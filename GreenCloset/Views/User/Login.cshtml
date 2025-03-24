@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-form">
+    <section class="py-3 py-md-5 py-xl-8 login-background">
+        <div class="container pb-3">
+            <div class="row">
+                <div class="col-12">
+                    <div class="mb-5">
+                        <h2 class="display-5 fw-bold text-center">Đăng nhập</h2>
+                        <p class="text-center m-0">Bạn chưa có tài khoản ? <a asp-action="Register">Đăng Kí</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-8">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-5">
+                            <form method="post">
+                                <div class="row gy-3 overflow-hidden">
+                                    <div class="col-12">
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control border-0 border-bottom rounded-0" name="email" type="email" placeholder="name@example.com" required>
+                                            <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input class="form-control border-0 border-bottom rounded-0" id="password" name="password" type="password"  placeholder="Password" required>
+                                            <label class="form-label"><i class="bi bi-lock"></i> Mật khẩu</label>
+                                            <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3"
+                                            id="togglePassword" style="cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="justify-content-center align-items-center d-flex flex-column">
+                                        <p>
+                                            <a id="forgot-password" class="text-dark" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                        </p>
+                                        <p>
+                                            <a id="resend-confirmation" class="text-dark" asp-action="ResendEmailConfirmation">Gửi lại email xác nhận</a>
+                                        </p>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="d-grid">
+                                            <button class="btn btn-success btn-lg" type="submit">Đăng nhập</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-12 col-lg-2 d-flex align-items-center justify-content-center gap-3 flex-lg-column">
+                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                            <div>Hoặc</div>
+                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                        </div>
+                        <div class="col-12 col-lg-5 d-flex align-items-center">
+                            <div class="w-100">
+                                <a asp-controller="User" asp-action="LoginWithGoogle" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-google"></i> Đăng nhập bằng Google
+                                </a>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            var passwordInput = document.getElementById("password");
+            var icon = this;
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye"); // Chuyển sang icon mắt mở
+            } else {
+                passwordInput.type = "password";
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash"); // Chuyển về icon mắt đóng
+            }
+        });
+    </script>
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}

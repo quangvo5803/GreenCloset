@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="register-form">
+    <section class="py-3 py-md-5 py-xl-8 login-background">
+        <div class="container pb-3">
+            <div class="row">
+                <div class="col-12">
+                    <div class="mb-5">
+                        <h2 class="display-5 fw-bold text-center">Đăng Ký</h2>
+                        <p class="text-center m-0">Bạn đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-8">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-5">
+                            <form method="post">
+                                <div class="row gy-3 overflow-hidden">
+                                    <div class="col-12">
+                                        <div class="form-floating mb-3">
+                                            <input class="form-control border-0 border-bottom rounded-0" name="email" type="email" placeholder="name@example.com" value="@ViewBag.Email" required>
+                                            <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input id="password" class="form-control border-0 border-bottom rounded-0" name="password" type="password" placeholder="Mật khẩu" required>
+                                            <label class="form-label"><i class="bi bi-lock"></i> Mật khẩu</label>
+                                            <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="password" style="cursor: pointer;"></i>
+                                        </div>
+                                        <ul class="password-criteria list-unstyled mt-2">
+                                            <li id="criteria-length" class="text-muted"><i class="bi bi-x-circle"></i> Ít nhất 8 ký tự</li>
+                                            <li id="criteria-uppercase" class="text-muted"><i class="bi bi-x-circle"></i> Chứa ít nhất 1 chữ hoa</li>
+                                            <li id="criteria-number" class="text-muted"><i class="bi bi-x-circle"></i> Chứa ít nhất 1 chữ số</li>
+                                            <li id="criteria-special" class="text-muted"><i class="bi bi-x-circle"></i> Chứa ít nhất 1 ký tự đặc biệt (!#$%^&*)</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input id="repassword" class="form-control border-0 border-bottom rounded-0" name="repassword" type="password" placeholder="Nhập lại mật khẩu" required>
+                                            <label class="form-label"><i class="bi bi-lock"></i> Nhập lại mật khẩu</label>
+                                            <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="repassword" style="cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="justify-content-center align-items-center d-flex flex-column">
+                                        <p>
+                                            <a id="have-account" class="text-dark" asp-action="Login">Đã có tài khoản</a>
+                                        </p>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="d-grid">
+                                            <button class="btn btn-success btn-lg" type="submit">Đăng ký</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-12 col-lg-2 d-flex align-items-center justify-content-center gap-3 flex-lg-column">
+                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                            <div>Hoặc</div>
+                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll(".toggle-password").forEach(icon => {
+            icon.addEventListener("click", function () {
+                var input = document.getElementById(this.dataset.target);
+                if (input.type === "password") {
+                    input.type = "text";
+                    this.classList.remove("bi-eye-slash");
+                    this.classList.add("bi-eye");
+                } else {
+                    input.type = "password";
+                    this.classList.remove("bi-eye");
+                    this.classList.add("bi-eye-slash");
+                }
+            });
+        });
+        document.getElementById("password").addEventListener("input", function () {
+            let password = this.value;
+
+            // Kiểm tra từng tiêu chí
+            let hasLength = password.length >= 8;
+            let hasUppercase = /[A-Z]/.test(password);
+            let hasNumber = /[0-9]/.test(password);
+            let hasSpecial = /[!@@#$%^&*]/.test(password);
+
+            // Cập nhật giao diện
+            updateCriteria("criteria-length", hasLength);
+            updateCriteria("criteria-uppercase", hasUppercase);
+            updateCriteria("criteria-number", hasNumber);
+            updateCriteria("criteria-special", hasSpecial);
+        });
+
+        function updateCriteria(id, isValid) {
+            let element = document.getElementById(id);
+            if (isValid) {
+                element.classList.remove("text-muted", "text-danger");
+                element.classList.add("text-success");
+                element.innerHTML = '<i class="bi bi-check-circle"></i> ' + element.textContent.trim();
+            } else {
+                element.classList.remove("text-success");
+                element.classList.add("text-muted", "text-danger");
+                element.innerHTML = '<i class="bi bi-x-circle"></i> ' + element.textContent.trim();
+            }
+        }
+    </script>
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}

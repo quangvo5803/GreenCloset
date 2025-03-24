@@ -61,3 +61,4 @@ logs/
 # Tệp từ Resharper & Rider
 *.sln.docstates
 .idea/
+.vs/

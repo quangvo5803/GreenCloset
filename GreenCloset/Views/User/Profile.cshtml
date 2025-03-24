@@ -1,0 +1,85 @@
+﻿@model User
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link active text-white" asp-action="Profile" style="background-color: #198754 !important;">
+                                        <i class="bi bi-person me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-action="ChangePassword"><i class="bi bi-lock me-2"></i>Bảo mật</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+                                <form asp-action="Profile" method="post">
+                                    <div class="mb-4">
+                                        <h5 class="mb-4">Thông tin cá nhân</h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3">
+                                                    <input class="form-control border-0 border-bottom rounded-0" asp-for="UserName" type="text" placeholder="Chưa cung cấp thông tin">
+                                                    <label asp-for="UserName">Họ và tên</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3">
+                                                    <input type="email" class="form-control border-0 border-bottom rounded-0" asp-for="Email" placeholder="Email" readonly>
+                                                    <label asp-for="Email">Email</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3">
+                                                    <input type="date" class="form-control border-0 border-bottom rounded-0" asp-for="DOB" placeholder="Ngày sinh">
+                                                    <label asp-for="DOB">Ngày sinh</label>
+                                                </div>
+                                                <span asp-validation-for="DOB" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3">
+                                                    <select class="form-select border-0 border-bottom rounded-0" asp-for="Gender">
+                                                        <option value="">Chọn giới tính</option>
+                                                        <option value="Male">Nam</option>
+                                                        <option value="Female">Nữ</option>
+                                                        <option value="Other">Khác</option>
+                                                    </select>
+                                                    <label asp-for="Gender">Giới tính</label>
+                                                </div>
+                                                <span asp-validation-for="Gender" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-floating mb-3">
+                                                    <input type="tel" class="form-control border-0 border-bottom rounded-0" asp-for="PhoneNumber" placeholder="Số điện thoại">
+                                                    <label asp-for="PhoneNumber">Số điện thoại</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-floating mb-3">
+                                                    <input type="text" class="form-control border-0 border-bottom rounded-0" asp-for="Address" placeholder="Địa chỉ">
+                                                    <label asp-for="Address">Địa chỉ</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Save Button -->
+                                    <div class="d-flex justify-content-end mb-4 me-4">
+                                        <button type="submit" class="btn btn-success px-4">Lưu thay đổi</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div> <!-- End Content Area -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

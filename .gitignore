@@ -62,3 +62,4 @@ logs/
 *.sln.docstates
 .idea/
 .vs/
+GreenCloset/appsettings.json

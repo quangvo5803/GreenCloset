@@ -1,12 +1,12 @@
 using BussinessLayer.Implement;
 using BussinessLayer.Interface;
-using GreenCloset.Data;
-using GreenCloset.Repository.Implement;
-using GreenCloset.Repository.Interface;
+using DataAccess.Data;
 using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Repository.Implement;
+using Repository.Interface;
 
 namespace GreenCloset
 {

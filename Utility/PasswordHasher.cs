@@ -1,4 +1,4 @@
-﻿namespace WebApp.Utility
+﻿namespace GreenCloset.Utility
 {
     public static class PasswordHasher
     {

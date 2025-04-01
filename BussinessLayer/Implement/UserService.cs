@@ -1,17 +1,15 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using BussinessLayer.Interface;
-using GreenCloset.Models;
-using GreenCloset.Repository.Implement;
+using DataAccess.Models;
 using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Repository.Implement;
 
 namespace BussinessLayer.Implement
 {
@@ -114,15 +112,13 @@ namespace BussinessLayer.Implement
             {
                 return false;
             }
-            if (!IsValidPassword(password))
-            {
-                return false;
-            }
             string hashedPassword = PasswordHasher.HashPassword(password);
+            var comformationToken = Guid.NewGuid().ToString();
             var user = new User
             {
                 Email = email,
                 PasswordHash = hashedPassword,
+                ComfirmationToken = comformationToken,
                 Role = UserRole.Customer,
                 IsEmailConfirmed = false,
             };
@@ -130,7 +126,7 @@ namespace BussinessLayer.Implement
             _unitOfWork.Save();
             //Tạo token
             var token = Convert.ToBase64String(
-                Encoding.UTF8.GetBytes($"{user.Email}:{Guid.NewGuid()}")
+                Encoding.UTF8.GetBytes($"{user.Email}:{comformationToken}")
             );
             //Tạo link xác nhận
             var emailSender = new EmailSender(
@@ -187,15 +183,28 @@ namespace BussinessLayer.Implement
         public bool ChangePassword(string email, string oldPassword, string newPassword)
         {
             var user = _unitOfWork.User.Get(u => u.Email == email);
-            if (
-                user == null
-                || !IsValidPassword(newPassword)
-                || !PasswordHasher.VerifyPassword(oldPassword, user.PasswordHash)
-            )
+            if (user == null || !PasswordHasher.VerifyPassword(oldPassword, user.PasswordHash))
             {
                 return false;
             }
             user.PasswordHash = PasswordHasher.HashPassword(newPassword);
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public bool ConfirmEmail(string token)
+        {
+            var decodedBytes = Convert.FromBase64String(token);
+            var decodedString = Encoding.UTF8.GetString(decodedBytes);
+            var email = decodedString.Split(':')[0];
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null || user.ComfirmationToken != token)
+            {
+                return false;
+            }
+            user.ComfirmationToken = null;
+            user.IsEmailConfirmed = true;
             _unitOfWork.User.Update(user);
             _unitOfWork.Save();
             return true;
@@ -220,7 +229,7 @@ namespace BussinessLayer.Implement
             );
         }
 
-        private bool IsValidPassword(string password)
+        public bool IsValidPassword(string password)
         {
             return Regex.IsMatch(password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$");
         }

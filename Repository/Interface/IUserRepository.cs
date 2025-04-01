@@ -1,6 +1,6 @@
-﻿using GreenCloset.Models;
+﻿using DataAccess.Models;
 
-namespace GreenCloset.Repository.Interface
+namespace Repository.Interface
 {
     public interface IUserRepository : IRepository<User>
     {

@@ -1,8 +1,8 @@
-﻿using GreenCloset.Data;
-using GreenCloset.Models;
-using GreenCloset.Repository.Interface;
+﻿using DataAccess.Data;
+using DataAccess.Models;
+using Repository.Interface;
 
-namespace GreenCloset.Repository.Implement
+namespace Repository.Implement
 {
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {

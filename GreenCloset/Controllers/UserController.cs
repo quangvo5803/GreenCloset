@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
-using System.Text;
 using BussinessLayer.Interface;
-using GreenCloset.Models;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -44,9 +43,9 @@ namespace GreenCloset.Controllers
             }
             return user!.Role switch
             {
-                Models.UserRole.Admin => RedirectToAction("Index", "Admin"),
-                Models.UserRole.Customer => RedirectToAction("Index", "Home"),
-                Models.UserRole.Lessor => RedirectToAction("Index", "Lessor"),
+                UserRole.Admin => RedirectToAction("Index", "Admin"),
+                UserRole.Customer => RedirectToAction("Index", "Home"),
+                UserRole.Lessor => RedirectToAction("Index", "Lessor"),
                 _ => RedirectToAction("Index", "Home"),
             };
         }
@@ -99,40 +98,32 @@ namespace GreenCloset.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (_facadeService.User.Register(email, password))
+            if (_facadeService.User.IsValidPassword(password))
             {
-                TempData["success"] =
-                    "Đăng kí thành công! Vui lòng xác nhận email trước khi đăng nhập";
-                return RedirectToAction("Login");
+                TempData["error"] = "Mật khẩu không hợp lệ";
+                ViewBag.Email = email;
+                return View();
             }
-            TempData["error"] = "Email đã có người sử dụng hoặc mật khẩu không hợp lệ";
-            ViewBag.Email = email;
-            return View();
+            if (!_facadeService.User.Register(email, password))
+            {
+                TempData["error"] = "Email đã có người sử dụng hoặc mật khẩu không hợp lệ";
+                ViewBag.Email = email;
+                return View();
+            }
+            TempData["success"] = "Đăng kí thành công! Vui lòng xác nhận email trước khi đăng nhập";
+            return RedirectToAction("Login");
         }
 
         [HttpGet]
         public IActionResult ConfirmEmail(string token)
         {
-            try
+            if (!_facadeService.User.ConfirmEmail(token))
             {
-                var decodedBytes = Convert.FromBase64String(token);
-                var decodedString = Encoding.UTF8.GetString(decodedBytes);
-                var email = decodedString.Split(':')[0];
-
-                var user = _facadeService.User.GetUserByEmail(email);
-                if (user == null)
-                {
-                    return BadRequest("Token không hợp lệ.");
-                }
-                user.IsEmailConfirmed = true;
-                _facadeService.User.UpdateUser(user);
-                TempData["success"] = "Xác thực email thành công";
+                TempData["error"] = "Token xác thực không hợp lệ";
                 return RedirectToAction("Login", "User");
             }
-            catch
-            {
-                return BadRequest("Token không hợp lệ hoặc đã hết hạn.");
-            }
+            TempData["success"] = "Xác thực email thành công";
+            return RedirectToAction("Login", "User");
         }
 
         [Authorize]
@@ -147,6 +138,7 @@ namespace GreenCloset.Controllers
             return View(user);
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult Profile(User user)
         {
@@ -165,6 +157,32 @@ namespace GreenCloset.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpPost]
+        public IActionResult ChangePassword(
+            string oldPassword,
+            string newPassword,
+            string rePassword
+        )
+        {
+            if (newPassword != rePassword)
+            {
+                TempData["error"] = "Mật khẩu không khớp";
+                return View();
+            }
+            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (
+                email == null
+                || !_facadeService.User.ChangePassword(email, oldPassword, newPassword)
+            )
+            {
+                TempData["error"] = "Mật khẩu cũ không đúng";
+                return View();
+            }
+            return View();
+        }
+
+        [Authorize]
         [HttpPost]
         public IActionResult Logout()
         {

@@ -1,9 +1,9 @@
 ﻿using System.Linq.Expressions;
-using GreenCloset.Data;
-using GreenCloset.Repository.Interface;
+using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
+using Repository.Interface;
 
-namespace GreenCloset.Repository.Implement
+namespace Repository.Implement
 {
     public class Repository<T> : IRepository<T>
         where T : class

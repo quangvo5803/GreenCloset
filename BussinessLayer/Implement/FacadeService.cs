@@ -1,6 +1,6 @@
 ﻿using BussinessLayer.Interface;
-using GreenCloset.Repository.Implement;
 using Microsoft.Extensions.Configuration;
+using Repository.Implement;
 
 namespace BussinessLayer.Implement
 {

@@ -3,7 +3,7 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace WebApp.Utility
+namespace GreenCloset.Utility
 {
     public class EmailSender
     {

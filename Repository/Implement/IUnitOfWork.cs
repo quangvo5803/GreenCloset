@@ -1,6 +1,6 @@
-﻿using GreenCloset.Repository.Interface;
+﻿using Repository.Interface;
 
-namespace GreenCloset.Repository.Implement
+namespace Repository.Implement
 {
     public interface IUnitOfWork
     {

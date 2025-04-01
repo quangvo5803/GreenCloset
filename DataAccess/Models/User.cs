@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace GreenCloset.Models
+namespace DataAccess.Models
 {
     public class User
     {
@@ -16,6 +16,8 @@ namespace GreenCloset.Models
 
         [Required]
         public required string PasswordHash { get; set; }
+
+        public string? ComfirmationToken { get; set; }
         public string? UserName { get; set; }
 
         [DisplayName("Ngày sinh: ")]

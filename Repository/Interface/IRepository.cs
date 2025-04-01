@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace GreenCloset.Repository.Interface
+namespace Repository.Interface
 {
     public interface IRepository<T>
         where T : class

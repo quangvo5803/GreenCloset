@@ -1,0 +1,108 @@
+﻿<nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+        <div class="m-header">
+            <a asp-action="Index" asp-controller="Admin" class="b-brand text-primary">
+                <img src="/image//headerlogo.png" class="img-fluid logo-lg" alt="logo">
+            </a>
+        </div>
+        <div class="navbar-content">
+            <ul class="pc-navbar">
+                <li class="pc-item">
+                    <a asp-action="Index" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-house"></i></span>
+                        <span class="pc-mtext">Thống kê</span>
+                    </a>
+                </li>
+
+                <li class="pc-item pc-caption font-bold">
+                    <label>Quản lí</label>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="ManagerCategory" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-list"></i></span>
+                        <span class="pc-mtext">Danh mục</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="ManagerProduct" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-shirt"></i></span>
+                        <span class="pc-mtext">Sản phẩm</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="ManagerOrder" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-truck"></i></span>
+                        <span class="pc-mtext">Đơn hàng</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="ManagerOrder" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-user"></i></span>
+                        <span class="pc-mtext">Người dùng</span>
+                    </a>
+                </li>
+                <li class="pc-item pc-caption font-bold">
+                    <label>Khác</label>
+                    <i class="ti ti-brand-chrome"></i>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="" asp-controller="Admin" class="pc-link">
+                        <span class="pc-micon"><i class="fa fa-gear"></i></span>
+                        <span class="pc-mtext">Cài đặt</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a asp-action="Logout" asp-controller="Home" class="pc-link">
+                        <span class="pc-micon text-danger"><i class="fa fa-right-from-bracket"></i></span>
+                        <span class="pc-mtext">Đăng xuất</span>
+                    </a>
+                </li>
+            </ul>          
+        </div>
+    </div>
+</nav>
+<!-- [ Sidebar Menu ] end --> <!-- [ Header Topbar ] start -->
+<header class="pc-header">
+    <div class="header-wrapper">
+        <!-- [Mobile Media Block] start -->
+        <div class="me-auto pc-mob-drp">
+            <ul class="list-unstyled">
+                <!-- ======= Menu collapse Icon ===== -->
+                <li class="pc-h-item pc-sidebar-collapse">
+                    <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+                        <i class="fa fa-bars"></i>
+                    </a>
+                </li>
+                <li class="pc-h-item pc-sidebar-popup">
+                    <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+                        <i class="fa fa-bars"></i>
+                    </a>
+                </li>
+                <li class="dropdown pc-h-item d-inline-flex d-md-none">
+                    <a class="pc-head-link dropdown-toggle arrow-none m-0"
+                       data-bs-toggle="dropdown"
+                       href="#"
+                       role="button"
+                       aria-haspopup="false"
+                       aria-expanded="false">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </a>
+                    <div class="dropdown-menu pc-h-dropdown drp-search">
+                        <form class="px-3">
+                            <div class="form-group mb-0 d-flex align-items-center">
+                                <i data-feather="search"></i>
+                                <input type="search" class="form-control border-0 shadow-none" placeholder="Nhập và tìm kiếm ở đây. . .">
+                            </div>
+                        </form>
+                    </div>
+                </li>
+                <li class="pc-h-item d-none d-md-inline-flex">
+                    <form class="header-search">
+                        <i data-feather="search" class="icon-search"></i>
+                        <input type="search" class="form-control" placeholder="Nhập và tìm kiếm ở đây. . .">
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

@@ -1,16 +1,12 @@
-using System.Diagnostics;
+﻿using BussinessLayer.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GreenCloset.Controllers;
 
-public class HomeController : Controller
+public partial class HomeController : BaseController
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
+    public HomeController(IFacedeService facedeService)
+        : base(facedeService) { }
 
     public IActionResult Index()
     {

@@ -1,6 +1,7 @@
 ﻿@{
     var isLoggedIn = User.Identity.IsAuthenticated;
     var pageTile = ViewData["Title"] as string;
+    var categories = ViewBag.Categories as IEnumerable<Category>;
 }
 <partial name="_SearchPopup" /> 
 <header>
@@ -73,14 +74,17 @@
                                     <li class="menu-item has-sub">
                                         <a href="shop.html" class="item-anchor d-flex align-item-center" data-effect="Shop">Danh mục cho thuê<i class="icon icon-chevron-down"></i></a>
                                         <ul class="submenu">
-                                            <li style="padding: 10px"><a href="shop.html" class="item-anchor">Shop</a></li>
-                                            <li style="padding: 10px"><a href="shop-slider.html" class="item-anchor">Shop slider<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="shop-grid.html" class="item-anchor">Shop grid<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="shop-list.html" class="item-anchor">Shop list<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="single-product.html" class="item-anchor">Single product<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="cart.html" class="item-anchor">Cart<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="wishlist.html" class="item-anchor">Wishlist<span class="text-primary"> (PRO)</span></a></li>
-                                            <li style="padding: 10px"><a href="checkout.html" class="item-anchor">Checkout<span class="text-primary"> (PRO)</span></a></li>
+                                            @if(categories != null && categories.Any())
+                                            {
+                                                @foreach (var category in categories)
+                                                {
+                                                    <li style="padding: 10px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="@category.Id" class="item-anchor"> @category.CategoryName</a></li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <li style="padding: 10px"><a class="item-anchor">Chưa có danh mục</a></li>
+                                            }
                                         </ul>
                                     </li>
 

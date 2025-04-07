@@ -1752,6 +1752,7 @@ blockquote cite {
 /* submenu */
 .stellarnav ul ul {
     background: var(--dark-color);
+    margin-top: 10px;
 }
 
     .stellarnav ul ul a {
@@ -1775,13 +1776,11 @@ blockquote cite {
 }
 
 .menu-list .submenu a.item-anchor:hover {
-    color: var(--light-color);
-    background-color: #343434;
+    color: var(--primary-color);
 }
 
 .menu-list .submenu a.item-anchor.active {
     color: var(--light-color);
-    background-color: #343434;
 }
 
 /* Search Bar

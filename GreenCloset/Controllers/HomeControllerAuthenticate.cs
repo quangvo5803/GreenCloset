@@ -31,6 +31,7 @@ namespace GreenCloset.Controllers
                     return View();
                 }
             }
+            TempData["success"] = "Đăng nhập thành công";
             return user!.Role switch
             {
                 UserRole.Admin => RedirectToAction("Index", "Admin"),

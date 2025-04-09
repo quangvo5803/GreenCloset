@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Quản lí sản phẩm";
+}
+<div class="pc-container">
+    <div class="pc-content">
+        <h2 class="text-center">Danh sách sản phẩm</h2>
+        <p class="text-end">
+            <a asp-action="CreateProduct" class="btn btn-primary">Tạo sản phẩm mới</a>
+        </p>
+
+        <table id="tblData" class="table table-bordered" width="100%">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá tiền</th>
+                    <th>Danh mục</th>
+                    <th>Đánh giá</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+
+        <p class="text-end mt-2">
+            <a asp-action="Index" class="btn btn-secondary">Trở về trang chính</a>
+        </p>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/Admin/Product.js"></script>
+}
+

@@ -8,10 +8,12 @@ namespace DataAccess.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Tên sản phẩm không được để trống")]
         public required string Name { get; set; }
 
         public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Giá sản phẩm không được để trống")]
         public double Price { get; set; }
         public int? ProductAvatarId { get; set; }
 

@@ -1,0 +1,245 @@
+﻿using BussinessLayer.Interface;
+using DataAccess.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Repository.Implement;
+
+namespace BussinessLayer.Implement
+{
+    public class ProductService : IProductService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public ProductService(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        {
+            _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        public Product? GetProductById(int id, string? includeProperties = null)
+        {
+            return _unitOfWork.Product.Get(p => p.Id == id, includeProperties);
+        }
+
+        public IEnumerable<Product> GetAllProducts(string? includeProperties = null)
+        {
+            return _unitOfWork.Product.GetAll(includeProperties);
+        }
+
+        public IEnumerable<Product> GetProductsByCategoryId(
+            int categoryId,
+            string? includeProperties = null
+        )
+        {
+            return _unitOfWork.Product.GetRange(
+                p => p.Categories != null && p.Categories.Any(c => c.Id == categoryId),
+                includeProperties
+            );
+        }
+
+        public async Task AddProduct(
+            Product product,
+            IEnumerable<int>? selectedCategories,
+            IFormFile? avatar,
+            List<IFormFile>? gallery
+        )
+        {
+            // Add product
+            _unitOfWork.Product.Add(product);
+            if (selectedCategories != null)
+            {
+                List<Category> categories = new List<Category>();
+                foreach (var categoryId in selectedCategories)
+                {
+                    var category = _unitOfWork.Category.Get(c => c.Id == categoryId);
+                    if (category != null)
+                    {
+                        categories.Add(category);
+                    }
+                }
+                product.Categories = categories;
+            }
+            _unitOfWork.Save();
+            // Create folder for images
+            string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "image/products");
+            if (!Directory.Exists(uploadFolder))
+            {
+                Directory.CreateDirectory(uploadFolder);
+            }
+            // Add avatar
+            if (avatar != null)
+            {
+                //Add to folder
+                string avatarFileName =
+                    Guid.NewGuid().ToString() + Path.GetExtension(avatar.FileName);
+                string avatarPath = Path.Combine(uploadFolder, avatarFileName);
+                using (var fileStream = new FileStream(avatarPath, FileMode.Create))
+                {
+                    await avatar.CopyToAsync(fileStream);
+                }
+                //Save to database
+                var productAvatar = new ItemImage
+                {
+                    ImagePath = avatarFileName,
+                    ProductId = product.Id,
+                };
+                _unitOfWork.ItemImage.Add(productAvatar);
+                _unitOfWork.Save();
+                product.ProductAvatarId = productAvatar.Id;
+            }
+            //Add gallery
+            if (gallery != null && gallery.Count > 0)
+            {
+                foreach (var file in gallery)
+                {
+                    //Add to folder
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string filePath = Path.Combine(uploadFolder, fileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+                    //Save to database
+                    var productImage = new ItemImage
+                    {
+                        ImagePath = fileName,
+                        ProductId = product.Id,
+                    };
+                    _unitOfWork.ItemImage.Add(productImage);
+                }
+            }
+            _unitOfWork.Save();
+        }
+
+        public async Task UpdateProduct(
+            Product product,
+            IEnumerable<int>? selectedCategories,
+            IFormFile? avatar,
+            List<IFormFile>? gallery
+        )
+        {
+            product.Categories = null;
+            _unitOfWork.Product.Update(product);
+            _unitOfWork.Save();
+            if (selectedCategories != null)
+            {
+                List<Category> categories = new List<Category>();
+                foreach (var categoryId in selectedCategories)
+                {
+                    var category = _unitOfWork.Category.Get(c => c.Id == categoryId);
+                    if (category != null)
+                    {
+                        categories.Add(category);
+                    }
+                }
+                product.Categories = categories;
+            }
+            _unitOfWork.Save();
+            string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "image/products");
+            if (avatar != null)
+            {
+                if (product.ProductAvatar != null)
+                {
+                    var oldAvatarPath = Path.Combine(uploadFolder, product.ProductAvatar.ImagePath);
+                    if (File.Exists(oldAvatarPath))
+                    {
+                        File.Delete(oldAvatarPath);
+                    }
+                    _unitOfWork.ItemImage.Remove(product.ProductAvatar);
+                }
+
+                var newAvatarFileName =
+                    Guid.NewGuid().ToString() + Path.GetExtension(avatar.FileName);
+                var newAvatarPath = Path.Combine(uploadFolder, newAvatarFileName);
+                using (var fileStream = new FileStream(newAvatarPath, FileMode.Create))
+                {
+                    await avatar.CopyToAsync(fileStream);
+                }
+
+                var newAvatar = new ItemImage
+                {
+                    ImagePath = newAvatarFileName,
+                    ProductId = product.Id,
+                };
+                _unitOfWork.ItemImage.Add(newAvatar);
+                _unitOfWork.Save();
+                product.ProductAvatarId = newAvatar.Id;
+            }
+
+            if (gallery != null && gallery.Count > 0)
+            {
+                List<ItemImage> newGallery = new List<ItemImage>();
+                foreach (var item in gallery)
+                {
+                    var newImageFileName =
+                        Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
+                    var newImagePath = Path.Combine(uploadFolder, newImageFileName);
+                    using (var fileStream = new FileStream(newImagePath, FileMode.Create))
+                    {
+                        await item.CopyToAsync(fileStream);
+                    }
+                    var newImage = new ItemImage
+                    {
+                        ImagePath = newImageFileName,
+                        ProductId = product.Id,
+                    };
+                    newGallery.Add(newImage);
+                }
+
+                _unitOfWork.ItemImage.AddRange(newGallery);
+                if (product.ProductImages != null)
+                {
+                    foreach (var image in product.ProductImages)
+                    {
+                        newGallery.Add(image);
+                    }
+                }
+                product.ProductImages = newGallery;
+            }
+            _unitOfWork.Save();
+        }
+
+        public bool DeleteProduct(Product product)
+        {
+            if (product.ProductAvatar != null || product.ProductImages != null)
+            {
+                string uploadFolder = Path.Combine(
+                    _webHostEnvironment.WebRootPath,
+                    "image/products"
+                );
+                //Remove avatar
+                if (product.ProductAvatar != null)
+                {
+                    var oldAvatarPath = Path.Combine(uploadFolder, product.ProductAvatar.ImagePath);
+                    if (File.Exists(oldAvatarPath))
+                    {
+                        File.Delete(oldAvatarPath);
+                    }
+                    _unitOfWork.ItemImage.Remove(product.ProductAvatar);
+                }
+                //Remove gallery
+                if (product.ProductImages != null)
+                {
+                    foreach (var image in product.ProductImages)
+                    {
+                        if (image.Id != product.ProductAvatarId)
+                        {
+                            var oldImagePath = Path.Combine(uploadFolder, image.ImagePath);
+                            if (File.Exists(oldImagePath))
+                            {
+                                File.Delete(oldImagePath);
+                            }
+                            _unitOfWork.ItemImage.Remove(image);
+                        }
+                    }
+                }
+            }
+            product.Categories = null;
+            _unitOfWork.Save();
+            _unitOfWork.Product.Remove(product);
+            _unitOfWork.Save();
+            return true;
+        }
+    }
+}

@@ -10,5 +10,7 @@ namespace BussinessLayer.Interface
     {
         IUserService User { get; }
         ICategoryService Category { get; }
+        IProductService Product { get; }
+        IItemImageService ItemImage { get; }
     }
 }

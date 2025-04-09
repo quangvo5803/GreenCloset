@@ -1,0 +1,214 @@
+﻿@model Product
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    int itemPerCol = 0;
+    if(categories != null)
+    {
+        int totalCategories = categories.Count();
+        itemPerCol = 5;
+    }
+
+}
+
+<div class="pc-container">
+    <div class="pc-content">
+        <div class="admin-margin container py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-12 col-md-10">
+                    <div class="card shadow-lg border-0 rounded-lg">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="text-center my-2  text-white">
+                                <i class="fas fa-plus-circle me-2"></i>Thêm sản phẩm mới
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="CreateProduct" method="post" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                            <input asp-for="Name" class="form-control" required placeholder="Nhập tên sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Price" class="form-label fw-bold">Giá sản phẩm:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="Price" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label fw-bold">Mô tả:</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    @if (categories != null)
+                                    {
+                                        <label class="control-label fw-bold">Chọn danh mục:</label>
+                                        <div class="row category-container">
+                                            @foreach (var categoryCol in categories.Select((item, index) => new { Item = item, Index = index }).GroupBy(x => x.Index / itemPerCol))
+                                            {
+                                                <div class="col-md-3 col-sm-6 mb-2">
+                                                    @foreach (var category in categoryCol.Select(x => x.Item))
+                                                    {
+                                                        <div class="form-check">
+                                                            <input type="checkbox" name="selectedCategories" value="@category.Id" class="form-check-input" id="@category.Id" />
+                                                            <label class="form-check-label" for="category_@category.Id">
+                                                                @category.CategoryName
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ProductAvatar" class="form-label fw-bold me-2">Ảnh đại diện:</label>
+                                    <input type="file" name="Avatar" id="avatarInput" class="form-control d-none" accept="image/*" />
+                                    <label for="avatarInput" class="btn btn-primary">
+                                        <i class="bi bi-upload"></i> Tải ảnh lên
+                                    </label>
+                                    <div class="avatar-preview-container position-relative mt-2" style="display: none; width:200px;">
+                                        <img id="avatarPreview" class="img-thumbnail" style="max-width: 200px;" />
+                                        <button type="button" class="btn-close position-absolute end-0 bg-danger text-white"
+                                                onclick="removeAvatarPreview()" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="ProductImages" class="form-label fw-bold me-2">Ảnh của sản phẩm (Bạn có thê tải lên nhiều ảnh):</label>
+                                    <input type="file" name="Gallery" id="galleryInput" class="form-control d-none" accept="image/*" multiple />
+                                    <label for="galleryInput" class="btn btn-secondary">
+                                        <i class="bi bi-images"></i> Tải lên nhiều ảnh
+                                    </label>
+                                    <div id="galleryPreviewContainer" class="d-flex flex-wrap mt-2"></div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a asp-action="ManageProduct" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Trở về danh sách sản phẩm
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Thêm sản phẩm
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Avatar preview handling
+        document.querySelector('input[name="Avatar"]').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const previewContainer = document.querySelector('.avatar-preview-container');
+            const preview = document.getElementById('avatarPreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    preview.src = reader.result;
+                    previewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        });
+
+        // Remove avatar preview
+        function removeAvatarPreview() {
+            const input = document.querySelector('input[name="Avatar"]');
+            input.value = ''; // Clear the file input
+            document.querySelector('.avatar-preview-container').style.display = 'none';
+        }
+
+        // Gallery images preview
+               document.querySelector('input[name="Gallery"]').addEventListener('change', function (e) {
+            handleGalleryFiles(e.target.files);
+        });
+
+        let currentFiles = []; // Mảng lưu trữ các file hiện tại
+
+                function handleGalleryFiles(files) {
+            const previewContainer = document.getElementById('galleryPreviewContainer');
+            const galleryInput = document.getElementById('galleryInput');
+
+            const newFiles = Array.from(files);
+
+            // Nối thêm file mới vào currentFiles
+            newFiles.forEach((file) => {
+                currentFiles.push(file);
+
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    const previewWrapper = document.createElement('div');
+                    previewWrapper.className = 'position-relative m-2';
+                    previewWrapper.dataset.fileIndex = currentFiles.length - 1;
+
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.className = 'img-thumbnail';
+                    img.style.width = '150px';
+                    img.style.height = '150px';
+                    img.style.objectFit = 'cover';
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn-close position-absolute top-0 end-0 bg-danger text-white';
+                    removeBtn.setAttribute('aria-label', 'Close');
+                    removeBtn.addEventListener('click', function () {
+                        removeGalleryImage(previewWrapper);
+                    });
+
+                    previewWrapper.appendChild(img);
+                    previewWrapper.appendChild(removeBtn);
+                    previewContainer.appendChild(previewWrapper);
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            // Cập nhật input file
+            const dataTransfer = new DataTransfer();
+            currentFiles.forEach(file => dataTransfer.items.add(file));
+            galleryInput.files = dataTransfer.files;
+        }
+
+                function removeGalleryImage(previewElement) {
+            const galleryInput = document.getElementById('galleryInput');
+            const previewContainer = document.getElementById('galleryPreviewContainer');
+
+            const index = Array.from(previewContainer.children).indexOf(previewElement);
+
+            if (index > -1) {
+                currentFiles.splice(index, 1);
+            }
+
+            previewElement.remove();
+
+            const dataTransfer = new DataTransfer();
+            currentFiles.forEach(file => dataTransfer.items.add(file));
+            galleryInput.files = dataTransfer.files;
+
+            if (currentFiles.length === 0) {
+                galleryInput.value = '';
+            }
+        }
+
+    </script>
+}

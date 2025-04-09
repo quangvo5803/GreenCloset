@@ -24,9 +24,21 @@ namespace DataAccess.Data
             //Relition N-N
             modelBuilder
                 .Entity<Product>()
-                .HasMany(x => x.Categories)
-                .WithMany(x => x.Products)
-                .UsingEntity(y => y.ToTable("ProductCategory"));
+                .HasMany(p => p.Categories)
+                .WithMany(c => c.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ProductCategory",
+                    j =>
+                        j.HasOne<Category>()
+                            .WithMany()
+                            .HasForeignKey("CategoriesId")
+                            .OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                        j.HasOne<Product>()
+                            .WithMany()
+                            .HasForeignKey("ProductsId")
+                            .OnDelete(DeleteBehavior.Cascade)
+                );
 
             // Relation 1-1 between  Product and ProductAvatar
             modelBuilder

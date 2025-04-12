@@ -1,0 +1,294 @@
+﻿
+
+    <style>
+        .chatbox {
+            position: fixed;
+            bottom: 4rem;
+            right: 1rem;
+            z-index: 60;
+        }
+    </style>
+
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="bg-white p-4 rounded shadow-sm">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox" id="selectAllProducts" />
+                    <strong>Sản Phẩm</strong>
+                </div>
+                <div class="d-flex gap-5">
+                    <span>Đơn Giá</span>
+                    <span>Số Lượng</span>
+                    <span>Số Tiền</span>
+                    <span>Thao Tác</span>
+                </div>
+            </div>
+
+            <!-- Shop Header -->
+            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox" class="shopCheckbox" />
+                    <span class="badge bg-danger">Hot</span>
+                    <span class="text-danger">Trail Echo</span>
+                </div>
+            </div>
+
+            <!-- Product Rows -->
+            <div class="border-bottom py-3 product-row">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" class="productCheckbox" data-price="171720" />
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://placehold.co/100x100" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                            <div>
+                                <p class="fw-semibold mb-1">Trail Echo Nam Vintage Kẻ Sọc Ao Sơ Mi Mới Nhật Bản Retro ...</p>
+                                <p class="text-muted small">Phân Loại Hàng: Cà phê, XL</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-4 align-items-center">
+                        <span class="text-danger">₫171.720</span>
+                        <div class="input-group" style="width: 100px;">
+                            <button class="btn btn-outline-secondary btn-sm decrement">-</button>
+                            <input type="text" class="form-control text-center quantity" value="1" />
+                            <button class="btn btn-outline-secondary btn-sm increment">+</button>
+                        </div>
+                        <span class="text-danger product-total">₫171.720</span>
+                        <a href="#" class="text-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nhân bản thêm các hàng sản phẩm như trên -->
+            <!-- (Sao chép các block .product-row để tạo nhiều sản phẩm) -->
+            <!-- Shop Header 2 -->
+            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox" class="shopCheckbox" />
+                    <span class="badge bg-danger">Hot</span>
+                    <span class="text-danger">Shop ABC</span>
+                </div>
+            </div>
+            <div class="border-bottom py-3 product-row">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" class="productCheckbox" data-price="171720" />
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://placehold.co/100x100" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                            <div>
+                                <p class="fw-semibold mb-1">Trail Echo Nam Vintage Kẻ Sọc Ao Sơ Mi Mới Nhật Bản Retro ...</p>
+                                <p class="text-muted small">Phân Loại Hàng: Cà phê, XL</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-4 align-items-center">
+                        <span class="text-danger">₫171.720</span>
+                        <div class="input-group" style="width: 100px;">
+                            <button class="btn btn-outline-secondary btn-sm decrement">-</button>
+                            <input type="text" class="form-control text-center quantity" value="1" />
+                            <button class="btn btn-outline-secondary btn-sm increment">+</button>
+                        </div>
+                        <span class="text-danger product-total">₫171.720</span>
+                        <a href="#" class="text-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-bottom py-3 product-row">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" class="productCheckbox" data-price="171720" />
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://placehold.co/100x100" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                            <div>
+                                <p class="fw-semibold mb-1">Trail Echo Nam Vintage Kẻ Sọc Ao Sơ Mi Mới Nhật Bản Retro ...</p>
+                                <p class="text-muted small">Phân Loại Hàng: Cà phê, XL</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-4 align-items-center">
+                        <span class="text-danger">₫171.720</span>
+                        <div class="input-group" style="width: 100px;">
+                            <button class="btn btn-outline-secondary btn-sm decrement">-</button>
+                            <input type="text" class="form-control text-center quantity" value="1" />
+                            <button class="btn btn-outline-secondary btn-sm increment">+</button>
+                        </div>
+                        <span class="text-danger product-total">₫171.720</span>
+                        <a href="#" class="text-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Các sản phẩm thuộc Shop ABC (như trên, chỉ thay đổi thông tin) -->
+            <!-- Sticky Footer -->
+            <div class="bg-white border-top mt-4 py-3 position-sticky bottom-0" id="sticky-footer">
+                <div class="container d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" id="selectAllBottom" />
+                        <span id="selectedCount">Chọn Tất Cả (0)</span>
+                        <a href="#" class="text-danger ms-2">Xóa</a>
+                    </div>
+                    <div class="text-end">
+                        <p class="text-danger fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
+                        <button class="btn btn-danger">Mua Hàng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbox -->
+        <div class="position-fixed bottom-0 end-0 m-4">
+            <button class="btn btn-danger rounded-circle p-3 position-relative">
+                <i class="fas fa-comments"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-danger">
+                    16
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+
+    <script>
+        window.addEventListener('scroll', function () {
+            var footer = document.querySelector('.site-footer');
+            var stickyFooter = document.getElementById('sticky-footer');
+            var shopeeXu = document.querySelector('.border-b.py-4:last-of-type');
+            var scrollPosition = window.scrollY + window.innerHeight;
+            var footerPosition = footer.offsetTop;
+
+            if (scrollPosition >= footerPosition) {
+                stickyFooter.classList.remove('sticky-footer');
+                shopeeXu.insertAdjacentElement('afterend', stickyFooter);
+            } else {
+                stickyFooter.classList.add('sticky-footer');
+            }
+        });
+
+        const selectAllProducts = document.getElementById('selectAllProducts');
+        const productCheckboxes = document.querySelectorAll('.productCheckbox');
+        const selectAllBottom = document.getElementById('selectAllBottom');
+        const shopCheckboxes = document.querySelectorAll('.shopCheckbox');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const totalPriceSpan = document.getElementById('totalPrice');
+
+        function updateCart() {
+            let selectedCount = 0;
+            let totalPrice = 0;
+
+            productCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedCount++;
+                    const productRow = checkbox.closest('.product-row');
+                    const quantityInput = productRow.querySelector('.quantity');
+                    const price = parseFloat(checkbox.dataset.price);
+                    totalPrice += price * parseInt(quantityInput.value);
+                }
+            });
+
+            selectedCountSpan.textContent = `Chọn Tất Cả (${selectedCount})`;
+            totalPriceSpan.textContent = `Tổng cộng (${selectedCount} Sản phẩm): ₫${totalPrice.toLocaleString()}`;
+        }
+
+        selectAllProducts.addEventListener('change', function () {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            selectAllBottom.checked = this.checked;
+            updateShopCheckboxes();
+            updateCart();
+        });
+
+        selectAllBottom.addEventListener('change', function () {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            selectAllProducts.checked = this.checked;
+            updateShopCheckboxes();
+            updateCart();
+        });
+
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const allChecked = Array.from(productCheckboxes).every(checkbox => checkbox.checked);
+                selectAllProducts.checked = allChecked;
+                selectAllBottom.checked = allChecked;
+                updateShopCheckboxes();
+                updateCart();
+            });
+        });
+
+        shopCheckboxes.forEach(shopCheckbox => {
+            shopCheckbox.addEventListener('change', function () {
+                const shopProducts = getShopProducts(this);
+                shopProducts.forEach(product => {
+                    product.checked = this.checked;
+                });
+                updateShopCheckboxes();
+                updateSelectAll();
+                updateCart();
+            });
+        });
+
+        function getShopProducts(shopCheckbox) {
+            let currentShop = shopCheckbox.parentElement.parentElement.nextElementSibling;
+            let shopProducts = [];
+            while (currentShop && currentShop.classList.contains('product-row')) {
+                shopProducts.push(currentShop.querySelector('.productCheckbox'));
+                currentShop = currentShop.nextElementSibling;
+            }
+            return shopProducts;
+        }
+
+        function updateShopCheckboxes() {
+            shopCheckboxes.forEach(shopCheckbox => {
+                const shopProducts = getShopProducts(shopCheckbox);
+                const allShopProductsChecked = shopProducts.every(product => product.checked);
+                shopCheckbox.checked = allShopProductsChecked;
+            });
+            updateSelectAll();
+        }
+
+        function updateSelectAll() {
+            const allProductsChecked = Array.from(productCheckboxes).every(checkbox => checkbox.checked);
+            selectAllProducts.checked = allProductsChecked;
+            selectAllBottom.checked = allProductsChecked;
+        }
+
+        document.querySelectorAll('.increment').forEach(button => {
+            button.addEventListener('click', function () {
+                const input = this.parentElement.querySelector('.quantity');
+                input.value = parseInt(input.value) + 1;
+                updateProductTotal(this.closest('.product-row'));
+                updateCart();
+            });
+        });
+
+        document.querySelectorAll('.decrement').forEach(button => {
+            button.addEventListener('click', function () {
+                const input = this.parentElement.querySelector('.quantity');
+                if (parseInt(input.value) > 1) {
+                    input.value = parseInt(input.value) - 1;
+                    updateProductTotal(this.closest('.product-row'));
+                    updateCart();
+                }
+            });
+        });
+
+        function updateProductTotal(productRow) {
+            const quantityInput = productRow.querySelector('.quantity');
+            const price = parseFloat(productRow.querySelector('.productCheckbox').dataset.price);
+            const totalSpan = productRow.querySelector('.product-total');
+            totalSpan.textContent = `₫${(price * parseInt(quantityInput.value)).toLocaleString()}`;
+        }
+
+        productCheckboxes.forEach(checkbox=>{
+            checkbox.addEventListener('change', updateCart);
+        })
+        document.querySelectorAll('.quantity').forEach(quantityInput =>{
+            quantityInput.addEventListener('change', function (){
+                updateProductTotal(this.closest('.product-row'));
+                updateCart();
+            })
+        })
+    </script>

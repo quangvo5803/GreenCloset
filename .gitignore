@@ -36,7 +36,6 @@ appsettings.json
 logs/
 temp/
 node_modules/
-wwwroot/lib/
 wwwroot/dist/
 dist/
 coverage/

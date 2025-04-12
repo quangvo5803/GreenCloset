@@ -23,4 +23,15 @@ public partial class HomeController : BaseController
     {
         return View();
     }
+
+    public IActionResult ProductDetail(int id, int pageNumber = 1, int pageSize = 5)
+    {
+        var product = _facadeService.Product.GetProductById(
+            id,
+            includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
+        );
+        ViewBag.PageNumber = pageNumber;
+        ViewBag.PageSize = pageSize;
+        return View(product);
+    }
 }

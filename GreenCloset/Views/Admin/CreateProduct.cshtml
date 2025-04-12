@@ -71,6 +71,32 @@
                                         </div>
                                     }
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chọn size quần áo có sẵn:</label>
+                                    <div class="row">
+                                        @foreach (SizeClother size in Enum.GetValues(typeof(SizeClother)))
+                                        {
+                                            <div class="form-check col-md-2">
+                                                <input type="checkbox" class="form-check-input" name="SelectedClotherSizes" value="@size" onclick="toggleSizes('clothing')" />
+                                                <label class="form-check-label" for="size_@size">@size</label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chọn size giày có sẵn:</label>
+                                    <div class="row">
+                                        @for (int size = 35; size <= 45; size++)
+                                        {
+                                            <div class="form-check col-md-2">
+                                                <input type="checkbox" class="form-check-input" name="SelectedShoeSizes" value="@size" onclick="toggleSizes('shoes')" />
+                                                <label class="form-check-label" for="shoe_@size">@size</label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                
 
                                 <div class="mb-3">
                                     <label asp-for="ProductAvatar" class="form-label fw-bold me-2">Ảnh đại diện:</label>
@@ -209,6 +235,40 @@
                 galleryInput.value = '';
             }
         }
+            // Hàm để kiểm tra và vô hiệu hóa các checkbox khi chọn một nhóm
+        function toggleSizes(type) {
+            if (type === 'clothing') {
+                let shoeCheckboxes = document.querySelectorAll('input[name="SelectedShoeSizes"]');
+                shoeCheckboxes.forEach(checkbox => checkbox.disabled = true); // Vô hiệu hóa size giày
+            } else if (type === 'shoes') {
+                let clothingCheckboxes = document.querySelectorAll('input[name="SelectedClotherSizes"]');
+                clothingCheckboxes.forEach(checkbox => checkbox.disabled = true); // Vô hiệu hóa size quần áo
+            }
+        }
 
+        // Hàm để xử lý khi bỏ chọn các checkbox
+        document.querySelectorAll('input[name="SelectedClotherSizes"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                if (!this.checked) {
+                    // Bỏ vô hiệu hóa size giày nếu không có size quần áo nào được chọn
+                    let anyClothingChecked = Array.from(document.querySelectorAll('input[name="SelectedClotherSizes"]')).some(c => c.checked);
+                    if (!anyClothingChecked) {
+                        document.querySelectorAll('input[name="SelectedShoeSizes"]').forEach(c => c.disabled = false);
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('input[name="SelectedShoeSizes"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                if (!this.checked) {
+                    // Bỏ vô hiệu hóa size quần áo nếu không có size giày nào được chọn
+                    let anyShoesChecked = Array.from(document.querySelectorAll('input[name="SelectedShoeSizes"]')).some(s => s.checked);
+                    if (!anyShoesChecked) {
+                        document.querySelectorAll('input[name="SelectedClotherSizes"]').forEach(s => s.disabled = false);
+                    }
+                }
+            });
+        });
     </script>
 }

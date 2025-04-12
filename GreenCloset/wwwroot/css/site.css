@@ -19,6 +19,119 @@ input[type="search"]::-webkit-search-cancel-button {
     background-color: rgb(255, 255, 255);
     border-bottom: 1px solid #ddd;
 }
+.pagination {
+    margin-top: 20px;
+}
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        text-decoration: none;
+    }
+
+    .pagination .active {
+        background-color: #007bff;
+        color: white;
+    }
+
+.customer-reviews {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.review-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+    .review-item:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .review-header strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+.rating {
+    display: flex;
+    gap: 2px;
+}
+
+    .rating .fa-star {
+        color: #ffc107;
+    }
+
+        .rating .fa-star.text-muted {
+            color: #e0e0e0;
+        }
+
+.overall-rating {
+    background-color: #f1f3f5;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.rating-breakdown .progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.page-item.active .page-link {
+    background-color: #FEA116;
+    border-color: #FEA116;
+}
+
+.page-link {
+    color: #FEA116;
+}
+
+    .page-link:hover {
+        background-color: #FEA116;
+        color: white;
+    }
+
+.review-item {
+    padding: 10px;
+}
+
+.review-images {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+    .review-images img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+        .review-images img:hover {
+            transform: scale(1.05);
+        }
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------
 /** 1. VARIABLES

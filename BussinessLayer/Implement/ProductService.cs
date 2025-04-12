@@ -80,13 +80,7 @@ namespace BussinessLayer.Implement
             if (avatar != null)
             {
                 //Add to folder
-                string avatarFileName =
-                    Guid.NewGuid().ToString() + Path.GetExtension(avatar.FileName);
-                string avatarPath = Path.Combine(uploadFolder, avatarFileName);
-                using (var fileStream = new FileStream(avatarPath, FileMode.Create))
-                {
-                    await avatar.CopyToAsync(fileStream);
-                }
+                string avatarFileName = await SaveImageAsync(avatar, uploadFolder);
                 //Save to database
                 var productAvatar = new ItemImage
                 {
@@ -98,17 +92,12 @@ namespace BussinessLayer.Implement
                 product.ProductAvatarId = productAvatar.Id;
             }
             //Add gallery
-            if (gallery != null && gallery.Count > 0)
+            if (gallery?.Any() == true)
             {
                 foreach (var file in gallery)
                 {
                     //Add to folder
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    string filePath = Path.Combine(uploadFolder, fileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStream);
-                    }
+                    string fileName = await SaveImageAsync(file, uploadFolder);
                     //Save to database
                     var productImage = new ItemImage
                     {
@@ -158,13 +147,7 @@ namespace BussinessLayer.Implement
                     _unitOfWork.ItemImage.Remove(product.ProductAvatar);
                 }
 
-                var newAvatarFileName =
-                    Guid.NewGuid().ToString() + Path.GetExtension(avatar.FileName);
-                var newAvatarPath = Path.Combine(uploadFolder, newAvatarFileName);
-                using (var fileStream = new FileStream(newAvatarPath, FileMode.Create))
-                {
-                    await avatar.CopyToAsync(fileStream);
-                }
+                var newAvatarFileName = await SaveImageAsync(avatar, uploadFolder);
 
                 var newAvatar = new ItemImage
                 {
@@ -181,13 +164,7 @@ namespace BussinessLayer.Implement
                 List<ItemImage> newGallery = new List<ItemImage>();
                 foreach (var item in gallery)
                 {
-                    var newImageFileName =
-                        Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
-                    var newImagePath = Path.Combine(uploadFolder, newImageFileName);
-                    using (var fileStream = new FileStream(newImagePath, FileMode.Create))
-                    {
-                        await item.CopyToAsync(fileStream);
-                    }
+                    var newImageFileName = await SaveImageAsync(item, uploadFolder);
                     var newImage = new ItemImage
                     {
                         ImagePath = newImageFileName,
@@ -249,6 +226,17 @@ namespace BussinessLayer.Implement
             _unitOfWork.Product.Remove(product);
             _unitOfWork.Save();
             return true;
+        }
+
+        private async Task<string> SaveImageAsync(IFormFile file, string uploadFolder)
+        {
+            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string filePath = Path.Combine(uploadFolder, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            return fileName;
         }
     }
 }

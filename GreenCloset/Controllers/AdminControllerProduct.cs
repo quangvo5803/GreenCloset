@@ -42,11 +42,15 @@ namespace GreenCloset.Controllers
             Product product,
             IEnumerable<int>? selectedCategories,
             IFormFile? avatar,
-            List<IFormFile>? gallery
+            List<IFormFile>? gallery,
+            List<SizeClother> SelectedClotherSizes,
+            List<int> SelectedShoeSizes
         )
         {
             if (ModelState.IsValid)
             {
+                product.SizeClother = SelectedClotherSizes;
+                product.SizeShoe = SelectedShoeSizes;
                 _facedeService.Product.AddProduct(product, selectedCategories, avatar, gallery);
                 TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
@@ -76,7 +80,9 @@ namespace GreenCloset.Controllers
             Product product,
             IEnumerable<int>? selectedCategories,
             IFormFile? avatar,
-            List<IFormFile>? gallery
+            List<IFormFile>? gallery,
+            List<SizeClother> SelectedClotherSizes,
+            List<int> SelectedShoeSizes
         )
         {
             if (ModelState.IsValid)
@@ -91,6 +97,8 @@ namespace GreenCloset.Controllers
                     TempData["error"] = "Không tìm thấy sản phẩm";
                     return RedirectToAction("ManageProduct");
                 }
+                existingProduct.SizeClother = SelectedClotherSizes;
+                existingProduct.SizeShoe = SelectedShoeSizes;
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;

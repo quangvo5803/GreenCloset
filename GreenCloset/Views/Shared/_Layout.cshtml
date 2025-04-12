@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="//cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css" />  
+    <link rel="stylesheet" href="//cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css" />
+    <link rel="stylesheet" href="~/lib/owlcarousel/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/lib/venobox/venobox.min.css">
     <link rel="stylesheet" href="~/css/normalize.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/icomoon/icomoon.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/vendor.css" asp-append-version="true" />
@@ -23,6 +25,7 @@
 
     <!--Google font-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!--Customer CSS-->
@@ -56,7 +59,7 @@
             @RenderBody()
         </main>
     </div>
-    @if (roles != "Admin" || roles != "Lessor" || roles == null)
+    @if (roles == "Customer" || roles == null)
     {
         <partial name="_Footer" ; />
     }
@@ -71,6 +74,8 @@
     <script src="//cdn.datatables.net/2.0.7/js/dataTables.min.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="~/js/Plugins/plugins.js" asp-append-version="true"></script>
+    <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="~/lib/venobox/venobox.min.js"></script>
     @if (roles == "Admin")
     {
         <script src="~/js/Plugins/simplebar.min.js" asp-append-version="true"></script>

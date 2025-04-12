@@ -17,6 +17,8 @@ namespace DataAccess.Models
         public double Price { get; set; }
         public int? ProductAvatarId { get; set; }
         public int RentalCount { get; set; } = 0;
+        public IEnumerable<SizeClother>? SizeClother { get; set; }
+        public List<int>? SizeShoe { get; set; }
 
         //Foreign key
 
@@ -29,5 +31,14 @@ namespace DataAccess.Models
         public virtual ICollection<ItemImage>? ProductImages { get; set; }
 
         public virtual ICollection<Feedback>? Feedbacks { get; set; }
+    }
+
+    public enum SizeClother
+    {
+        S,
+        M,
+        L,
+        XL,
+        XXL,
     }
 }

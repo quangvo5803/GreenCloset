@@ -17,7 +17,7 @@
                             </p>
                         </div>
                         <div class="col-md-4 shipping-purchase text-center">
-                            <p>Freeship với đơn hàng từ 499k</p>
+                            <p><strong>Miễn phí giao hàng</strong> với đơn từ 499k</p>
                         </div>
                         <div class="col-md-4 col-sm-12 user-items">
                             <ul class="d-flex justify-content-end list-unstyled">
@@ -78,13 +78,12 @@
                                             {
                                                 @foreach (var category in categories)
                                                 {
-                                                    <li style="padding: 10px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="@category.Id" class="item-anchor"> @category.CategoryName</a></li>
+                                                    <li style="padding: 10px; width:300px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="@category.Id" class="item-anchor"> @category.CategoryName</a></li>
                                                 }
                                             }
                                             else
                                             {
-                                                <li style="padding: 10px"><a class="item-anchor">Chưa có danh mục</a></li>
-                                                <li style="padding: 10px"><a class="item-anchor">Chưa có danh mục</a></li>
+                                                <li style="padding: width:300px 10px"><a class="item-anchor">Chưa có danh mục</a></li>
                                             }
                                         </ul>
                                     </li>

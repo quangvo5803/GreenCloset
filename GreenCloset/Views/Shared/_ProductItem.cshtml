@@ -14,7 +14,7 @@
             <a asp-action="" asp-controller="Customer" type="button" class="btn-wrap cart-link d-flex align-items-center me-2">
                 Thêm vào <i class="ms-1 icon icon-arrow-io"></i>
             </a>
-            <a asp-action="ProductDetail" asp-controller="Home" type="button" class="view-btn d-flex">
+            <a asp-action="ProductDetail" asp-controller="Home" asp-route-id="@Model.Id" type="button" class="view-btn d-flex">
                 <i class="icon icon-screen-full"></i>
             </a>
             <a asp-action="" asp-controller="Customer" type="button" class="wishlist-btn">
@@ -24,7 +24,7 @@
     </div>
     <div class="product-detail mt-3">
         <h3 class="product-title">
-            <a asp-action="" asp-controller="Home">@Model.Name</a>
+        <a asp-action="ProductDetail" asp-controller="Home" asp-route-id="@Model.Id">@Model.Name</a>
         </h3>
         <span class="item-price text-primary">@Model.Price.ToString("C", new CultureInfo("vi-VN"))</span>
     </div>

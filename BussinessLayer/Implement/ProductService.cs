@@ -27,6 +27,15 @@ namespace BussinessLayer.Implement
             return _unitOfWork.Product.GetAll(includeProperties);
         }
 
+        public IEnumerable<Product> GetFeatureProduct(string? includeProperties = null)
+        {
+            return _unitOfWork
+                .Product.GetAll(includeProperties)
+                .Where(p => p.RentalCount > 0)
+                .OrderByDescending(p => p.RentalCount)
+                .Take(8);
+        }
+
         public IEnumerable<Product> GetProductsByCategoryId(
             int categoryId,
             string? includeProperties = null

@@ -16,8 +16,7 @@ input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 #header-wrap {
-    background-color: rgba(255, 255, 255);
-    backdrop-filter: blur(5px);
+    background-color: rgb(255, 255, 255);
     border-bottom: 1px solid #ddd;
 }
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
@@ -2174,19 +2173,59 @@ blockquote cite {
 
 /*----- Featured Products Section
 --------------------------------------------------------------*/
+#featured-products {
+    position: relative;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+    color: #000;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    padding: 30px;
+}
+
+    .swiper-button-prev:hover,
+    .swiper-button-next:hover {
+        color: var(--light-color);
+        background-color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+    .swiper-button-prev {
+        left: 0px; /* chỉnh ra ngoài container */
+    }
+
+.swiper-button-next {
+    right: 0px; /* chỉnh ra ngoài container */
+}
+
 .product-store .product-item {
     position: relative;
     margin-bottom: 30px;
 }
-
+.image-holder {
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 .product-item img.product-image {
     background: var(--light-color);
-    border: 1px solid var(--grey-color);
-    border-radius: 6px;
     padding: 10px;
     cursor: pointer;
     margin-bottom: 20px;
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .product-item .cart-concern {

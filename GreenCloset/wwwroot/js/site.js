@@ -90,8 +90,7 @@
         $(".close-button").click(function () {
             $(".search-box").toggleClass('active');
         });
-
-        var swiper = new Swiper(".main-swiper", {
+        var mainSwiper = new Swiper(".main-swiper", {
             speed: 500,
             loop: true,
             navigation: {
@@ -104,19 +103,14 @@
             },
         });
 
-        var swiper = new Swiper(".two-column-swiper", {
+        var productSwiper = new Swiper("#featured-products .product-swiper", {
             speed: 500,
             loop: true,
+            slidesPerView: 4,
+            spaceBetween: 30,
             navigation: {
-                nextEl: ".button-next",
-                prevEl: ".button-prev",
-            },
-        });
-
-        var swiper = new Swiper("#featured-products .product-swiper", {
-            pagination: {
-                el: "#featured-products .swiper-pagination",
-                clickable: true,
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
             },
             breakpoints: {
                 0: {
@@ -136,34 +130,9 @@
                     spaceBetween: 30,
                 },
             },
-        });
+        });     
 
-        var swiper = new Swiper("#featured-products .product-swiper-two", {
-            pagination: {
-                el: "#featured-products .swiper-pagination",
-                clickable: true,
-            },
-            breakpoints: {
-                0: {
-                    slidesPerView: 1,
-                    spaceBetween: 30,
-                },
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 30,
-                },
-                999: {
-                    slidesPerView: 4,
-                    spaceBetween: 30,
-                },
-                1299: {
-                    slidesPerView: 5,
-                    spaceBetween: 30,
-                },
-            },
-        });
-
-        var swiper = new Swiper("#flash-sales .product-swiper", {
+        var salesSwiper = new Swiper("#flash-sales .product-swiper", {
             pagination: {
                 el: "#flash-sales .product-swiper .swiper-pagination",
                 clickable: true,
@@ -188,7 +157,7 @@
             },
         });
 
-        var swiper = new Swiper(".testimonial-swiper", {
+        var testimonialSwiper = new Swiper(".testimonial-swiper", {
             loop: true,
             navigation: {
                 nextEl: ".next-button",

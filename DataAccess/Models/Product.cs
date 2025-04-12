@@ -16,6 +16,7 @@ namespace DataAccess.Models
         [Required(ErrorMessage = "Giá sản phẩm không được để trống")]
         public double Price { get; set; }
         public int? ProductAvatarId { get; set; }
+        public int RentalCount { get; set; } = 0;
 
         //Foreign key
 

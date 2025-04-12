@@ -1,5 +1,92 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    categories = categories?.Take(5);
 }
+<footer id="footer">
+    <div class="container">
+        <div class="footer-menu-list">
+            <div class="row d-flex flex-wrap justify-content-between">
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="footer-menu">
+                        <h5 class="widget-title">GreenCloset</h5>
+                        <ul class="menu-list list-unstyled">
+                            <li class="menu-item">
+                                <a asp-action="" asp-controller="Home">Về chúng tôi</a>
+                            </li>
+                            <li class="menu-item">
+                                <a asp-action="" asp-controller="Home">Trở thành đối tác</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="footer-menu">
+                        <h5 class="widget-title">Danh mục cho thuê</h5>
+                        <ul class="menu-list list-unstyled">                           
+                            @foreach(var category in categories)
+                            {
+                                <li class="menu-item">
+                                    <a asp-action="" asp-controller="Home">@category.CategoryName</a>
+                                </li>
+                            }
+                            <li class="menu-item">
+                                <a asp-action="" asp-controller="Home">Xem thêm</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="footer-menu">
+                        <h5 class="widget-title">Liên hệ</h5>
+                        <p>
+                            Gửi ngay email về <a href="#" class="email">greencloset8383@@gmail.com</a>
+                        </p>
+                        </<br />
+                        <p>
+                            Hoặc
+                        </p>
+                        <p>
+                            Gọi ngay nếu cần hỗ trợ <br>
+                            <strong>+84 686.868.6865</strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="footer-menu">
+                        <h5 class="widget-title">Green Closet</h5>
+                        <p>Green Closet cung cấp các dịch vụ cho thuê quần áo với chất lượng cao và giá cả hợp lý.</p>
+                        <div class="social-links">
+                            <ul class="d-flex list-unstyled">
+                                <li>
+                                    <a href="https://www.facebook.com/greencloset8386">
+                                        <i class="icon icon-facebook"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+</footer>
+
+<div id="footer-bottom">
+    <div class="container">
+        <div class="d-flex align-items-center flex-wrap justify-content-between">
+            <div class="copyright">
+                <p>
+                    Copyrights © 2025 by GreenCloset.
+                </p>
+            </div>
+            <div class="payment-method">
+                <p>Tùy chọn thanh toán:</p>
+                <div class="card-wrap">
+                    <img style="height:40px" src="https://developers.momo.vn/v3/assets/images/square-8c08a00f550e40a2efafea4a005b1232.png" alt="momo">
+                    <img style="height:20px" src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png" alt="vnpay">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

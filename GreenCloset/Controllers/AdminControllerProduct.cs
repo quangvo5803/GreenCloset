@@ -85,11 +85,15 @@ namespace GreenCloset.Controllers
                     product.Id,
                     includeProperties: "Categories,ProductAvatar,ProductImages"
                 );
+
                 if (existingProduct == null)
                 {
                     TempData["error"] = "Không tìm thấy sản phẩm";
                     return RedirectToAction("ManageProduct");
                 }
+                existingProduct.Name = product.Name;
+                existingProduct.Price = product.Price;
+                existingProduct.Description = product.Description;
                 await _facedeService.Product.UpdateProduct(
                     existingProduct,
                     selectedCategories,

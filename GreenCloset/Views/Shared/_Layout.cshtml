@@ -56,7 +56,10 @@
             @RenderBody()
         </main>
     </div>
+    @if (roles != "Admin" || roles != "Lessor" || roles == null)
+    {
         <partial name="_Footer" ; />
+    }
 
 
 

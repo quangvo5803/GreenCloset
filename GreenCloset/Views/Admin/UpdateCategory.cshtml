@@ -15,6 +15,8 @@
                         </div>
                         <div class="card-body">
                             <form asp-action="UpdateCategory" method="post">
+                                <input asp-for="Id" class="form-control" hidden/>
+
                                 <div class="mb-3">
                                     <label asp-for="CategoryName" class="form-label fw-bold">Tên danh mục</label>
                                     <div class="input-group">

@@ -58,7 +58,7 @@ namespace GreenCloset.Controllers
             return View(category);
         }
 
-        public IActionResult EditCategory(int id)
+        public IActionResult UpdateCategory(int id)
         {
             var category = _facedeService.Category.GetCategoryById(id);
             if (category == null)
@@ -70,7 +70,7 @@ namespace GreenCloset.Controllers
         }
 
         [HttpPost]
-        public IActionResult EditCategory(Category category)
+        public IActionResult UpdateCategory(Category category)
         {
             if (ModelState.IsValid)
             {

@@ -2,6 +2,20 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var featuredProducts = ViewBag.FeatureProducts as IEnumerable<Product>;
+    var displayedProducts = featuredProducts?.ToList() ?? new List<Product>();
+    if (displayedProducts.Count < 8)
+    {
+        var remaining = 8 - displayedProducts.Count;
+
+        var additionalProducts = Model
+            .Where(p => !displayedProducts.Any(fp => fp.Id == p.Id))
+            .Take(remaining);
+
+        displayedProducts.AddRange(additionalProducts);
+
+    }
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    categories = categories?.Take(8);
 }
 <!--Slider-->
 <section id="billboard">
@@ -71,7 +85,7 @@
 
 
 <!--Feature product-->
-<section id="featured-products" class="product-store padding-large">
+<section id="featured-products" class="product-store">
     <div class="container">
         <div class="section-header d-flex flex-wrap align-items-center justify-content-between">
             <h2 class="section-title">Sản phẩm nổi bật</h2>
@@ -83,45 +97,224 @@
         <div class="swiper-button-next"></div>
         <div class="swiper product-swiper overflow-hidden">           
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    @foreach (var product in featuredProducts)
+                @if (displayedProducts != null)
+                {
+
+                    @foreach (var product in displayedProducts)
                     {
-                        <div class="product-item">
-                            <div class="image-holder">
-                                @if (product.ProductAvatar != null)
-                                {
-                                    <img src="/image/products/@product.ProductAvatar.ImagePath" alt="" class="product-image">
-                                }
-                                else
-                                {
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="" class="product-image">
-                                }
-                            </div>
-                            <div class="cart-concern">
-                                <div class="cart-button d-flex justify-content-between align-items-center">
-                                    <a asp-action="" asp-controller="Customer" type="button" class="btn-wrap cart-link d-flex align-items-center">
-                                        Add to cart <i class="icon icon-arrow-io"></i>
-                                    </a>
-                                    <a asp-action="" asp-controller="Home" class="view-btn tooltip d-flex">
-                                        <i class="icon icon-screen-full"></i>
-                                        <span class="tooltip-text">View detail</span>
-                                    </a>
-                                    <a asp-action="" asp-controller="Customer" type="button" class="wishlist-btn">
-                                        <i class="icon icon-heart"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="product-detail">
-                                <h3 class="product-title">
-                                    <a asp-action="" asp-controller="Home">@product.Name</a>
-                                </h3>
-                                <span class="item-price text-primary">@product.Price.ToString("C", new CultureInfo("vi-VN"))</span>
+                        <div class="swiper-slide">
+                            <div class="product-item">
+                                <partial name="_ProductItem" model="product" />
                             </div>
                         </div>
                     }
-                </div>
+                }                  
             </div>
         </div>
     </div>
 </section>
 <!--Feature product-->
+
+<!--Register-->
+<section id="subscribe">
+    <div class="container">
+        <div class="row">
+            <div class="block-text col-md-6">
+                <div class="section-header">
+                    <h2 class="section-title">Nhận ngay voucher giảm giá 25%</h2>
+                </div>
+                <p>Đăng ký để trở thành khách hàng thân thiết và nhận ưu đãi hấp dẫn mỗi ngày!</p>
+            </div>
+            <div class="subscribe-content col-md-6">
+                <form id="form" class="d-flex justify-content-between">
+                    <input id="emailInput" type="text" name="email" placeholder="Nhập email của bạn tại đây" />
+                    <button id="signUpBtn" class="btn btn-dark">Đăng kí ngay</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+<!--Register-->
+<!--Best Rentail-->
+<section id="selling-products" class="product-store bg-light-grey">
+    <div class="container pt-5">
+        <div class="section-header">
+            <h2 class="section-title">Sản phẩm được thuê nhiều</h2>
+        </div>
+        <ul class="tabs list-unstyled">
+            <li data-tab-target="#all" class="active tab">Tất cả</li>
+            @if(categories != null)
+            {
+                @foreach (var category in categories)
+                {
+                    var cateId = "category" + category.Id;
+                    <li data-tab-target="#@cateId" class="tab">@category.CategoryName</li>
+                }
+            }
+            <li class="tab"><a asp-action="" asp-controller="Home">Xem toàn bộ danh mục</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="all" data-tab-content class="active">
+                <div class="row d-flex flex-wrap">
+                        @foreach (var product in Model
+                        .OrderByDescending(p => p.RentalCount)
+                        .Take(12))
+                        {
+                            <div class="product-item col-lg-3 col-md-6 col-sm-6">
+                                <partial name="_ProductItem" model="product" />
+                            </div>
+                        }
+                </div>
+            </div>
+                        @if(categories != null)
+                        {
+                            foreach(var category in categories)
+                            {
+                                var cateId = "category" + category.Id;
+                                <div id="@cateId" data-tab-content>
+                                    <div class="row d-flex flex-wrap">
+
+                                        @foreach (var product in Model.Where(p => p.Categories != null && p.Categories.Any(c => c.Id == category.Id)).OrderByDescending(p => p.RentalCount)
+                                       .Take(12))
+                                        {
+                                            <div class="product-item col-lg-3 col-md-6 col-sm-6">
+                                                <partial name="_ProductItem" model="product" />
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+        </div>
+    </div>
+</section>
+<!--Best Rentail-->
+<!--Collection-->
+<section class="shoppify-section-banner">
+    <div class="container mt-5">
+        <div class="product-collection">
+            <div class="left-content collection-item">
+                <div class="products-thumb">
+                    <img src="https://congstudio.com.vn/wp-content/uploads/2022/08/chup-anh-ky-yeu-concept-co-phuc-30-1024x683.jpg" alt="collection item" class="large-image image-rounded">
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6 product-entry">
+                    <h3 class="item-title text-white">Bộ sưu tập trang phục truyền thống.</h3>
+                    <p>Là những y phục truyền thống Việt Nam hay còn gọi là Việt Nam phục sức theo cách gọi lịch sử. Việt phục sẽ bao gồm y phục của dân tộc Việt/Kinh và những y phục cung đình.</p>
+                    <div class="btn-wrap">
+                        <a href="shop.html" class="d-flex align-items-center">
+                            Xem bộ sưu tập <i class="icon icon-arrow-io"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Collection-->
+<!--Follow Facebook-->
+<section id="instagram">
+    <div class="container mt-5">
+        <div class="section-header">
+            <h2 class="section-title">Facebook của chúng tôi </h2>
+        </div>
+        <p>
+            Trang Facebook chính thức <a href="https://www.facebook.com/greencloset8386" target="_blank">@@GreenCloset</a>
+        </p>
+        <div class="row d-flex flex-wrap justify-content-between">
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                        <img src="https://static.vinwonders.com/production/Vietnamese-wedding-dress-02.jpg" alt="instagram" class="insta-image">
+                        <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8aD39QPM6kPU7nR-34h7PxdIokM019RFidA&s" alt="instagram" class="insta-image">
+                        <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                        <img src="https://product.hstatic.net/200000182297/product/12_b740233da1554d0a8cb16bcfe5883961_1024x1024.jpg" alt="instagram" class="insta-image">
+                        <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                        <img src="https://images2.thanhnien.vn/Uploaded/hainq/2022_04_15/anh-4-5157.jpg" alt="instagram" class="insta-image">
+                        <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                    <img src="https://static2.yan.vn/YanNews/2167221/202001/4-cach-phoi-do-nam-di-an-tiec-cuoi-27ca9ef6.jpg" alt="instagram" class="insta-image">
+                    <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <a href="https://www.facebook.com/greencloset8386" target="_blank">
+                    <figure class="zoom-effect">
+                        <img src="https://sakurafashion.vn/upload/a/3808-nem-fashion-1870.webp" alt="instagram" class="insta-image">
+                        <i class="icon icon-facebook"></i>
+                    </figure>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+<!--Follow Facebook-->
+<!--Shipping information-->
+<section id="shipping-information">
+    <hr>
+    <div class="container-fluid ms-5">
+        <div class="row d-flex flex-wrap align-items-center justify-content-between">
+            <div class="col-md-3 col-sm-6">
+                <div class="icon-box">
+                    <i class="icon icon-truck"></i>
+                    <h4 class="block-title">
+                        <strong>Miễn phí ship</strong> cho đơn hàng từ 499k
+                    </h4>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="icon-box">
+                    <i class="icon icon-return"></i>
+                    <h4 class="block-title">
+                        <strong>Hoàn trả tiền</strong> trong vòng 2 tiếng
+                    </h4>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="icon-box">
+                    <i class="icon icon-tags1"></i>
+                    <h4 class="block-title">
+                        <strong>Thuê từ 2 bộ</strong> chỉ từ 99k/bộ
+                    </h4>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="icon-box">
+                    <i class="icon icon-help_outline"></i>
+                    <h4 class="block-title">
+                        <strong>Hỗ trợ trực tuyến</strong> trong 10 phút
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+</section>
+<!--Shipping information-->

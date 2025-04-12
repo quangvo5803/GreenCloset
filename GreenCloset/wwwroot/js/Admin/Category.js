@@ -33,13 +33,13 @@ function loadDataTable() {
                     if (data === 0) {
                         return `
                             <div class="btn-group d-flex justify-content-between" role="group">
-                                <a href="/Admin/EditCategory?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Sửa danh mục</a>
+                                <a href="/Admin/UpdateCategory?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Sửa danh mục</a>
                                 <a onClick=Delete('/Admin/DeleteCategory?id=${row.id}') class="btn btn-danger text-white flex-grow-1 mx-1">Xóa danh mục</a>
                             </div>`;
                     } else {
                         return `
                             <div class="btn-group d-flex justify-content-between" role="group">
-                                <a href="/Admin/EditCategory?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Sửa danh mục</a>
+                                <a href="/Admin/UpdateCategory?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Sửa danh mục</a>
                             </div>`;
                     }
                 }

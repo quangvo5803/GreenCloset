@@ -10,7 +10,9 @@ public partial class HomeController : BaseController
 
     public IActionResult Index()
     {
-        var products = _facadeService.Product.GetAllProducts(includeProperties: "ProductAvatar");
+        var products = _facadeService.Product.GetAllProducts(
+            includeProperties: "Categories,ProductAvatar"
+        );
         ViewBag.FeatureProducts = _facadeService.Product.GetFeatureProduct(
             includeProperties: "ProductAvatar"
         );

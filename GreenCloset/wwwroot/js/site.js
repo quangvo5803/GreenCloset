@@ -1,7 +1,22 @@
 ﻿(function ($) {
-
+    var signUpBtn = document.getElementById("signUpBtn");
+    if (signUpBtn) {
+        signUpBtn.addEventListener("click", function (event) {
+            event.preventDefault(); 
+            var email = document.getElementById("emailInput").value.trim();
+            if (email) {
+                window.location.href = "/Home/Register?email=" + encodeURIComponent(email);
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Chưa nhập email!',
+                    text: 'Vui lòng nhập email trước khi đăng ký.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
     "use strict";
-
     var searchPopup = function () {
         // open search box
         $('.secondary-nav').on('click', '.search-button', function (e) {

@@ -16,8 +16,7 @@ input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 #header-wrap {
-    background-color: rgba(255, 255, 255);
-    backdrop-filter: blur(5px);
+    background-color: rgb(255, 255, 255);
     border-bottom: 1px solid #ddd;
 }
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
@@ -866,6 +865,7 @@ fieldset[disabled] a.btn {
 
     .btn.btn-dark:hover {
         background: var(--primary-color);
+        border: var(--primary-color);
     }
 
 .btn.btn-light {
@@ -954,8 +954,10 @@ img.video-image,
 img.post-image,
 img.insta-image {
     width: 100%;
-    height: auto;
+    height: 300px;
     object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
 }
 
 img.large-image {
@@ -1580,28 +1582,6 @@ blockquote cite {
         border-radius: 0;
     }
 
-/*--- Tooltip
------------------------------------------------*/
-.tooltip .tooltip-text {
-    width: 120px;
-    background-color: var(--primary-color);
-    color: var(--light-color);
-    font-size: 14px;
-    text-align: center;
-    position: absolute;
-    top: -49px;
-    left: -40px;
-    z-index: 1;
-    padding: 10px 0;
-    visibility: hidden;
-    border-radius: 20px;
-}
-
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-}
-
-
 /*====================================================================*/
 /* 5. BLOG STYLES */
 /*====================================================================*/
@@ -2174,19 +2154,59 @@ blockquote cite {
 
 /*----- Featured Products Section
 --------------------------------------------------------------*/
+#featured-products {
+    position: relative;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+    color: #000;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    padding: 30px;
+}
+
+    .swiper-button-prev:hover,
+    .swiper-button-next:hover {
+        color: var(--light-color);
+        background-color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+    .swiper-button-prev {
+        left: 0px; /* chỉnh ra ngoài container */
+    }
+
+.swiper-button-next {
+    right: 0px; /* chỉnh ra ngoài container */
+}
+
 .product-store .product-item {
     position: relative;
     margin-bottom: 30px;
 }
-
+.image-holder {
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    overflow: hidden;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+}
 .product-item img.product-image {
     background: var(--light-color);
-    border: 1px solid var(--grey-color);
-    border-radius: 6px;
     padding: 10px;
     cursor: pointer;
     margin-bottom: 20px;
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .product-item .cart-concern {
@@ -2197,7 +2217,7 @@ blockquote cite {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 300px;
+    bottom: 200px;
     z-index: 9;
     transition: 0.5s ease-out;
     padding: 20px 30px;
@@ -2205,7 +2225,7 @@ blockquote cite {
 }
 
 .product-item:hover .cart-concern {
-    bottom: 280px;
+    bottom: 250px;
     opacity: 1;
 }
 
@@ -2299,7 +2319,7 @@ i.icon.icon-arrow-io {
 }
 
 .product-collection .product-entry h3.item-title {
-    font-size: 4.4em;
+    font-size: 3em;
     line-height: 1;
     font-weight: 900;
 }

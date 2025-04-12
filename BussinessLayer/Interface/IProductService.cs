@@ -7,6 +7,7 @@ namespace BussinessLayer.Interface
     {
         Product? GetProductById(int id, string? includeProperties = null);
         IEnumerable<Product> GetAllProducts(string? includeProperties = null);
+        IEnumerable<Product> GetFeatureProduct(string? includeProperties = null);
         IEnumerable<Product> GetProductsByCategoryId(
             int categoryId,
             string? includeProperties = null

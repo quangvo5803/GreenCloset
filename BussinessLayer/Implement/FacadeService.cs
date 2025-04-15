@@ -14,7 +14,7 @@ namespace BussinessLayer.Implement
         public ICategoryService Category { get; private set; }
         public IProductService Product { get; private set; }
         public IItemImageService ItemImage { get; private set; }
-
+        public ICartService Cart { get; private set; }
         public FacadeService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
@@ -28,6 +28,7 @@ namespace BussinessLayer.Implement
             Category = new CategoryService(_unitOfWork);
             Product = new ProductService(_unitOfWork, _webHostEnvironment);
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);
+            Cart = new CartService(_unitOfWork);
         }
     }
 }

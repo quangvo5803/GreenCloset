@@ -245,7 +245,7 @@
 }
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
+        $(document).ready(function () {
         // Sticky Footer khi cuộn đến cuối trang
         window.addEventListener('scroll', function () {
             const footer = document.querySelector('.site-footer');
@@ -344,18 +344,31 @@
             const endDate = group.querySelector('input[name="endDate"]')?.value;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-            if (startDate >= endDate) {
-                toastr.error("Ngày trả phải lơn hơn ngày thuê.");
-                return;
-            }
 
-            $.post('@Url.Action("UpdateCart", "Customer")', {
-                productId, quantity, size: selectedSize, sizeType, startDate, endDate,
-                __RequestVerificationToken: token
-            }).done(response => {
-                response.success ? toastr.success(response.message) : toastr.error(response.message);
-            }).fail((xhr, status, error) => {
-                console.error("Lỗi cập nhật giỏ hàng:", error);
+            $.ajax({
+                url: '@Url.Action("UpdateCart", "Customer")',
+                method: 'POST',
+                data: {
+                    productId: productId,
+                    quantity: quantity,
+                    size: selectedSize,
+                    sizeType: sizeType,
+                    startDate,
+                    endDate,
+                    __RequestVerificationToken: token
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        console.log("Cập nhật giỏ hàng thành công:", response);
+                    } else {
+                        toastr.error(response.message);
+                        console.error("Cập nhật giỏ hàng thất bại:", response);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Lỗi cập nhật giỏ hàng:", error);
+                }
             });
         }
 
@@ -437,23 +450,33 @@
         // Xóa sản phẩm khỏi giỏ
         $(document).on('click', '.delete-item', function (e) {
             e.preventDefault();
+            const userId = $(this).data('user-id');
+            const productId = $(this).data('product-id');
             const row = $(this).closest('.product-row');
-            const { userId, productId } = this.dataset;
 
-            $.post('@Url.Action("DeleteCart", "Customer")', {
-                userId, productId: parseInt(productId),
-                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-            }).done(response => {
-                if (response.success) {
-                    toastr.success(response.message);
-                    row.remove();
-                    updateCartDisplay();
-                } else {
-                    alert("Không thể xóa sản phẩm: " + response.message);
+            console.log('Deleting:', { userId, productId, row });
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("DeleteCart", "Customer")',
+                data: {
+                    userId: userId,
+                    productId: parseInt(productId),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        row.remove();
+                        updateCartDisplay();
+                    } else {
+                        alert("Không thể xóa sản phẩm: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX Error:', xhr, status, error);
+                    alert("Lỗi khi gửi yêu cầu: " + error);
                 }
-            }).fail((xhr, status, error) => {
-                console.error('AJAX Error:', xhr, status, error);
-                alert("Lỗi khi gửi yêu cầu: " + error);
             });
         });
     });

@@ -23,7 +23,7 @@ namespace BussinessLayer.Implement
             return _unitOfWork.Cart.GetRange(
                 c => c.UserId == userId,
                 includeProperties: "Product,Product.ProductAvatar"
-            );
+            ).OrderByDescending(c => c.Id).ToList(); 
         }
 
         public void DeleteCart(Guid userId, int productId)

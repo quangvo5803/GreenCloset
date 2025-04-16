@@ -14,7 +14,10 @@ namespace DataAccess.Models
 
         [Range(1, 1000, ErrorMessage = "Please enter a value between 1 and 1000")]
         public int Count { get; set; }
-
+        public SizeClother? SizeClother { get; set; }
+        public int? SizeShoe { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public Guid UserId { get; set; } // Guid
 
         [ForeignKey("UserId")]

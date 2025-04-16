@@ -27,10 +27,6 @@
                 toastr.error("Vui lòng chọn ngày trả.");
                 return;
             }
-            if (startDate >= endDate) {
-                toastr.error("Ngày trả phải lơn hơn ngày thuê.");
-                return;
-            }
         }
 
         console.log("Ngày thuê:", startDate);

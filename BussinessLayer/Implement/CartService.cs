@@ -36,7 +36,7 @@ namespace BussinessLayer.Implement
             }
         }
 
-        public void AddToCart(int productId, string? size, DateTime startDate, DateTime endDate, int count, string userId)
+        public void AddToCart(int productId, string? size, DateTime? startDate, DateTime? endDate, int count, string userId)
         {
             var product = _unitOfWork.Product.Get(p => p.Id == productId);
             if (product == null)

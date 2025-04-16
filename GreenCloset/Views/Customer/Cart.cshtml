@@ -10,16 +10,12 @@
         --text-color: #333;
         --bg-color: #fff;
     }
-
-    body {
-        background-color: var(--bg-color);
-        color: var(--text-color);
-    }
-
     .product-total {
         min-width: 120px;
         text-align: right;
         font-weight: 500;
+        display: flex;  
+        margin-left:40px;
     }
 
     #sticky-footer {
@@ -41,10 +37,10 @@
         border-color: var(--main-color);
     }
 
-        .input-group .btn:hover {
-            background-color: var(--main-color);
-            color: white;
-        }
+    .input-group .btn:hover {
+        background-color: var(--main-color);
+        color: white;
+    }
 
     .input-group .form-control {
         padding: 0.25rem 0.5rem;
@@ -56,13 +52,9 @@
         border-color: var(--main-color);
     }
 
-
-
-    .text-danger {
+    .text-dangers {
         color: var(--main-color) !important;
     }
-
-
 
     .shadow-sm {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
@@ -101,14 +93,13 @@
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
                 <div class="d-flex align-items-center gap-2">
                     <label class="d-flex align-items-center m-0" for="selectAllProducts">
-                            <input type="checkbox" id="selectAllProducts" class="me-2" style="margin-bottom:0px" />
-                        <strong class="m-0">Sản Phẩm</strong>
+                        <strong class="m-0" id="selectAllProducts">Sản Phẩm</strong>
                     </label>
                 </div>
                 <div class="d-flex gap-5">
                     <span>Đơn Giá</span>
                     <span>Số Lượng</span>
-                    <span>Số Tiền</span>
+                    <span>Thành Tiền</span>
                     <span>Thao Tác</span>
                 </div>
             </div>
@@ -207,14 +198,14 @@
                             </div>
                         </div>
                         <div class="d-flex gap-4 align-items-center">
-                            <span class="text-danger">₫@item.Product.Price.ToString("#,##0")</span>
-                            <div class="input-group" style="width: 100px;" data-product-id="@item.Product.Id">
+                            <span class="text-dangers">₫@item.Product.Price.ToString("#,##0")</span>
+                                <div class="input-group" style="width:100px; margin-left: 6px;" data-product-id="@item.Product.Id">
                                 <button class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
                                 <input type="text" class="form-control text-center quantity" value="@item.Count" style="margin-bottom: 16px; margin-top:16px;"/>
                                 <button class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
                             </div>
-                            <span class="text-danger product-total">₫@(item.Product.Price * item.Count)</span>
-                            <a href="#" class="text-danger delete-item"
+                            <span class="text-dangers product-total">₫@(item.Product.Price * item.Count)</span>
+                            <a href="#" class="text-dangers delete-item"
                                data-user-id="@item.UserId"
                                data-product-id="@item.ProductId">
                                 Xóa
@@ -236,7 +227,7 @@
                 <span id="selectedCount">Chọn Tất Cả (0)</span>
             </div>
             <div class="text-end ms-auto">
-                <p class="text-danger fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
+                <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
                 <button class="btn btn-danger">Mua Hàng</button>
             </div>
         </div>
@@ -359,10 +350,8 @@
                 },
                 success: function (response) {
                     if (response.success) {
-                        toastr.success(response.message);
                         console.log("Cập nhật giỏ hàng thành công:", response);
                     } else {
-                        toastr.error(response.message);
                         console.error("Cập nhật giỏ hàng thất bại:", response);
                     }
                 },
@@ -478,6 +467,21 @@
                     alert("Lỗi khi gửi yêu cầu: " + error);
                 }
             });
+        });
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').min = today;
+        document.getElementById('endDate').min = today;
+
+        // Khi ngày bắt đầu thay đổi, cập nhật ngày tối thiểu cho ngày trả
+        document.getElementById('startDate').addEventListener('change', function() {
+            const startDate = this.value;
+            document.getElementById('endDate').min = startDate;
+
+            // Nếu ngày trả nhỏ hơn ngày bắt đầu mới, cập nhật ngày trả
+            if (document.getElementById('endDate').value < startDate) {
+                document.getElementById('endDate').value = startDate;
+            }
         });
     });
 </script>

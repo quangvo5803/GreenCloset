@@ -39,7 +39,7 @@ namespace GreenCloset.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddToCart(int productId, string? size, DateTime startDate, DateTime endDate, int count = 1)
+        public IActionResult AddToCart(int productId, string? size, DateTime? startDate, DateTime? endDate, int count = 1)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
@@ -68,7 +68,7 @@ namespace GreenCloset.Controllers
                 DateTime? start = !string.IsNullOrEmpty(startDate) ? DateTime.Parse(startDate) : null;
                 DateTime? end = !string.IsNullOrEmpty(endDate) ? DateTime.Parse(endDate) : null;
                 _facadeService.Cart.UpdateCart(productId, quantity, size, sizeType, start, end, userId);
-                return Json(new { success = true, message = "Cập nhật thành công" });
+                return Json(new { success = true});
 
             }
             catch (Exception ex)

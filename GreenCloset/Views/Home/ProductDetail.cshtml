@@ -1,4 +1,5 @@
 ﻿@model Product
+@Html.AntiForgeryToken()
 @{
     ViewData["Title"] = "Product Detail";
     var feedbacks = ViewBag.Feedbacks as List<Feedback>;
@@ -10,108 +11,109 @@
     var colorHex = GetColorHex(Model.Color);
 }
 <section>
-    <div class="container-xxl py-5 bg-dark mb-5"
-    style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
-        <div class="container text-center my-5 pb-4">
-            <h1 class="text-dark mb-3">Thông tin chi tiết</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-center text-uppercase">
-                    <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a asp-action="Category" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Danh mục</a></li>
-                    <li class="breadcrumb-item text-black">@Model.Name</li>
-                </ol>
-            </nav>
+    <div id="pageContainer" data-page-type="product-detail">
+        <div class="container-xxl py-5 bg-dark mb-5"
+             style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
+            <div class="container text-center my-5 pb-4">
+                <h1 class="text-dark mb-3">Thông tin chi tiết</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center text-uppercase">
+                        <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a asp-action="Category" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Danh mục</a></li>
+                        <li class="breadcrumb-item text-black">@Model.Name</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
-    </div>
-    <div class="container">
-        <div class="row gx-5">
-            <div class="col-lg-6">
-                <div id="imageCarousel" class="carousel slide rounded-4 mb-3" data-bs-ride="carousel">
-                    <div class="carousel-inner mb-5">
+        <div class="container">
+            <div class="row gx-5">
+                <div class="col-lg-6">
+                    <div id="imageCarousel" class="carousel slide rounded-4 mb-3" data-bs-ride="carousel">
+                        <div class="carousel-inner mb-5">
+                            @if (Model.ProductImages != null && Model.ProductImages.Any())
+                            {
+                                int imageIndex = 0;
+                                foreach (var image in Model.ProductImages)
+                                {
+                                    <div class="carousel-item @(imageIndex == 0 ? "active" : "")">
+                                        <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: darkgrey;">
+                                            <a class="venobox" data-gallary="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
+                                                <img class="rounded-4" src="/image/products/@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    imageIndex++;
+                                }
+                                <!-- Controls -->
+                                <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: #f8f9fa;">
+                                    <img class="rounded-4" src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" style="max-height: 450px; max-width: 100%; object-fit: contain;" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail Row -->
+                    <div class="d-flex justify-content-center flex-wrap" style="margin-top: -30px; margin-bottom: 20px;">
                         @if (Model.ProductImages != null && Model.ProductImages.Any())
                         {
-                            int imageIndex = 0;
                             foreach (var image in Model.ProductImages)
                             {
-                                <div class="carousel-item @(imageIndex == 0 ? "active" : "")">
-                                    <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: darkgrey;">
-                                        <a class="venobox" data-gallary="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
-                                            <img class="rounded-4" src="/image/products/@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
-                                        </a>
-                                    </div>
+                                <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                    <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
+                                         src="/image/products/@image.ImagePath"
+                                         data-bs-target="#imageCarousel"
+                                         data-bs-slide-to="@thumbnail" />
                                 </div>
-                                imageIndex++;
+                                thumbnail++;
                             }
-                            <!-- Controls -->
-                            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon"></span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon"></span>
-                            </button>
                         }
                         else
                         {
-                            <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: #f8f9fa;">
-                                <img class="rounded-4" src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" style="max-height: 450px; max-width: 100%; object-fit: contain;" />
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Thumbnail Row -->
-                <div class="d-flex justify-content-center flex-wrap" style="margin-top: -30px; margin-bottom: 20px;">
-                    @if (Model.ProductImages != null && Model.ProductImages.Any())
-                    {
-                        foreach (var image in Model.ProductImages)
-                        {
                             <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                                 <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
-                                src="/image/products/@image.ImagePath"
-                                data-bs-target="#imageCarousel"
-                                data-bs-slide-to="@thumbnail" />
+                                     src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                     data-bs-target="#imageCarousel"
+                                     data-bs-slide-to="@thumbnail" />
                             </div>
-                            thumbnail++;
                         }
-                    }
-                    else
-                    {
-                        <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                            <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
-                            src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
-                            data-bs-target="#imageCarousel"
-                            data-bs-slide-to="@thumbnail" />
-                        </div>
-                    }
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="ps-lg-3">
-                    <h2 class="title text-dark">
-                        @Model.Name
-                    </h2>
-                    <div class="d-flex flex-row my-3">
-                        <div class="text-warning mb-1 me-2">
-                            @for (int i = 1; i <= 5; i++)
-                            {
-                                if (i <= avgRating)
-                                {
-                                    <i class="fa fa-star"></i>
-                                }
-                                else if (i - 0.5 <= avgRating)
-                                {
-                                    <i class="fa fa-star-half-stroke"></i>
-                                }
-                                else
-                                {
-                                    <i class="fa-regular fa-star"></i>
-                                }
-                            }                      
-                        </div>
-                        <span class="ms-1">
-                            @avgRating (@totalReviews đánh giá)
-                        </span>
                     </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ps-lg-3">
+                        <h2 class="title text-dark">
+                            @Model.Name
+                        </h2>
+                        <div class="d-flex flex-row my-3">
+                            <div class="text-warning mb-1 me-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= avgRating)
+                                    {
+                                        <i class="fa fa-star"></i>
+                                    }
+                                    else if (i - 0.5 <= avgRating)
+                                    {
+                                        <i class="fa fa-star-half-stroke"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-regular fa-star"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="ms-1">
+                                @avgRating (@totalReviews đánh giá)
+                            </span>
+                        </div>
 
                     <div class="mb-3" style="font-size:20px">
                         <h3>
@@ -150,85 +152,86 @@
                                 }
                             </dd>
 
-                        </dl>
-                    }
-                    <hr />
-                    <div class="mb-3">
-                        <h5>Chọn Size:</h5>
-                        <div class="d-flex">
-                            <!-- Clothing Size -->
-                            @if (Model.SizeClother != null && Model.SizeClother.Any())
-                            {
-                                <div class="mb-4">
-                                    <div class="size-selector">
-                                        @foreach (var size in Model.SizeClother)
-                                        {
-                                            <div class="size-option">
-                                                <input type="radio" class="size-checkbox" name="SelectedClotherSizes" value="@size" id="size_@size" />
-                                                <label class="size-label" for="size_@size">@size</label>
-                                            </div>
-                                        }
+                            </dl>
+                        }
+                        <hr />
+                        <div class="mb-3">
+                            <h5>Chọn Size:</h5>
+                            <div class="d-flex">
+                                <!-- Clothing Size -->
+                                @if (Model.SizeClother != null && Model.SizeClother.Any())
+                                {
+                                    <div class="mb-4">
+                                        <div class="size-selector">
+                                            @foreach (var size in Model.SizeClother)
+                                            {
+                                                <div class="size-option">
+                                                    <input type="radio" class="size-checkbox" name="size" value="@size" id="size_@size" required />
+                                                    <label class="size-label" for="size_@size">@size</label>
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            }
+                                }
 
-                            <!-- Shoe Size -->
-                            @if (Model.SizeShoe != null && Model.SizeShoe.Any())
-                            {
-                                <div class="mb-4">
-                                    <div class="size-selector">
-                                        @foreach (var size in Model.SizeShoe)
-                                        {
-                                            <div class="size-option">
-                                                <input type="radio" class="size-checkbox" name="SelectedClotherSizes" value="@size" id="size_@size" />
-                                                <label class="size-label" for="size_@size">@size</label>
-                                            </div>
-                                        }
+                                <!-- Shoe Size -->
+                                @if (Model.SizeShoe != null && Model.SizeShoe.Any())
+                                {
+                                    <div class="mb-4">
+                                        <div class="size-selector">
+                                            @foreach (var size in Model.SizeShoe)
+                                            {
+                                                <div class="size-option">
+                                                    <input type="radio" class="size-checkbox" name="size" value="@size" id="size_@size" required />
+                                                    <label class="size-label" for="size_@size">@size</label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                <!-- Size error message -->
+                                <div id="size-error" class="text-danger mt-2" style="display: none;"></div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold fs-5 mb-3">Thời gian thuê:</label>
+                                </div>
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="date-input-container">
+                                        <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </span>
+                                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                        </div>
                                     </div>
                                 </div>
-                            }
-                        </div>
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <label class="form-label fw-bold fs-5 mb-3">Thời gian thuê:</label>
-                            </div>
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <div class="date-input-container">
-                                    <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-primary text-white">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </span>
-                                        <input type="date" class="form-control" id="startDate" name="startDate" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="date-input-container">
-                                    <label for="endDate" class="form-label">Ngày trả</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-primary text-white">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </span>
-                                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                <div class="col-md-6">
+                                    <div class="date-input-container">
+                                        <label for="endDate" class="form-label">Ngày trả</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </span>
+                                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="btn-group mb-3">
-                            <a asp-action="AddToCart" asp-controller="Customer" asp-route-productId="@Model.Id" class="btn btn-primary shadow-0 me-2"> <i class="me-1 fa fa-shopping-basket"></i> Thêm vào giỏ hàng </a>
-                            <a asp-action="" asp-controller="Customer" asp-route-productId="@Model.Id" class="btn btn-outline-secondary shadow-0 me-2"> <i class="me-1 fa fa-shopping-cart"></i> Thuê ngay </a>
-
-                            @if (Model.BuyPrice == 0)
-                            {
-                                <a asp-action="" asp-controller="Customer" asp-route-productId="@Model.Id" class="btn btn-outline-success"> <i class="me-1 fa fa-shopping-cart"></i> Mua ngay </a>
-                            }
-                        </div>
+                        <a href="#"
+                           class="btn btn-primary shadow-0 add-to-cart-btn"
+                           data-product-id="@Model.Id">
+                            <i class="me-1 fa fa-shopping-basket"></i>
+                            Thêm vào giỏ hàng
+                        </a>
                     </div>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
+    
 </section>
 <!-- content -->
 
@@ -378,6 +381,8 @@
             document.getElementById('endDate').value = startDate;
         }
     });
+
+    
 </script>
 <style>
     h1 {

@@ -12,5 +12,6 @@ namespace BussinessLayer.Interface
         ICategoryService Category { get; }
         IProductService Product { get; }
         IItemImageService ItemImage { get; }
+        ICartService Cart { get; }
     }
 }

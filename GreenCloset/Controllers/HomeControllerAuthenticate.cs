@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace GreenCloset.Controllers
 {
@@ -56,10 +57,9 @@ namespace GreenCloset.Controllers
             var authResult = await HttpContext.AuthenticateAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
-
             if (!authResult.Succeeded || authResult.Principal == null)
             {
-                return RedirectToAction("Login", "User");
+                return RedirectToAction("Login", "Home");
             }
             var success = await _facadeService.User.LoginWithGoogle(
                 HttpContext,
@@ -68,7 +68,7 @@ namespace GreenCloset.Controllers
             if (!success)
             {
                 TempData["error"] = "Đăng nhập không thành công";
-                return RedirectToAction("Login", "User");
+                return RedirectToAction("Login", "Home");
             }
 
             return RedirectToAction("Index", "Home");
@@ -112,10 +112,80 @@ namespace GreenCloset.Controllers
             if (!_facadeService.User.ConfirmEmail(token))
             {
                 TempData["error"] = "Token xác thực không hợp lệ";
-                return RedirectToAction("Login", "User");
+                return RedirectToAction("Login", "Home");
             }
             TempData["success"] = "Xác thực email thành công";
-            return RedirectToAction("Login", "User");
+            return RedirectToAction("Login", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ForgotPassword(string email)
+        {
+            if (_facadeService.User.GetUserByEmail(email) != null)
+            {
+                _facadeService.User.SendResetPasswordEmail(email);
+            }
+            TempData["success"] = "Vui lòng kiểm tra email để đặt lại mật khẩu";
+            return RedirectToAction("Login", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            var email = _facadeService.User.IsValidToken(token);
+            if (string.IsNullOrEmpty(token) || email == null)
+            {
+                TempData["error"] = "Token không hợp lệ";
+                return RedirectToAction("Login", "Home");
+            }
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ResetPassword(string email, string password, string repassword)
+        {
+            if (password != repassword)
+            {
+                TempData["error"] = "Mật khẩu không khớp";
+                return View();
+            }
+            if (!_facadeService.User.IsValidPassword(password))
+            {
+                TempData["error"] = "Mật khẩu mới không hợp lệ";
+                return View();
+            }
+            var success = _facadeService.User.ResetPassword(email, password);
+            if (!success)
+            {
+                TempData["error"] = "Đặt lại mật khẩu không thành công";
+                return View();
+            }
+            TempData["success"] = "Đặt lại mật khẩu thành công";
+            return RedirectToAction("Login", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ResendEmailConfirmation()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ResendEmailConfirmation(string email)
+        {
+            if (_facadeService.User.GetUserByEmail(email) != null)
+            {
+                _facadeService.User.SendEmailComfirm(email);
+            }
+            TempData["success"] = "Vui lòng kiểm tra email để xác thực tài khoản";
+            return RedirectToAction("Login", "Home");
         }
 
         public IActionResult Logout()

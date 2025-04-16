@@ -22,11 +22,22 @@
                         </div>
                         <div class="col-md-4 col-sm-12 user-items">
                             <ul class="d-flex justify-content-end list-unstyled">
-                                <li>
-                                    <a asp-action="Login" asp-controller="Home">
-                                        <i class="icon icon-user"></i>
-                                    </a>
-                                </li>
+                                @if (isLoggedIn)
+                                {
+                                    <li>
+                                        <a asp-action="Profile" asp-controller="User">
+                                            <i class="icon icon-user"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <a asp-action="Login" asp-controller="Home">
+                                            <i class="icon icon-user"></i>
+                                        </a>
+                                    </li>
+                                }
                                 <li>
                                     <a asp-action="Cart" asp-controller="User">
                                         <i class="fa fa-cart-shopping"></i>

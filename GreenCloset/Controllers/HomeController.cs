@@ -19,7 +19,7 @@ public partial class HomeController : BaseController
         return View(products);
     }
 
-    public IActionResult Privacy()
+    public IActionResult About()
     {
         return View();
     }

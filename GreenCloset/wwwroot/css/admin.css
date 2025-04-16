@@ -13,6 +13,39 @@
     text-align: center;
     font-size: 16px;
 }
+.color-circle {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+}
+
+    .color-circle:hover {
+        border-color: #333;
+    }
+
+.checkmark {
+    color: white;
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.color-radio:checked + .color-circle .checkmark {
+    display: block;
+}
+
+.color-radio:checked + .color-circle {
+    border-color: #28a745;
+    box-shadow: 0 0 6px #28a745;
+}
 @charset "UTF-8";
 
 :root {

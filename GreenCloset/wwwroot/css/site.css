@@ -1,4 +1,5 @@
-﻿.item-anchor {
+﻿
+.item-anchor {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -132,6 +133,39 @@ input[type="search"]::-webkit-search-cancel-button {
         .review-images img:hover {
             transform: scale(1.05);
         }
+.color-circle {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+}
+
+    .color-circle:hover {
+        border-color: #333;
+    }
+
+.checkmark {
+    color: white;
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.color-radio:checked + .color-circle .checkmark {
+    display: block;
+}
+
+.color-radio:checked + .color-circle {
+    border-color: #28a745;
+    box-shadow: 0 0 6px #28a745;
+}
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------
 /** 1. VARIABLES
@@ -797,12 +831,10 @@ input[type="submit"],
 input[type="reset"],
 input[type="file"],
 button {
-    background-image: none;
-    background: var(--dark-color);
+   
     text-decoration: none !important;
     display: inline-block;
     position: relative;
-    border: 2px solid transparent;
     border-radius: 0;
     padding: 0.75em 1.5em;
     margin-top: 15px;
@@ -812,7 +844,6 @@ button {
     line-height: normal;
     text-align: center;
     text-transform: uppercase;
-    color: var(--light-color);
     z-index: 1;
     cursor: pointer;
     white-space: nowrap;
@@ -826,59 +857,6 @@ button {
     -ms-user-select: none;
     user-select: none;
 }
-
-    .btn:hover,
-    .btn:focus,
-    input[type="button"]:focus,
-    input[type="button"]:hover,
-    input[type="submit"]:focus,
-    input[type="submit"]:hover,
-    input[type="reset"]:focus,
-    input[type="reset"]:hover,
-    input[type="file"]:focus,
-    input[type="file"]:hover,
-    button:focus,
-    button:hover {
-        text-decoration: none;
-        outline: 0;
-    }
-
-.light .btn:hover {
-    color: var(--light-color);
-}
-
-.btn:last-child {
-    margin-right: 0;
-}
-
-.btn:active,
-.btn.btn-outline-light:active,
-.btn.btn-outline-dark:active,
-.btn.btn-outline-accent:active,
-input[type="button"]:active,
-input[type="submit"]:active,
-input[type="reset"]:active,
-input[type="file"]:active,
-button:active {
-    outline: 0;
-    background-image: none;
-    -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.btn.disabled,
-.btn[disabled],
-fieldset[disabled] .btn {
-    cursor: not-allowed;
-    opacity: 0.65;
-    box-shadow: none;
-}
-
-a.btn.disabled,
-fieldset[disabled] a.btn {
-    pointer-events: none;
-}
-
 /* - Button Sizes
 ------------------------------------------------------------- */
 .btn.btn-small {
@@ -1016,10 +994,6 @@ fieldset[disabled] a.btn {
     color: var(--light-color);
 }
 
-    .btn.btn-primary:hover {
-        background-color: var(--dark-color);
-        color: var(--light-color);
-    }
 
 /* - Buttons Aligns
 ------------------------------------------------------------- */
@@ -2190,6 +2164,7 @@ blockquote cite {
         padding: 10px;
         background: rgba(255,255,255,0.4);
         color: #191919;
+        border:none;
     }
 
     #billboard .button-prev {

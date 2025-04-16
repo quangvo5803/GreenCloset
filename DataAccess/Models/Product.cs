@@ -14,7 +14,24 @@ namespace DataAccess.Models
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Giá sản phẩm không được để trống")]
+        [Range(0, double.MaxValue, ErrorMessage = "Giá thuê phải lớn hơn 0")]
         public double Price { get; set; }
+
+        [Range(
+            0,
+            double.MaxValue,
+            ErrorMessage = "Giá  mua phải lớn hơn 0 hoặc bằng 0 nếu không bán"
+        )]
+        public double BuyPrice { get; set; } = 0;
+
+        [Range(
+            0,
+            double.MaxValue,
+            ErrorMessage = "Giá  cọc phải lớn hơn 0 hoặc bằng 0 nếu không cần cọc"
+        )]
+        public double DepositPrice { get; set; } = 0;
+        public bool Available { get; set; } = true;
+        public ProductColor? Color { get; set; }
         public int? ProductAvatarId { get; set; }
         public int RentalCount { get; set; } = 0;
         public IEnumerable<SizeClother>? SizeClother { get; set; }
@@ -35,10 +52,39 @@ namespace DataAccess.Models
 
     public enum SizeClother
     {
-        S,
-        M,
-        L,
-        XL,
-        XXL,
+        S = 1,
+        M = 2,
+        L = 3,
+        XL = 4,
+        XXL = 5,
+    }
+
+    // Enum các màu phổ biến
+    public enum ProductColor
+    {
+        Black,
+        White,
+        Red,
+        Blue,
+        Green,
+        Yellow,
+        Pink,
+        Brown,
+        Gray,
+        Orange,
+        Purple,
+        Navy,
+        Beige,
+        Maroon,
+        Olive,
+        Teal,
+        Khaki,
+        Coral,
+        Mint,
+        Burgundy,
+        Mustard,
+        SkyBlue,
+        Lavender,
+        Cream,
     }
 }

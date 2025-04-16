@@ -8,6 +8,7 @@
     int thumbnail = 0;
     int totalPages = (int)Math.Ceiling((double)totalReviews / ViewBag.PageSize);
     int currentPage = ViewBag.PageNumber;
+    var colorHex = GetColorHex(Model.Color);
 }
 <section>
     <div id="pageContainer" data-page-type="product-detail">
@@ -114,22 +115,42 @@
                             </span>
                         </div>
 
-                        <div class="mb-3" style="font-size:20px">
-                            <h3>
-                                @Model.Price.ToString("C", new CultureInfo("vi-VN"))
-                            </h3>
-                        </div>
-
-                        @if (Model.Categories != null)
+                    <div class="mb-3" style="font-size:20px">
+                        <h3>
+                            Giá thuê: @Model.Price.ToString("C", new CultureInfo("vi-VN"))                          
+                        </h3>
+                        @if(Model.DepositPrice != 0)
                         {
-                            <dl class="row">
-                                <dt class="col-3">Danh mục:</dt>
-                                <dd class="col-9">
-                                    @foreach (var category in Model.Categories)
-                                    {
-                                        <span class="badge bg-primary rounded-pill me-1">@category.CategoryName</span>
-                                    }
-                                </dd>
+                            <h3>
+                                Giá cọc: @Model.DepositPrice.ToString("C", new CultureInfo("vi-VN"))
+                            </h3>
+                        }
+                        @if (Model.BuyPrice != 0)
+                        {
+                            <h3>
+                                Giá mua: @Model.BuyPrice.ToString("C", new CultureInfo("vi-VN"))
+                            </h3>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <h4>
+                            Màu sắc:
+                        </h4>
+                        <input type="radio" class="form-check-input d-none color-radio" checked />
+                        <label class="color-circle position-relative" style="background-color: @colorHex;" title="@Model.Color">
+                            <span class="checkmark">✔</span>
+                        </label>
+                    </div>
+                    @if(Model.Categories != null)
+                    {
+                        <dl class="row">
+                            <dt class="col-3">Danh mục:</dt>
+                            <dd class="col-9">
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <span class="badge bg-primary rounded-pill me-1">@category.CategoryName</span>
+                                }
+                            </dd>
 
                             </dl>
                         }
@@ -465,6 +486,38 @@
 
     .size-checkbox:checked + .size-label:hover {
         background-color: var(--primary-color);
-        ;
     }
 </style>
+@functions {
+    public string GetColorHex(ProductColor? color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
+}

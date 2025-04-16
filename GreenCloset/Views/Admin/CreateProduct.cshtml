@@ -8,7 +8,6 @@
         int totalCategories = categories.Count();
         itemPerCol = 5;
     }
-
 }
 
 <div class="pc-container">
@@ -35,15 +34,33 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label asp-for="Price" class="form-label fw-bold">Giá sản phẩm:</label>
+                                        <label asp-for="Price" class="form-label fw-bold">Giá thuê :</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá sản phẩm" />
+                                            <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá thuê sản phẩm" />
                                         </div>
                                         <span asp-validation-for="Price" class="text-danger"></span>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="BuyPrice" class="form-label fw-bold">Giá mua:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input asp-for="BuyPrice" class="form-control" type="number" step="1000"  placeholder="Nhập giá mua sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="BuyPrice" class="text-danger"></span>
+                                    </div>
 
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="DepositPrice" class="form-label fw-bold">Giá sản phẩm:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input asp-for="DepositPrice" class="form-control" type="number" step="1000"  placeholder="Nhập giá cọc sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="DepositPrice" class="text-danger"></span>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label asp-for="Description" class="form-label fw-bold">Mô tả:</label>
                                     <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
@@ -95,7 +112,22 @@
                                         }
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chọn màu sản phẩm</label>
+                                    <div class="row">
+                                        @foreach (ProductColor color in Enum.GetValues(typeof(ProductColor)))
+                                        {
+                                            var colorHex = GetColorHex(color);
 
+                                            <div class="form-check col-md-2 text-center mb-2">
+                                                <input type="radio" class="form-check-input d-none color-radio" asp-for="Color" value="@color" />
+                                                <label for="color_@color" class="color-circle position-relative" style="background-color:@colorHex;" title="@color">
+                                                    <span class="checkmark">✔</span>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                                 
 
                                 <div class="mb-3">
@@ -271,4 +303,37 @@
             });
         });
     </script>
+}
+@functions {
+    public string GetColorHex(ProductColor color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
 }

@@ -102,6 +102,9 @@ namespace GreenCloset.Controllers
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
+                existingProduct.BuyPrice = product.BuyPrice;
+                existingProduct.DepositPrice = product.DepositPrice;
+                existingProduct.Color = product.Color;
                 await _facedeService.Product.UpdateProduct(
                     existingProduct,
                     selectedCategories,

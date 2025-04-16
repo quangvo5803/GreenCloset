@@ -40,12 +40,30 @@
                                         <label asp-for="Price" class="form-label fw-bold">Giá sản phẩm:</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá sản phẩm" />
+                                            <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá thuê sản phẩm" />
                                         </div>
                                         <span asp-validation-for="Price" class="text-danger"></span>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="BuyPrice" class="form-label fw-bold">Giá mua:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input asp-for="BuyPrice" class="form-control" type="number" step="1000" placeholder="Nhập giá mua sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="BuyPrice" class="text-danger"></span>
+                                    </div>
 
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="DepositPrice" class="form-label fw-bold">Giá sản phẩm:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input asp-for="DepositPrice" class="form-control" type="number" step="1000" placeholder="Nhập giá cọc sản phẩm" />
+                                        </div>
+                                        <span asp-validation-for="DepositPrice" class="text-danger"></span>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label asp-for="Description" class="form-label fw-bold">Mô tả:</label>
                                     <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
@@ -112,7 +130,25 @@
                                         }
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chọn màu sản phẩm</label>
+                                    <div class="row">
+                                        @foreach (ProductColor color in Enum.GetValues(typeof(ProductColor)))
+                                        {
+                                            var colorHex = GetColorHex(color);
 
+                                            <div class="form-check col-md-1 text-center mb-2 mt-2">
+                                                @{
+                                                    var checkedColor = Model.Color == color ? "Checked" : "";
+                                                }
+                                                <input type="radio" class="form-check-input d-none color-radio" id="color_@color" asp-for="Color" value="@color" checkedColor/>
+                                                <label for="color_@color" class="color-circle position-relative" style="background-color:@colorHex;" title="@color">
+                                                    <span class="checkmark">✔</span>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
 
 
                                 <div class="mb-3">
@@ -177,6 +213,25 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+             window.addEventListener('DOMContentLoaded', () => {
+            // Khi trang vừa load, kiểm tra nếu có checkbox nào đã được chọn
+
+            let clothingCheckboxes = document.querySelectorAll('input[name="SelectedClotherSizes"]');
+            let shoeCheckboxes = document.querySelectorAll('input[name="SelectedShoeSizes"]');
+
+            let anyClothingChecked = Array.from(clothingCheckboxes).some(c => c.checked);
+            let anyShoesChecked = Array.from(shoeCheckboxes).some(s => s.checked);
+
+            // Nếu đã chọn size quần áo => disable size giày
+            if (anyClothingChecked) {
+                shoeCheckboxes.forEach(cb => cb.disabled = true);
+            }
+
+            // Nếu đã chọn size giày => disable size quần áo
+            if (anyShoesChecked) {
+                clothingCheckboxes.forEach(cb => cb.disabled = true);
+            }
+        });
         // Avatar preview handling
         document.querySelector('input[name="Avatar"]').addEventListener('change', function (e) {
             const file = e.target.files[0];
@@ -318,7 +373,7 @@
                 }
             });
         }
-            // Hàm để kiểm tra và vô hiệu hóa các checkbox khi chọn một nhóm
+        // Hàm để kiểm tra và vô hiệu hóa các checkbox khi chọn một nhóm
         function toggleSizes(type) {
             if (type === 'clothing') {
                 let shoeCheckboxes = document.querySelectorAll('input[name="SelectedShoeSizes"]');
@@ -355,4 +410,37 @@
         });
 
     </script>
+}
+@functions {
+    public string GetColorHex(ProductColor color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
 }

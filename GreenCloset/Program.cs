@@ -1,4 +1,4 @@
-using BussinessLayer.Implement;
+﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Data;
 using GreenCloset.Utility;
@@ -32,6 +32,12 @@ namespace GreenCloset
                     {
                         options.ClientId = builder.Configuration["GoogleKeys:ClientID"];
                         options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
+                        options.Events.OnRemoteFailure = context =>
+                        {
+                            context.Response.Redirect("/Home/Login");
+                            context.HandleResponse();
+                            return Task.CompletedTask;
+                        };
                     }
                 );
             builder.Services.AddDistributedMemoryCache();

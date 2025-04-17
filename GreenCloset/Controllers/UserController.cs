@@ -45,17 +45,17 @@ namespace GreenCloset.Controllers
 
         [HttpPost]
         public IActionResult ChangePassword(
-            string oldPassword,
-            string newPassword,
-            string rePassword
+            string oldpassword,
+            string newpassword,
+            string repassword
         )
         {
-            if (newPassword != rePassword)
+            if (newpassword != repassword)
             {
                 TempData["error"] = "Mật khẩu không khớp";
                 return View();
             }
-            if (!_facadeService.User.IsValidPassword(newPassword))
+            if (!_facadeService.User.IsValidPassword(newpassword))
             {
                 TempData["error"] = "Mật khẩu mới không hợp lệ";
                 return View();
@@ -63,12 +63,19 @@ namespace GreenCloset.Controllers
             var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
             if (
                 email == null
-                || !_facadeService.User.ChangePassword(email, oldPassword, newPassword)
+                || !_facadeService.User.ChangePassword(email, oldpassword, newpassword)
             )
             {
                 TempData["error"] = "Mật khẩu cũ không đúng";
                 return View();
             }
+            TempData["success"] = "Đổi mật khẩu thành công";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ManageOrder()
+        {
             return View();
         }
 

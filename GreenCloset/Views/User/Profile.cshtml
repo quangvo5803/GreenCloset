@@ -1,5 +1,7 @@
 ﻿@model User
-
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
 <div class="container py-5">
     <div class="row">
         <div class="col-12">
@@ -11,9 +13,12 @@
                             <div class="p-4">
                                 <div class="nav flex-column nav-pills">
                                     <a class="nav-link active text-white" asp-action="Profile" style="background-color: #198754 !important;">
-                                        <i class="bi bi-person me-2"></i> Thông tin cá nhân
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
                                     </a>
-                                    <a class="nav-link text-black" asp-action="ChangePassword"><i class="bi bi-lock me-2"></i>Bảo mật</a>
+                                    <a class="nav-link text-black" asp-action="ChangePassword"><i class="fa fa-lock me-2"></i>Bảo mật</a>
+                                    <a class="nav-link text-black" asp-action="ManageOrder">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -23,7 +28,7 @@
                             <div class="p-4">
                                 <form asp-action="Profile" method="post">
                                     <div class="mb-4">
-                                        <h5 class="mb-4">Thông tin cá nhân</h5>
+                                        <h3 class="mb-4"><i class="fa fa-user me-2"></i>Thông tin cá nhân</h3>
                                         <div class="row g-3">
                                             <div class="col-md-6">
                                                 <div class="form-floating mb-3">

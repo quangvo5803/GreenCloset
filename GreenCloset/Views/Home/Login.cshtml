@@ -2,79 +2,79 @@
     ViewData["Title"] = "Đăng nhập";
 }
 
-<div class="login-form">
-    <section class="py-2 py-md-3 py-xl-8 login-background">
-        <div class="container pb-3">
-            <div class="row">
-                <div class="col-12">
-                    <div class="mb-5">
-                        <h2 class="display-5 fw-bold text-center">Đăng nhập</h2>
-                        <p class="text-center m-0">Bạn chưa có tài khoản ? <a asp-action="Register">Đăng Ký</a></p>
+    <div class="login-form">
+        <section class="py-2 py-md-3 py-xl-8 login-background">
+            <div class="container pb-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-5">
+                            <h2 class="display-5 fw-bold text-center">Đăng nhập</h2>
+                            <p class="text-center m-0">Bạn chưa có tài khoản ? <a asp-action="Register">Đăng Ký</a></p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row justify-content-center">
-                <div class="col-12 col-lg-10 col-xl-8">
-                    <div class="row justify-content-center">
-                        <div class="col-12 col-lg-5">
-                            <form method="post">
-                                <div class="row gy-3 overflow-hidden">
-                                    <div class="col-12">
-                                        <div class="form-floating mb-3">
-                                            <input class="form-control border-0 border-bottom rounded-0" name="email" type="email" placeholder="name@example.com" required>
-                                            <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-10 col-xl-8">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-5">
+                                <form method="post">
+                                    <div class="row gy-3 overflow-hidden">
+                                        <div class="col-12">
+                                            <div class="form-floating mb-3">
+                                                <input class="form-control border-0 border-bottom rounded-0" name="email" type="email" placeholder="name@example.com" required>
+                                                <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-floating mb-3 position-relative">
+                                                <input class="form-control border-0 border-bottom rounded-0" id="password" name="password" type="password" placeholder="Password" required>
+                                                <label class="form-label"><i class="bi bi-lock"></i> Mật khẩu</label>
+                                                <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3"
+                                                   id="togglePassword" style="cursor: pointer;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="justify-content-center align-items-center d-flex flex-column">
+                                            <p>
+                                                <a id="forgot-password" class="text-dark text-decoration-underline" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                            </p>
+                                            <p>
+                                                <a id="resend-confirmation" class="text-dark text-decoration-underline" asp-action="ResendEmailConfirmation">Gửi lại email xác nhận</a>
+                                            </p>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-grid">
+                                                <button class="btn btn-success btn-lg" type="submit">Đăng nhập</button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <div class="form-floating mb-3 position-relative">
-                                            <input class="form-control border-0 border-bottom rounded-0" id="password" name="password" type="password"  placeholder="Password" required>
-                                            <label class="form-label"><i class="bi bi-lock"></i> Mật khẩu</label>
-                                            <i class="bi bi-eye-slash position-absolute top-50 end-0 translate-middle-y me-3"
-                                            id="togglePassword" style="cursor: pointer;"></i>
-                                        </div>
-                                    </div>
-                                    <div class="justify-content-center align-items-center d-flex flex-column">
-                                        <p>
-                                            <a id="forgot-password" class="text-dark text-decoration-underline" asp-action="ForgotPassword">Quên mật khẩu?</a>
-                                        </p>
-                                        <p>
-                                            <a id="resend-confirmation" class="text-dark text-decoration-underline" asp-action="ResendEmailConfirmation">Gửi lại email xác nhận</a>
-                                        </p>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="d-grid">
-                                            <button class="btn btn-success btn-lg" type="submit">Đăng nhập</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="col-12 col-lg-2 d-flex align-items-center justify-content-center gap-3 flex-lg-column">
-                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
-                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
-                            <div>Hoặc</div>
-                            <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
-                            <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
-                        </div>
-                        <div class="col-12 col-lg-5 d-flex align-items-center">
-                            <div class="w-100">
-                                <a asp-controller="Home" asp-action="LoginWithGoogle" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
-                                        <path fill="#4285F4" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.2l6.5-6.5C35.2 2.5 29.9 0 24 0 14.6 0 6.8 5.6 2.9 13.7l7.6 5.9C12.3 13.2 17.7 9.5 24 9.5z" />
-                                        <path fill="#34A853" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.5c-.6 3.1-2.5 5.7-5.3 7.5l8.2 6.4c4.8-4.5 7.7-11.1 7.7-18.4z" />
-                                        <path fill="#FBBC05" d="M10.5 28.1c-1-2.9-1-6 .1-8.9l-7.7-6C.7 18.4 0 21.1 0 24c0 3.1.7 6 2 8.6l8.5-4.5z" />
-                                        <path fill="#EA4335" d="M24 48c6.5 0 11.9-2.1 15.8-5.7l-8.2-6.4c-2.2 1.5-5.1 2.4-7.6 2.4-6.4 0-11.8-4.3-13.7-10.1L2 32.6C6 40.4 14.3 48 24 48z" />
-                                    </svg>
-                                    Đăng nhập bằng Google
-                                </a>
+                                </form>
                             </div>
-                         </div>
+                            <div class="col-12 col-lg-2 d-flex align-items-center justify-content-center gap-3 flex-lg-column">
+                                <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                                <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                                <div>Hoặc</div>
+                                <div class="bg-dark h-100 d-none d-lg-block" style="width: 1px; --bs-bg-opacity: .1;"></div>
+                                <div class="bg-dark w-100 d-lg-none" style="height: 1px; --bs-bg-opacity: .1;"></div>
+                            </div>
+                            <div class="col-12 col-lg-5 d-flex align-items-center">
+                                <div class="w-100">
+                                    <a asp-controller="Home" asp-action="LoginWithGoogle" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                                            <path fill="#4285F4" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.2l6.5-6.5C35.2 2.5 29.9 0 24 0 14.6 0 6.8 5.6 2.9 13.7l7.6 5.9C12.3 13.2 17.7 9.5 24 9.5z" />
+                                            <path fill="#34A853" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.5c-.6 3.1-2.5 5.7-5.3 7.5l8.2 6.4c4.8-4.5 7.7-11.1 7.7-18.4z" />
+                                            <path fill="#FBBC05" d="M10.5 28.1c-1-2.9-1-6 .1-8.9l-7.7-6C.7 18.4 0 21.1 0 24c0 3.1.7 6 2 8.6l8.5-4.5z" />
+                                            <path fill="#EA4335" d="M24 48c6.5 0 11.9-2.1 15.8-5.7l-8.2-6.4c-2.2 1.5-5.1 2.4-7.6 2.4-6.4 0-11.8-4.3-13.7-10.1L2 32.6C6 40.4 14.3 48 24 48z" />
+                                        </svg>
+                                        Đăng nhập bằng Google
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

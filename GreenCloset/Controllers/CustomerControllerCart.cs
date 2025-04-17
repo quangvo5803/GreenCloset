@@ -1,11 +1,13 @@
 ﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
+    [Authorize(Roles = "Customer")]
     public partial class CustomerController : BaseController
     {
         public CustomerController(IFacedeService facedeService)

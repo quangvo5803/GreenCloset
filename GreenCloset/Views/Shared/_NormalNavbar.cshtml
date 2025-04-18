@@ -84,15 +84,15 @@
                                     <li><a asp-action="About" asp-controller="Home" class="item-anchor">Về GreenCloset</a></li>
 
                                     <li class="menu-item has-sub">
-                                        <a href="shop.html" class="item-anchor d-flex align-item-center" data-effect="Shop">Danh mục cho thuê<i class="icon icon-chevron-down"></i></a>
+                                        <a asp-action="Shop" asp-controller="Home" class="item-anchor d-flex align-item-center" data-effect="Shop">Danh mục cho thuê<i class="icon icon-chevron-down"></i></a>
                                         <ul class="submenu">
                                             @if (categories != null && categories.Any())
                                             {
                                                 @foreach (var category in categories)
                                                 {
-                                                    <li style="padding: 10px; width:300px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="@category.Id" class="item-anchor"> @category.CategoryName</a></li>
+                                                    <li style="padding: 10px; width:300px"><a asp-action="Shop" asp-route-categoryIds="@category.Id" asp-controller="Home" class="item-anchor"> @category.CategoryName</a></li>
                                                 }
-                                                <li style="padding: 10px; width:300px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="" class="item-anchor"> Xem tất cả</a></li>
+                                                <li style="padding: 10px; width:300px"><a asp-action="Shop" asp-controller="Home" asp-asp-route-id="" class="item-anchor"> Xem tất cả</a></li>
 
                                             }
                                             else

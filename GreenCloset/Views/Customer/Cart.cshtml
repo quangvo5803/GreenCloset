@@ -125,6 +125,7 @@
                                 <img src="~/image/headerlogo.png" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
                                 <div>
                                     <p class="fw-semibold mb-1">@item.Product.Name</p>
+                                        <p class="text-muted small">Màu: @item.Product.Color</p>
                                     <p class="text-muted small">
                                         Kích Cỡ:
                                         <span id="size-display-@item.Id">
@@ -228,7 +229,7 @@
             </div>
             <div class="text-end ms-auto">
                 <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
-                <button class="btn btn-danger">Mua Hàng</button>
+                <a class="btn btn-danger" asp-controller="Customer" asp-action="Checkout">Mua Hàng</a>
             </div>
         </div>
     </div>

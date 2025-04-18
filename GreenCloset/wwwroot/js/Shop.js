@@ -10,48 +10,6 @@
     }
 }
 
-// Hàm để kiểm tra và vô hiệu hóa các checkbox khi chọn một nhóm
-function toggleSizes(type) {
-    if (type === 'clothing') {
-        let shoeCheckboxes = document.querySelectorAll('input[name="SelectedShoeSizes"]');
-        shoeCheckboxes.forEach(checkbox => checkbox.disabled = true); // Disable shoe sizes
-        // Add collapse class to hide shoe size filter
-        document.getElementById('sizeshoes-collapse').classList.add('collapse');
-    } else if (type === 'shoes') {
-        let clothingCheckboxes = document.querySelectorAll('input[name="SelectedClotherSizes"]');
-        clothingCheckboxes.forEach(checkbox => checkbox.disabled = true); // Disable clothing sizes
-        // Add collapse class to hide clothing size filter
-        document.getElementById('sizeclother-collapse').classList.add('collapse');
-    }
-}
-
-// Reset filters and enable the other section when checkboxes are unchecked
-document.querySelectorAll('input[name="SelectedClotherSizes"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function () {
-        if (!this.checked) {
-            // If no clothing size is selected, enable shoe sizes and remove collapse class to show shoe filter
-            let anyClothingChecked = Array.from(document.querySelectorAll('input[name="SelectedClotherSizes"]')).some(c => c.checked);
-            if (!anyClothingChecked) {
-                document.querySelectorAll('input[name="SelectedShoeSizes"]').forEach(c => c.disabled = false);
-                document.getElementById('sizeshoes-collapse').classList.remove('collapse'); // Show shoe size filter
-            }
-        }
-    });
-});
-
-document.querySelectorAll('input[name="SelectedShoeSizes"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function () {
-        if (!this.checked) {
-            // If no shoe size is selected, enable clothing sizes and remove collapse class to show clothing filter
-            let anyShoesChecked = Array.from(document.querySelectorAll('input[name="SelectedShoeSizes"]')).some(s => s.checked);
-            if (!anyShoesChecked) {
-                document.querySelectorAll('input[name="SelectedClotherSizes"]').forEach(s => s.disabled = false);
-                document.getElementById('sizeclother-collapse').classList.remove('collapse'); // Show clothing size filter
-            }
-        }
-    });
-});
-
 document.getElementById('apply-filter').addEventListener('click', function () {
     const selectedCategories = [...document.querySelectorAll('input[name="SelectedCategories"]:checked')].map(checkbox => checkbox.value);
     const selectedColors = [...document.querySelectorAll('input[name="SelectedColors"]:checked')].map(checkbox => checkbox.value);

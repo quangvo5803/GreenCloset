@@ -120,7 +120,7 @@
                                             var colorHex = GetColorHex(color);
 
                                             <div class="form-check col-md-2 text-center mb-2">
-                                                <input type="radio" class="form-check-input d-none color-radio" asp-for="Color" value="@color" />
+                                                <input type="radio" class="form-check-input d-none color-radio" id="color_@color" asp-for="Color" value="@color" />
                                                 <label for="color_@color" class="color-circle position-relative" style="background-color:@colorHex;" title="@color">
                                                     <span class="checkmark">✔</span>
                                                 </label>

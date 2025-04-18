@@ -62,16 +62,21 @@ public partial class HomeController : BaseController
                 p.Color.HasValue && colors.Contains(p.Color.Value)
             );
         }
-        if (clotherSizes != null && clotherSizes.Any())
+        if ((clotherSizes != null && clotherSizes.Any()) || (shoeSizes != null && shoeSizes.Any()))
         {
             productList = productList.Where(p =>
-                p.SizeClother != null && p.SizeClother.Any(s => clotherSizes.Contains(s))
-            );
-        }
-        if (shoeSizes != null && shoeSizes.Any())
-        {
-            productList = productList.Where(p =>
-                p.SizeShoe != null && p.SizeShoe.Any(s => shoeSizes.Contains(s))
+                (
+                    clotherSizes != null
+                    && clotherSizes.Any()
+                    && p.SizeClother != null
+                    && p.SizeClother.Any(s => clotherSizes.Contains(s))
+                )
+                || (
+                    shoeSizes != null
+                    && shoeSizes.Any()
+                    && p.SizeShoe != null
+                    && p.SizeShoe.Any(s => shoeSizes.Contains(s))
+                )
             );
         }
         if (priceFrom.HasValue)

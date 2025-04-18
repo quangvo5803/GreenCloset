@@ -32,7 +32,7 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 
     .pagination .active {
-        background-color: #007bff;
+        background-color: var(--primary-color);
         color: white;
     }
 
@@ -96,16 +96,17 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .page-item.active .page-link {
-    background-color: #FEA116;
-    border-color: #FEA116;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .page-link {
-    color: #FEA116;
+    color: var(--primary-color);
+
 }
 
     .page-link:hover {
-        background-color: #FEA116;
+        background-color: var(--primary-color);
         color: white;
     }
 
@@ -166,6 +167,50 @@ input[type="search"]::-webkit-search-cancel-button {
     border-color: #28a745;
     box-shadow: 0 0 6px #28a745;
 }
+.size-option {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.size-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:40px;
+    height: 40px; 
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px; 
+    background-color: #fff; 
+    color: #333;
+}
+
+    .size-btn:hover {
+        background-color: #f8f9fa; 
+        border-color: #888; 
+    }
+
+    .size-btn:active {
+        background-color: #e2e6ea;
+    }
+
+input[type="checkbox"]:checked + label.size-btn {
+    background-color: #28a745;
+    color: #fff; 
+    border-color: #28a745; 
+}
+
+    input[type="checkbox"]:checked + label.size-btn:hover {
+        background-color: #218838; 
+    }
+
+    input[type="checkbox"]:checked + label.size-btn:active {
+        background-color: #1e7e34;
+    }
+
+
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------
 /** 1. VARIABLES
@@ -761,7 +806,6 @@ form {
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
     -moz-user-select: none; /* Old versions of Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Non-prefixed version, currently
@@ -1897,7 +1941,6 @@ blockquote cite {
     .search-popup.is-visible {
         opacity: 1;
         visibility: visible;
-        cursor: -webkit-image-set(url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23FFF' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23000' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E") 2x), pointer;
         cursor: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23000' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E"), pointer;
         -webkit-transition: opacity 0.3s 0s, visibility 0s 0s;
         -moz-transition: opacity 0.3s 0s, visibility 0s 0s;

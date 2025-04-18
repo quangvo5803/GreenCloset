@@ -1,0 +1,268 @@
+﻿@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "Sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    var selectedCategoryIds = ViewBag.SelectedCategoryIds as List<int> ?? new List<int>();
+    var selectedColors = ViewBag.SelectedColors as List<ProductColor> ?? new List<ProductColor>();
+    var selectedClotherSizes = ViewBag.SelectedClotherSizes as List<SizeClother> ?? new List<SizeClother>();
+    var selectedShoeSizes = ViewBag.SelectedShoeSizes as List<int> ?? new List<int>();
+    var priceFrom = ViewBag.PriceFrom as double? ?? null;
+    var priceTo = ViewBag.PriceTo as double? ?? null;
+    var queryParams = new Dictionary<string, object>();
+    queryParams.Add("categoryIds", selectedCategoryIds);    
+    queryParams.Add("colors", selectedColors);
+    queryParams.Add("clotherSizes", selectedClotherSizes);
+    queryParams.Add("shoeSizes", selectedShoeSizes);
+    if (priceFrom != null)
+    {
+        queryParams.Add("priceFrom", priceFrom);
+
+    }
+    if (priceTo != null)
+    {
+        queryParams.Add("priceFrom", priceTo);
+
+    }
+}
+<div id="shop-content" class="container py-4">
+    <h2 class="mb-4 text-center fw-bold">Danh Sách Sản Phẩm Cho Thuê</h2>
+
+    <div class="row g-4">
+        <!-- Filter Sidebar - Left Column -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm filter-card border-0 rounded-3">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title text-white text-center mb-0 py-2">Lọc sản phẩm</h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Category Filter -->
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('category-collapse')" style="cursor: pointer;">
+                            <span>Danh mục cho thuê</span>
+                            <i class="fa @(selectedCategoryIds != null && selectedCategoryIds.Count() > 0 ? "fa-minus" : "fa-plus")"></i>
+                        </h4>
+                        <div class="@(selectedCategoryIds != null && selectedCategoryIds.Count() > 0 ? "" : "collapse")" id="category-collapse">
+                            @if (categories != null && categories.Any())
+                            {
+                                @foreach (var category in categories)
+                                {
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="SelectedCategories" id="@category.Id" value="@category.Id" @(selectedCategoryIds != null && selectedCategoryIds.Contains(category.Id) ? "checked" : "")>
+                                        <label class="form-check-label" for="@category.Id">@category.CategoryName</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Color Filter -->
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('color-collapse')" style="cursor: pointer;">
+                            <span>Màu sắc</span>
+                            <i class="fa @(selectedColors != null && selectedColors.Count() > 0 ? "fa-minus" : "fa-plus")"></i>
+                        </h4>
+                        <div class="@(selectedColors != null && selectedColors.Count() > 0 ? "" : "collapse")" id="color-collapse">
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (ProductColor color in Enum.GetValues(typeof(ProductColor)))
+                                {
+                                    var colorHex = GetColorHex(color);
+                                    if (!string.IsNullOrEmpty(colorHex))
+                                    {
+                                        <div class="form-check col-md-2 text-center mb-2">
+                                            <input type="checkbox" class="form-check-input d-none color-radio" name="SelectedColors" id="color_@color" value="@color" @(selectedColors != null && selectedColors.Contains(color) ? "checked" : "") />
+                                            <label for="color_@color" class="color-circle position-relative" style="background-color:@colorHex;" title="@color">
+                                                <span class="checkmark">✔</span>
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size Clother Filter -->
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('sizeclother-collapse')" style="cursor: pointer;">
+                            <span>Size quần áo</span>
+                            <i class="fa @(selectedClotherSizes != null && selectedClotherSizes.Count() > 0 ? "fa-minus" : "fa-plus")"></i>
+                        </h4>
+                        <div class="@(selectedClotherSizes != null && selectedClotherSizes.Count() > 0 ? "" : "collapse")" id="sizeclother-collapse">
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (SizeClother size in Enum.GetValues(typeof(SizeClother)))
+                                {
+                                    <div class="size-option mb-2">
+                                        <input class="form-check-input d-none" type="checkbox" id="clother-@size" name="SelectedClotherSizes" value="@size" onclick="toggleSizes('clothing')" @(selectedClotherSizes != null && selectedClotherSizes.Contains(size) ? "checked" : "")>
+                                        <label class="size-btn" for="clother-@size">@size.ToString()</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size Shoes Filter -->
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('sizeshoes-collapse')" style="cursor: pointer;">
+                            <span>Size giày</span>
+                            <i class="fa @(selectedShoeSizes != null && selectedShoeSizes.Count() > 0 ? "fa-minus" : "fa-plus")"></i>
+                        </h4>
+                        <div class="@(selectedShoeSizes!= null && selectedShoeSizes.Count() > 0 ? "" : "collapse")" id="sizeshoes-collapse">
+                            <div class="d-flex flex-wrap gap-2">
+                                @for (int size = 30; size <= 45; size++)
+                                {
+                                    <div class="size-option mb-2">
+                                        <input class="form-check-input d-none" type="checkbox" id="shoe-@size" name="SelectedShoeSizes" value="@size" onclick="toggleSizes('shoes')" @(selectedShoeSizes != null && selectedShoeSizes.Contains(size) ? "checked" : "")>
+                                        <label class="size-btn" for="shoe-@size">@size</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('price-collapse')" style="cursor: pointer;">
+                            <span>Khoảng giá</span>
+                            <i class="fa @(priceFrom == null && priceFrom == null ? " fa-plus" : "fa-minus" )"></i>
+                        </h4>
+                        <div class="@(priceFrom == null && priceFrom == null ? "collapse" : "")" id="price-collapse">
+                            <div class="row g-2">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="Từ" id="price-from" value="@priceFrom">
+                                    </div>
+                                </div>
+                                <div class="col-auto d-flex align-items-center">
+                                    <span>-</span>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="Đến" id="price-to" value="@priceFrom">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary  py-2" type="button" id="apply-filter">Áp dụng bộ lọc</button>
+                        <button class="btn btn-outline-secondary py-2" type="button" id="reset-filter">Xóa tất cả</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product List - Right Column -->
+        <div class="col-lg-9">
+            <!-- Product Header -->
+            <div class="card shadow-sm mb-4 border-0 rounded-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <p class="mb-0"><strong>Tìm thấy @Model.ToList().Count sản phẩm</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-md-end align-items-center">
+                                <span class="me-2">Sắp xếp:</span>
+                                <select class="form-select form-select-sm w-auto mb-0" id="sort-select">
+                                    <option value="default">Mặc định</option>
+                                    <option value="price-high-low">Giá cao đến thấp</option>
+                                    <option value="price-low-high">Giá thấp đến cao</option>
+                                    <option value="most-rent">Thuê nhiều nhất</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class=" row d-flex flex-wrap">
+                @if(Model != null && Model.Any())
+                {
+                    @foreach (var product in Model)
+                    {
+                        <div class="product-item col-lg-4 col-md-6 col-sm-6">
+                            <partial name="_ProductItem" model="product" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="align-center">
+                        <img src="https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-results-png-image_6480370.png" alt="No products found" />
+                        <p>Không tìm thấy sản phẩm phù hợp</p>
+                    </div>
+                }
+            </div>
+
+
+            <!-- Pagination -->
+            @if (Model.ToList().Count >= 12)
+            {
+                <div class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @{
+                            queryParams["page"] = ViewBag.CurrentPage - 1;
+                        }
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Shop", queryParams)">Trước</a>
+                        </li>
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            queryParams["page"] = i;
+                            <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Shop", queryParams)">@i</a>
+                            </li>
+                        }
+
+                        @{
+                            queryParams["page"] = ViewBag.CurrentPage + 1;
+                        }
+                        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Shop", queryParams)">Sau</a>
+                        </li>
+                    </ul>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/Shop.js" asp-append-version="true"></script>
+}
+@functions {
+    public string GetColorHex(ProductColor color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
+}

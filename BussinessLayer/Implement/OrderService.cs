@@ -1,12 +1,9 @@
-﻿using Azure.Core;
-using BussinessLayer.Interface;
+﻿using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Repository.Implement;
 using Repository.Interface;
 using System;
@@ -31,33 +28,23 @@ namespace BussinessLayer.Implement
             _vpnPayService = vpnPayService;
         }
 
-        public string GetNameByUserId(string userId)
-        {
-            var user = _unitOfWork.User.Get(u => u.Id.ToString() == userId);
-            return user.UserName;
-        }
         //view checkout
-        public IEnumerable<Cart> GetCartItems(string selectedItems)
+        public IEnumerable<Cart> GetCartItems(List<int> selectedItems)
         {
-            if (string.IsNullOrEmpty(selectedItems)) return new List<Cart>();
-
-            var cartIds = selectedItems.Split(',').Select(int.Parse).ToList();
-
             var productsInCart = _unitOfWork.Cart
-                .GetRange(c => cartIds.Contains(c.Id), includeProperties: "Product")
+                .GetRange(c => selectedItems.Contains(c.Id), includeProperties: "Product")
                 .ToList(); 
 
             return productsInCart;
         }
         //Payment by COD
         public Order ProcessOrderByCOD(
-            string selectedItems, string phoneNumber, 
+            List<int> selectedItems, string phoneNumber, 
             string deliveryOptions, string deliveryAddress, 
             string paymentMethod, Guid userId)
         {
-            var cartIds = selectedItems.Split(',').Select(int.Parse).ToList();
             var productsInCart = _unitOfWork.Cart.GetRange
-                (c => cartIds.Contains(c.Id), includeProperties: "Product").ToList();
+                (c => selectedItems.Contains(c.Id), includeProperties: "Product").ToList();
 
             if (!productsInCart.Any())
             {
@@ -77,7 +64,7 @@ namespace BussinessLayer.Implement
             }
                 var order = CreateOrder(userId, totalPrice, phoneNumber, deliveryOptions, deliveryAddress, paymentMethod, productsInCart);
                 _unitOfWork.Order.Add(order);
-                var removeCartItem = _unitOfWork.Cart.GetRange(c => cartIds.Contains(c.Id));
+                var removeCartItem = _unitOfWork.Cart.GetRange(c => selectedItems.Contains(c.Id));
                 _unitOfWork.Cart.RemoveRange(removeCartItem);
                 _unitOfWork.Save();
             return order;
@@ -85,13 +72,12 @@ namespace BussinessLayer.Implement
 
         //Payment by VnPay
         public string ProcessOrderByVnPay(
-            string selectedItems, string phoneNumber, 
+            List<int> selectedItems, string phoneNumber, 
             string deliveryOptions, string deliveryAddress, 
             string paymentMethod, Guid userId, HttpContext httpContext)
         {
-            var cartIds = selectedItems.Split(',').Select(int.Parse).ToList();
             var productsInCart = _unitOfWork.Cart.GetRange
-                (c => cartIds.Contains(c.Id), includeProperties: "Product").ToList();
+                (c => selectedItems.Contains(c.Id), includeProperties: "Product").ToList();
 
             if (!productsInCart.Any())
             {
@@ -115,7 +101,7 @@ namespace BussinessLayer.Implement
             var order = CreateOrder(userId, totalPrice, phoneNumber, deliveryOptions, deliveryAddress, paymentMethod, productsInCart);
             _unitOfWork.Order.Add(order);
             _unitOfWork.Save();
-            httpContext.Session.SetString("CartIds", string.Join(",", cartIds));
+
             var vnpayModel = new VnPaymentRequestModel
             {
                 OrderId = new Random().Next(10000, 100000),
@@ -128,7 +114,7 @@ namespace BussinessLayer.Implement
             return _vpnPayService.CreatePaymentUrl(httpContext, vnpayModel);
         }
 
-        public bool VNPayReturn(IQueryCollection query, string userId, out int orderId, HttpContext httpContext)
+        public bool VNPayReturn(IQueryCollection query, string userId, out int orderId)
         {
             orderId = 0;     
             var response = _vpnPayService.PaymentExecute(query);
@@ -149,21 +135,20 @@ namespace BussinessLayer.Implement
 
             if (int.TryParse(response.OrderDescription, out int orderSuccessId))
             {
-                var cartIdItem = httpContext.Session.GetString("CartIds");
-                if (cartIdItem != null)
-                {
-                    var purchasedCartIds = cartIdItem
-                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(int.Parse)
-                        .ToList();
+                var purchasedProductIds = _unitOfWork.OrderDetail
+                    .GetRange(od =>  od.OrderId == orderSuccessId, includeProperties: "Product")
+                    .Select(od => od.ProductId)
+                    .ToList();
+  
+                var cartItemRemove = _unitOfWork.Cart
+                    .GetRange(c => c.UserId.ToString() == userId && purchasedProductIds.Contains(c.ProductId));
 
-                    var cartItems = _unitOfWork.Cart.GetRange(c => purchasedCartIds.Contains(c.Id));
-                    _unitOfWork.Cart.RemoveRange(cartItems);
-                    _unitOfWork.Save();
+                _unitOfWork.Cart.RemoveRange(cartItemRemove);
+                _unitOfWork.Save();
 
-                    orderId = orderSuccessId;
-                    return true;
-                }
+                orderId = orderSuccessId;
+                return true;
+                
             }
 
             return false;

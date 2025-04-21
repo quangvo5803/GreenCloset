@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace GreenCloset.Controllers
@@ -11,33 +10,27 @@ namespace GreenCloset.Controllers
     public partial class CustomerController : BaseController
     {
         [HttpPost]
-        public IActionResult Checkout(string selectedItems)
+        public IActionResult Checkout(List<int> selectedItems)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return RedirectToAction("Login", "Home");
-            }
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null) return RedirectToAction("Login", "Home");
 
-            var userName = _facadeService.Order.GetNameByUserId(userId);
-            if (userName == null)
-            {
-                TempData["error"] = "userName null";
-            }
+            var user = _facadeService.User.GetUserByEmail(email);
+            if (user == null) TempData["error"] = "userName null";
 
+            
             var productsInCart = _facadeService.Order.GetCartItems(selectedItems);
-            if (!productsInCart.Any())
-            {
-                return RedirectToAction("Cart", "Customer");
-            }
-            ViewBag.UserId = userId;
-            ViewBag.user = userName;
+            if (!productsInCart.Any()) return RedirectToAction("Cart", "Customer");
+
+            ViewBag.CartItems = productsInCart;
+            ViewBag.UserId = user.Id;
+            ViewBag.userName = user.UserName;
             return View(productsInCart);
         }
 
         [HttpPost]
         public IActionResult ProcessPayment(
-            string selectedItems,
+            List<int> selectedItems,
             string phoneNumber,
             string deliveryOptions,
             string deliveryAddress,
@@ -82,7 +75,7 @@ namespace GreenCloset.Controllers
         public IActionResult VNPayReturn()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (_facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId, HttpContext))
+            if (_facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId))
             {
                 TempData["success"] = "Payment successful.";
                 return RedirectToAction("Cart", "Customer");

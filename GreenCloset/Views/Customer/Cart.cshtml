@@ -87,8 +87,10 @@
         </a>
     </div>
 }else{
-
+    
 <div class="bg-light py-4">
+    <form id="checkoutForm" method="post" asp-action="Checkout" asp-controller="Customer" style="width:100%;">
+            <div id="selectedItemsContainer"></div>
     <div class="container">
         <div class="bg-white p-4 rounded shadow-sm">
             <!-- Header -->
@@ -122,7 +124,7 @@
                 <div class="border-bottom py-3 product-row" data-cart-id="@item.Id" data-product-id="@item.Product.Id">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-3">
-                            <input type="checkbox"  class="productCheckbox align-self-center" data-price="@item.Product.Price" />
+                            <input type="checkbox" class="productCheckbox align-self-center"  value="@item.Id" data-price="@item.Product.Price" />
                             <div class="d-flex align-items-center gap-3">
                                 <img src="@item.Product.ProductAvatar" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
                                 <div>
@@ -169,7 +171,7 @@
                                                 </div>
                                             }
                                             <div class="mt-2 text-end">
-                                                <button class="btn btn-sm btn-primary size-confirm-btn" data-item-id="@item.Id">Xác nhận</button>
+                                                <button type="button" class="btn btn-sm btn-primary size-confirm-btn" data-item-id="@item.Id">Xác nhận</button>
                                             </div>
                                         </div>
                                     </p>
@@ -181,8 +183,8 @@
                                                     <i class="fas fa-calendar-alt"></i>
                                                 </span>
                                                 <input type="date" class="form-control" id="startDate" name="startDate"
-                                                    value="@item.StartDate?.ToString("yyyy-MM-dd")" required
-                                                    onchange="handleDateChange(this)" required />
+                                                    value="@item.StartDate?.ToString("yyyy-MM-dd")" 
+                                                    onchange="handleDateChange(this)"  />
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -192,8 +194,8 @@
                                                     <i class="fas fa-calendar-alt"></i>
                                                 </span>
                                                 <input type="date" class="form-control" id="endDate" name="endDate"
-                                                    value="@item.EndDate?.ToString("yyyy-MM-dd")" required
-                                                    onchange="handleDateChange(this)" required />
+                                                    value="@item.EndDate?.ToString("yyyy-MM-dd")" 
+                                                    onchange="handleDateChange(this)"  />
                                             </div>
                                         </div>
                                     </div>
@@ -203,9 +205,9 @@
                         <div class="d-flex gap-4 align-items-center">
                             <span class="text-dangers">₫@item.Product.Price.ToString("#,##0")</span>
                                 <div class="input-group" style="width:100px; margin-left: 6px;" data-product-id="@item.Product.Id">
-                                <button class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
                                 <input type="text" class="form-control text-center quantity" value="@item.Count" style="margin-bottom: 16px; margin-top:16px;"/>
-                                <button class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
                             </div>
                             <span class="text-dangers product-total">₫@(item.Product.Price * item.Count)</span>
                             <a href="#" class="text-dangers delete-item"
@@ -232,9 +234,9 @@
             </div>
             <div class="text-end ms-auto">
                 <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
-                <form id="checkoutForm" method="post" asp-action="Checkout" asp-controller="Customer">
-                    <input type="hidden" name="selectedItems" id="selectedItemsInput" />
-                    <button type="submit" class="btn btn-danger"
+                
+                    
+                    <button type="submit" id="buyNowBtn" class="btn btn-danger"
                             style="background:rgb(141, 198, 63);
                         border-bottom-color:white;
                         border-left-color:white;
@@ -243,12 +245,13 @@
                             ">
                         Mua Hàng
                     </button>
-                    </form>
+                    
             </div>
         </div>
     </div>
+        </form>
 </div>
-
+    
 }
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -503,61 +506,77 @@
                 document.getElementById('endDate').value = startDate;
             }
         });
+
+
+
+      
     });
 
-    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const selectedProductIds = [];
-        const selectedProductNames = [];
-        let check = false;
-        document.querySelectorAll('.productCheckbox:checked').forEach(cb => {
-            const productRow = cb.closest('.product-row');
-            const cartId = productRow.getAttribute('data-cart-id');
-            const productName = productRow.querySelector('.fw-semibold')?.innerText;
-            const sizeDisplay = productRow.querySelector(`#size-display-${cartId}`);
-            const startDate = productRow.querySelector('input[name="startDate"]').value;
-            const endDate = productRow.querySelector('input[name="endDate"]').value;
 
-            // Kiểm tra size
-            const sizeText = sizeDisplay.textContent.trim();
+    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+        const selectedItemsContainer = document.getElementById("selectedItemsContainer");
+        selectedItemsContainer.innerHTML = ""; 
+
+        const selectedCheckboxes = document.querySelectorAll(".productCheckbox:checked");
+
+        if (selectedCheckboxes.length === 0) {
+            e.preventDefault();
+            toastr.error("Vui lòng chọn ít nhất một sản phẩm để mua.");
+            return;
+        }
+
+        let hasError = false;
+
+        // Reset các màu lỗi trước đó
+        document.querySelectorAll('.product-row input, .product-row span').forEach(el => {
+            el.style.borderColor = "";
+            el.style.color = "";
+        });
+
+        selectedCheckboxes.forEach(cb => {
+            const productRow = cb.closest(".product-row");
+            const productName = productRow.querySelector(".fw-semibold").innerText.trim();
+
+            const sizeDisplay = productRow.querySelector(`#size-display-${cb.value}`);
+            const sizeText = sizeDisplay?.innerText.trim();
+
             if (sizeText === "Chọn kích cỡ") {
-                check = true;
+                hasError = true;
                 toastr.error(`Chưa chọn kích cỡ cho sản phẩm: ${productName}`);
                 sizeDisplay.style.color = "red";
                 return;
             }
 
-            // Kiểm tra ngày
+            const startDateInput = productRow.querySelector('input[name="startDate"]');
+            const endDateInput = productRow.querySelector('input[name="endDate"]');
+            const startDate = startDateInput?.value;
+            const endDate = endDateInput?.value;
+
             if (!startDate || !endDate) {
-                check = true;
+                hasError = true;
                 toastr.error(`Chưa chọn ngày thuê cho sản phẩm: ${productName}`);
-                productRow.querySelector('input[name="startDate"]').style.borderColor = "red";
-                productRow.querySelector('input[name="endDate"]').style.borderColor = "red";
+                if (startDateInput) startDateInput.style.borderColor = "red";
+                if (endDateInput) endDateInput.style.borderColor = "red";
                 return;
             }
-            if (!check) {
-                if (cartId) selectedProductIds.push(cartId);
-                if (productName) selectedProductNames.push(productName);
-            }
 
+            // Nếu hợp lệ thì thêm input vào form
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "selectedItems";
+            input.value = cb.value;
+            selectedItemsContainer.appendChild(input);
         });
 
-        if (check || selectedProductIds.length === 0) {
+        if (hasError) {
             e.preventDefault();
-            if (selectedProductIds.length === 0) {
-                toastr.error("Chọn ít nhất một sản phẩm để thanh toán.");
-            }
-            return;
         }
-
-        console.log("Số lượng sản phẩm được chọn:", selectedProductIds.length);
-        console.log("Tên sản phẩm được chọn:");
-        selectedProductNames.forEach((name, index) => {
-            console.log(`${index + 1}. ${name}`);
-        });
-        document.getElementById("selectedItemsInput").value = selectedProductIds.join(",");
-        this.submit();
     });
+
+
+
+
+
 
 
 </script>

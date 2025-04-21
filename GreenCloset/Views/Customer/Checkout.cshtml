@@ -201,12 +201,15 @@
         <!-- Right column 3 -->
         <div class="col-lg-4 order-lg-2 d-flex justify-content-end">
             <form asp-action="ProcessPayment" asp-controller="Customer" method="post" style="width:100%;">
-                <input type="hidden" name="selectedItems" value="@string.Join(",", Model.Select(m => m.Id))" />
+                @foreach (var cart in ViewBag.CartItems as List<Cart>)
+                {
+                    <input type="hidden" name="selectedItems" value="@cart.Id" />
+                } 
                 <input type="hidden" name="userId" value="@ViewBag.UserId" />
             <div style="width: 100%;">
                 <div class="bg-white p-3 mb-3">
                     <label class="font-subheading d-block mb-2" for="customerName">Tên khách hàng</label>
-                    <div id="customerName" class="form-control">@ViewBag.user</div>
+                    <div id="customerName" class="form-control">@ViewBag.userName</div>
                 </div>
 
                 <div class="bg-white p-3 mb-3">

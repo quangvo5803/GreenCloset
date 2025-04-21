@@ -50,6 +50,7 @@
     .btn-danger {
         background-color: var(--main-color);
         border-color: var(--main-color);
+        
     }
 
     .text-dangers {
@@ -86,6 +87,7 @@
         </a>
     </div>
 }else{
+
 <div class="bg-light py-4">
     <div class="container">
         <div class="bg-white p-4 rounded shadow-sm">
@@ -120,9 +122,9 @@
                 <div class="border-bottom py-3 product-row" data-cart-id="@item.Id" data-product-id="@item.Product.Id">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-3">
-                                <input type="checkbox" class="productCheckbox align-self-center" data-price="@item.Product.Price"/>
+                            <input type="checkbox"  class="productCheckbox align-self-center" data-price="@item.Product.Price" />
                             <div class="d-flex align-items-center gap-3">
-                                <img src="~/image/headerlogo.png" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                <img src="@item.Product.ProductAvatar" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
                                 <div>
                                     <p class="fw-semibold mb-1">@item.Product.Name</p>
                                         <p class="text-muted small">Màu: @item.Product.Color</p>
@@ -221,6 +223,7 @@
         
     </div>
     <!-- Sticky Footer -->
+        
     <div class="bg-white border-top mt-4 py-3 position-sticky bottom-0" id="sticky-footer">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
@@ -229,11 +232,23 @@
             </div>
             <div class="text-end ms-auto">
                 <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
-                <a class="btn btn-danger" asp-controller="Customer" asp-action="Checkout">Mua Hàng</a>
+                <form id="checkoutForm" method="post" asp-action="Checkout" asp-controller="Customer">
+                    <input type="hidden" name="selectedItems" id="selectedItemsInput" />
+                    <button type="submit" class="btn btn-danger"
+                            style="background:rgb(141, 198, 63);
+                        border-bottom-color:white;
+                        border-left-color:white;
+                        border-right-color:white;
+                        border-top-color:white;
+                            ">
+                        Mua Hàng
+                    </button>
+                    </form>
             </div>
         </div>
     </div>
 </div>
+
 }
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -336,6 +351,10 @@
             const endDate = group.querySelector('input[name="endDate"]')?.value;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+            if(startDate > endDate){
+                toastr.error("Ngày trả phải lớn hơn ngày thuê");
+                return;
+            }
 
             $.ajax({
                 url: '@Url.Action("UpdateCart", "Customer")',
@@ -485,4 +504,60 @@
             }
         });
     });
+
+    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const selectedProductIds = [];
+        const selectedProductNames = [];
+        let check = false;
+        document.querySelectorAll('.productCheckbox:checked').forEach(cb => {
+            const productRow = cb.closest('.product-row');
+            const cartId = productRow.getAttribute('data-cart-id');
+            const productName = productRow.querySelector('.fw-semibold')?.innerText;
+            const sizeDisplay = productRow.querySelector(`#size-display-${cartId}`);
+            const startDate = productRow.querySelector('input[name="startDate"]').value;
+            const endDate = productRow.querySelector('input[name="endDate"]').value;
+
+            // Kiểm tra size
+            const sizeText = sizeDisplay.textContent.trim();
+            if (sizeText === "Chọn kích cỡ") {
+                check = true;
+                toastr.error(`Chưa chọn kích cỡ cho sản phẩm: ${productName}`);
+                sizeDisplay.style.color = "red";
+                return;
+            }
+
+            // Kiểm tra ngày
+            if (!startDate || !endDate) {
+                check = true;
+                toastr.error(`Chưa chọn ngày thuê cho sản phẩm: ${productName}`);
+                productRow.querySelector('input[name="startDate"]').style.borderColor = "red";
+                productRow.querySelector('input[name="endDate"]').style.borderColor = "red";
+                return;
+            }
+            if (!check) {
+                if (cartId) selectedProductIds.push(cartId);
+                if (productName) selectedProductNames.push(productName);
+            }
+
+        });
+
+        if (check || selectedProductIds.length === 0) {
+            e.preventDefault();
+            if (selectedProductIds.length === 0) {
+                toastr.error("Chọn ít nhất một sản phẩm để thanh toán.");
+            }
+            return;
+        }
+
+        console.log("Số lượng sản phẩm được chọn:", selectedProductIds.length);
+        console.log("Tên sản phẩm được chọn:");
+        selectedProductNames.forEach((name, index) => {
+            console.log(`${index + 1}. ${name}`);
+        });
+        document.getElementById("selectedItemsInput").value = selectedProductIds.join(",");
+        this.submit();
+    });
+
+
 </script>

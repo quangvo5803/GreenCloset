@@ -21,7 +21,7 @@ namespace DataAccess.Models
 
         [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
-
+        public string DeliveryOption { get; set; }
         public string? ShippingAddress { get; set; }
         public string? PhoneNumber { get; set; }
 

@@ -1,97 +1,107 @@
-﻿@model DataAccess.Models.Order
+﻿@model List<DataAccess.Models.Cart>
 @{
     ViewData["Title"] = "Checkout";
+    double subtotal = 0;
+    foreach (var item in Model)
+    {
+        if (item.Product != null)
+        {
+            subtotal += item.Count * item.Product.Price;
+        }
+    }
+    var index = 0;
 }
+
 
 <style>
     body {
-        font-family: "Montserrat", sans-serif;
-        background-color: #f3f3f1;
-        color: #1a1a1a;
+    font-family: "Montserrat", sans-serif;
+    background-color: #f3f3f1;
+    color: #1a1a1a;
     }
 
     .font-heading {
-        font-weight: 700;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 18px;
     }
     .bg-white{
-        margin-bottom: 0px !important;
+    margin-bottom: 0px !important;
     }
     .font-subheading {
-        font-weight: 700;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 12px;
     }
 
     .font-subheading-2 {
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 12px;
     }
 
     .btn-disabled {
-        background-color: #d8ede4 !important;
-        color: #ffffff !important;
-        cursor: not-allowed;
+    background-color: #d8ede4 !important;
+    color: #ffffff !important;
+    cursor: not-allowed;
     }
 
     .btn-success {
-        background-color: rgb(141, 198, 63) !important;
-        color: #ffffff !important;
+    background-color: rgb(141, 198, 63) !important;
+    color: #ffffff !important;
     }
 
     hr {
-        border-color: #d1d1d1;
+    border-color: #d1d1d1;
     }
     /* Disabled delivery address styling */
     .disabled-address {
-        background-color: #fefefe !important;
-        color: #a8a8a8 !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.15em !important;
-        text-transform: uppercase !important;
-        cursor: not-allowed !important;
+    background-color: #fefefe !important;
+    color: #a8a8a8 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    cursor: not-allowed !important;
     }
 
     .payment-option {
-        border: 1px solid #d1d1d1;
-        border-radius: 0.25rem;
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        user-select: none;
-        transition: border-color 0.3s ease;
+    border: 1px solid #d1d1d1;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.3s ease;
     }
 
-        .payment-option input[type="radio"] {
-            margin-right: 0.75rem;
-            cursor: pointer;
-        }
+    .payment-option input[type="radio"] {
+    margin-right: 0.75rem;
+    cursor: pointer;
+    }
 
-        .payment-option:hover {
-            border-color: #1a1a1a;
-        }
+    .payment-option:hover {
+    border-color: #1a1a1a;
+    }
 
-        .payment-option input[type="radio"]:checked + label {
-            font-weight: 700;
-            color: #1a1a1a;
-        }
+    .payment-option input[type="radio"]:checked + label {
+    font-weight: 700;
+    color: #1a1a1a;
+    }
     /* New style for product box */
     .product-box {
-        border: 1px solid #d1d1d1;
-        border-radius: 0.25rem;
-        padding: 0.75rem;
-        background-color: #fff;
-        font-size: 14px; /* increased font size */
-        line-height: 1.4;
+    border: 1px solid #d1d1d1;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    background-color: #fff;
+    font-size: 14px; /* increased font size */
+    line-height: 1.4;
     }
 
-        .product-box .fw-semibold.fs-6 {
-            font-size: 18px; /* price bigger */
-        }
+    .product-box .fw-semibold.fs-6 {
+    font-size: 18px; /* price bigger */
+    }
 </style>
 
 <div class="container py-3">
@@ -103,52 +113,73 @@
     <div class="row g-4">
         <!-- Left column 9 -->
         <div class="col-lg-8 order-lg-1 bg-white p-3">
+
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h2 class="font-subheading m-0" style="font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">
-                    1 item
-                </h2>
-                <button class="btn btn-link p-0 m-0 text-dark fw-normal" type="button" style="font-size: 12px;">
-                    Edit
-                </button>
+                <a href="~/Customer/Cart" class="font-subheading m-0"
+                   style="font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">
+                    <button type="button" class="font-subheading m-0"
+                            style="font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">
+                        <i class="bi bi-arrow-left"></i> Back To Cart
+                    </button>
+                </a>
+                <!--
+                <a class="btn btn-link p-0 m-0 text-dark fw-normal" type="button" style="font-size: 12px;">
+                Edit
+                </a>
+                -->
             </div>
+
             <hr />
-            <div class="product-box d-flex gap-3 mb-3">
-                <img alt="Man wearing black puffer jacket standing sideways" class="flex-shrink-0" height="40" src="https://storage.googleapis.com/a1aa/image/54f48d2d-d141-4408-897d-4332c557096f.jpg" width="100" />
-                <div>
-                    <div class="fw-bold">
-                        Model.OrderDeta
-                    </div>
-                    <div class="fs-6 mb-1">
-                        Đơn giá: 100.000 VND
-                    </div>
-                    <div class="fw-semibold mt-1">
-                        Đen
-                        <span class="fw-normal ms-2">XXS</span>
-                    </div>
+            @foreach (var item in Model)
+            {
+                <div class="product-box d-flex gap-3 mb-3">
+                    <img class="flex-shrink-0" height="40" src="@item.Product.ProductAvatar" width="100" />
                     <div>
-                        Số lượng: 1
-                    </div>
-                    <div class="fs-6 mb-1" id="rentalDays">
-                        Số ngày thuê:
-                    </div>
-                    <div class="" style="font-size: 17px; margin-top: 10px;">
-                        <span>
-                            Thành tiền:
-                        </span>
-                        <span>
-                            100.000 VND
-                        </span>
+                        <div class="fw-bold">
+                            @item.Product.Name
+                        </div>
+                        <div class="fs-6 mb-1">
+                            Đơn giá: @item.Product.Price.ToString("#,##0") VND
+                        </div>
+                        <div class="fw-semibold mt-1">
+                            @item.Product.Color
+                            <span class="fw-normal ms-2">
+                                @if (item.SizeShoe.HasValue)
+                                {
+                                    @item.SizeShoe
+                                }
+                                else if (item.SizeClother.HasValue)
+                                {
+                                    @item.SizeClother
+                                }
+                            </span>
+                        </div>
+                        <div>
+                            Số lượng: @item.Count
+                        </div>
+                        <div class="fs-6 mb-1" id="rentalDays_@index">
+                            Đang tính toán...
+                        </div>
+
+                        <div class="" style="font-size: 17px; margin-top: 10px;">
+                            <span>
+                                Thành tiền:
+                            </span>
+                            <span>
+                                @((item.Product.Price * item.Count).ToString("#,##0")) VND
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
+                index++;
+            }
             <hr />
             <div class="d-flex justify-content-between" style="font-size: 20px;" id="subtotalSection">
                 <span>
                     Tổng tạm tính
                 </span>
                 <span id="subtotalAmount">
-                    300.000 VND
+                    @subtotal.ToString("#,##0") VND
                 </span>
             </div>
             <div class="d-flex justify-content-between" style="font-size: 20px;" id="shippingFeeSection">
@@ -159,47 +190,52 @@
                     50.000 VND
                 </span>
             </div>
-            <div class="d-flex justify-content-between fw-bold text-uppercase" style="font-size: 20px; letter-spacing: 0.15em;" id="totalSection">
+            <div class="d-flex justify-content-between fw-bold text-uppercase"
+                 style="font-size: 20px; letter-spacing: 0.15em;" id="totalSection">
                 <span>
                     Tổng số tiền
                 </span>
-                <span id="totalAmount">
-                    350.000 VND
-                </span>
+                <span id="totalAmount"></span>
             </div>
         </div>
         <!-- Right column 3 -->
-        <section class="col-lg-4 order-lg-2 d-flex justify-content-end">
+        <div class="col-lg-4 order-lg-2 d-flex justify-content-end">
+            <form asp-action="ProcessPayment" asp-controller="Customer" method="post" style="width:100%;">
+                <input type="hidden" name="selectedItems" value="@string.Join(",", Model.Select(m => m.Id))" />
+                <input type="hidden" name="userId" value="@ViewBag.UserId" />
             <div style="width: 100%;">
-                <div class="bg-white p-3 mb-3" >
+                <div class="bg-white p-3 mb-3">
                     <label class="font-subheading d-block mb-2" for="customerName">Tên khách hàng</label>
-                    <div id="customerName" class="form-control">Phan Lê Đình Phúc</div>
+                    <div id="customerName" class="form-control">@ViewBag.user</div>
                 </div>
 
-                <div class="bg-white p-3 mb-3" >
+                <div class="bg-white p-3 mb-3">
                     <label class="font-subheading d-block mb-2" for="phoneNumber">Số điện thoại</label>
-                    <input class="form-control" id="phoneNumber" name="phoneNumber" type="tel" placeholder="Nhập số điện thoại" />
+                    <input class="form-control" id="phoneNumber" name="phoneNumber" type="tel"
+                           placeholder="Nhập số điện thoại" />
                 </div>
 
-                <div class="bg-white p-3 mb-3" >
+                <div class="bg-white p-3 mb-3">
                     <label class="font-subheading d-block mb-2" for="deliveryOptions">Tùy chọn giao hàng</label>
                     <select class="form-select" id="deliveryOptions" name="deliveryOptions">
                         <option value="1" selected>Giao hàng tận nơi</option>
-                        <option value="2">Nhận hàng tại cửa hàng</option>
+                        <option value="2">Nhận tại cửa hàng</option>
                     </select>
                 </div>
 
-                <div class="bg-white p-3 mb-3" >
+                <div class="bg-white p-3 mb-3">
                     <label class="font-subheading d-block mb-2" for="deliveryAddress">Địa chỉ nhận hàng</label>
-                    <input class="form-control" id="deliveryAddress" name="deliveryAddress" type="text" placeholder="Nhập địa chỉ giao hàng" />
+                    <input class="form-control" id="deliveryAddress" name="deliveryAddress" type="text"
+                           placeholder="Nhập địa chỉ giao hàng" />
                 </div>
 
-                <div class="bg-white p-3 mb-3" id="paymentSection" >
+                <div class="bg-white p-3 mb-3" id="paymentSection">
                     <label class="font-subheading d-block mb-2">Phương thức thanh toán</label>
                     <div class="d-flex flex-column gap-3">
 
                         <div class="payment-option d-flex align-items-center mb-2">
-                            <input id="paymentCOD" name="paymentMethod" type="radio" value="cod" checked class="me-2" style="margin-bottom: 0px;" />
+                            <input id="paymentCOD" name="paymentMethod" type="radio" value="cod" checked class="me-2"
+                                   style="margin-bottom: 0px;" />
                             <label class="mb-0 d-flex align-items-center" for="paymentCOD">
                                 <i class="fas fa-money-bill-wave me-2 text-success"></i>
                                 Trả tiền khi nhận hàng
@@ -207,78 +243,88 @@
                         </div>
 
                         <div class="payment-option d-flex align-items-center mb-2">
-                            <input id="paymentVNPay" name="paymentMethod" type="radio" value="vnpay" class="me-2" style="margin-bottom: 0px;" />
+                            <input id="paymentVNPay" name="paymentMethod" type="radio" value="vnpay" class="me-2"
+                                   style="margin-bottom: 0px;" />
                             <label class="mb-0 d-flex align-items-center" for="paymentVNPay">
-                                <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png" alt="VNPay" style="width: 30px;" class="me-2" />
+                                <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png"
+                                     alt="VNPay" style="width: 30px;" class="me-2" />
                                 VNPay
                             </label>
                         </div>
 
                         <div class="payment-option d-flex align-items-center">
-                            <input id="paymentMoMo" name="paymentMethod" type="radio" value="momo" class="me-2" style="margin-bottom: 0px;" />
+                            <input id="paymentMoMo" name="paymentMethod" type="radio" value="momo" class="me-2"
+                                   style="margin-bottom: 0px;" />
                             <label class="mb-0 d-flex align-items-center" for="paymentMoMo">
-                                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" style="width: 30px;" class="me-2" />
+                                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo"
+                                     style="width: 30px;" class="me-2" />
                                 MoMo
                             </label>
                         </div>
 
                     </div>
                 </div>
-
-                <button class="btn btn-disabled w-100 py-2" disabled id="checkoutBtn" type="button">
+                
+                <button class="btn btn-disabled w-100 py-2" disabled id="checkoutBtn" type="submit">
                     Tiến hành đặt hàng
                 </button>
+                
             </div>
-
-        </section>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-      const deliveryOptions = document.getElementById('deliveryOptions');
-      const deliveryAddress = document.getElementById('deliveryAddress');
-
-      function updateDeliveryAddressState() {
+    const deliveryOptions = document.getElementById('deliveryOptions');
+    const deliveryAddress = document.getElementById('deliveryAddress');
+    function updateDeliveryAddressState() {
         if (deliveryOptions.value === '1') {
-          // Giao hàng tận nơi - enable input
-          deliveryAddress.disabled = false;
-          deliveryAddress.classList.remove('disabled-address');
-          deliveryAddress.placeholder = "Nhập địa chỉ giao hàng";
+            // Giao hàng tận nơi - enable input
+            deliveryAddress.disabled = false;
+            deliveryAddress.classList.remove('disabled-address');
+            deliveryAddress.placeholder = "Nhập địa chỉ giao hàng";
         } else {
-          // Nhận hàng tại cửa hàng - disable input
-          deliveryAddress.disabled = true;
-          deliveryAddress.classList.add('disabled-address');
-          deliveryAddress.value = '';
-          deliveryAddress.placeholder = "";
+            // Nhận hàng tại cửa hàng - disable input
+            deliveryAddress.disabled = true;
+            deliveryAddress.classList.add('disabled-address');
+            deliveryAddress.value = '';
+            deliveryAddress.placeholder = "";
         }
-      }
+    }
+    deliveryOptions.addEventListener('change', updateDeliveryAddressState);
 
-      deliveryOptions.addEventListener('change', updateDeliveryAddressState);
+    updateDeliveryAddressState();
 
-      // Initialize on page load
-      updateDeliveryAddressState();
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const rentals = [
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var start = Model[i].StartDate?.ToString("yyyy-MM-dd") ?? "";
+            var end = Model[i].EndDate?.ToString("yyyy-MM-dd") ?? "";
+            <text>{start: "@start", end: "@end" }@((i < Model.Count - 1) ? "," : "")</text>
+        }];
 
-      const rentalDate = new Date("2025-04-16");
-      const returnDate = new Date("2025-04-19");
+    rentals.forEach((rental, index) => {
+        const rentalDate = new Date(rental.start);
+        const returnDate = new Date(rental.end);
 
-      const timeDiff = returnDate.getTime() - rentalDate.getTime();
-      const days = timeDiff / (1000 * 3600 * 24);
+        if (!isNaN(rentalDate) && !isNaN(returnDate)) {
+            const timeDiff = returnDate.getTime() - rentalDate.getTime();
+            const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-      document.getElementById('rentalDays').textContent =
-        `Số ngày thuê: ${days} ngày - (16/04/2025 - 19/04/2025)`;
+            const formattedStart = rentalDate.toLocaleDateString('vi-VN');
+            const formattedEnd = returnDate.toLocaleDateString('vi-VN');
 
-        // Lấy ngày từ Model (đảm bảo định dạng đúng cho JavaScript)
+            const el = document.getElementById(`rentalDays_${index}`);
+            if (el) {
+                el.textContent = `Số ngày thuê: ${days} - (${formattedStart} - ${formattedEnd})`;
+            }
+        }
+    });
+    });
 
-
-      // const timeDiff = returnDate.getTime() - rentalDate.getTime();
-      // const days = timeDiff / (1000 * 3600 * 24);
-
-      // // Định dạng ngày lại kiểu dd/MM/yyyy để hiển thị
-      // const formattedStart = rentalDate.toLocaleDateString('vi-VN');
-      // const formattedEnd = returnDate.toLocaleDateString('vi-VN');
-
-      // document.getElementById('rentalDays').textContent =
-      //     `Số ngày thuê: ${days} - (${formattedStart} - ${formattedEnd})`;
 
     const phoneInput = document.getElementById("phoneNumber");
     const deliverySelect = document.getElementById("deliveryOptions");
@@ -286,39 +332,40 @@
     const checkoutBtn = document.getElementById("checkoutBtn");
     const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
 
+    //
     function isPhoneValid() {
-      return phoneInput.value.trim().length > 9 && phoneInput.value.trim().length < 11 ;
+        return phoneInput.value.trim().length > 9 && phoneInput.value.trim().length < 11;
     }
 
     function isAddressValid() {
-      if (deliverySelect.value === "1") {
-        // Giao hàng tận nơi
-        return addressInput.value.trim().length > 0;
-      }
-      return true; // Nhận tại cửa hàng thì không cần địa chỉ
+        if (deliverySelect.value === "1") {
+            // Giao hàng tận nơi
+            return addressInput.value.trim().length > 0;
+        }
+        return true; // Nhận tại cửa hàng thì không cần địa chỉ
     }
 
     function isPaymentSelected() {
-      return Array.from(paymentRadios).some(r => r.checked);
+        return Array.from(paymentRadios).some(r => r.checked);
     }
 
     function updateButtonState() {
-      if (isPhoneValid() && isAddressValid() && isPaymentSelected()) {
-        checkoutBtn.disabled = false;
-        checkoutBtn.classList.remove("btn-disabled");
-        checkoutBtn.classList.add("btn-success");
-      } else {
-        checkoutBtn.disabled = true;
-        checkoutBtn.classList.add("btn-disabled");
-        checkoutBtn.classList.remove("btn-success");
-      }
+        if (isPhoneValid() && isAddressValid() && isPaymentSelected()) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove("btn-disabled");
+            checkoutBtn.classList.add("btn-success");
+        } else {
+            checkoutBtn.disabled = true;
+            checkoutBtn.classList.add("btn-disabled");
+            checkoutBtn.classList.remove("btn-success");
+        }
     }
 
     // Lắng nghe sự kiện thay đổi
     phoneInput.addEventListener("input", updateButtonState);
     deliverySelect.addEventListener("change", () => {
-      updateDeliveryAddressState(); // từ code gốc của bạn
-      updateButtonState();
+        updateDeliveryAddressState(); // từ code gốc của bạn
+        updateButtonState();
     });
     addressInput.addEventListener("input", updateButtonState);
     paymentRadios.forEach(radio => radio.addEventListener("change", updateButtonState));
@@ -327,7 +374,7 @@
     updateButtonState();
 
 
-        document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
         const deliverySelect = document.getElementById("deliveryOptions");
         const shippingFeeSection = document.getElementById("shippingFeeSection");
         const shippingFeeAmount = document.getElementById("shippingFeeAmount");
@@ -335,7 +382,7 @@
         const totalAmount = document.getElementById("totalAmount");
 
         const shippingFee = 50000;
-        const subtotal = 300000;
+        const subtotal = @subtotal;
 
         function formatCurrency(value) {
             return value.toLocaleString('vi-VN') + ' VND';
@@ -360,7 +407,5 @@
         deliverySelect.addEventListener("change", updateTotals);
         updateTotals(); // Gọi khi load trang
     });
-
-
 
 </script>

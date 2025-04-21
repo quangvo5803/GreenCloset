@@ -10,25 +10,30 @@ namespace BussinessLayer.Implement
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IVnPayService _vpnPayService;
         public IUserService User { get; private set; }
         public ICategoryService Category { get; private set; }
         public IProductService Product { get; private set; }
         public IItemImageService ItemImage { get; private set; }
         public ICartService Cart { get; private set; }
+        public IOrderService Order { get; private set; }
         public FacadeService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
-            IWebHostEnvironment webHostEnvironment
+            IWebHostEnvironment webHostEnvironment,
+            IVnPayService vnPayService
         )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
+            _vpnPayService = vnPayService;
             User = new UserService(_unitOfWork, _configuration);
             Category = new CategoryService(_unitOfWork);
             Product = new ProductService(_unitOfWork, _webHostEnvironment);
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);
             Cart = new CartService(_unitOfWork);
+            Order = new OrderService(_unitOfWork, _vpnPayService);           
         }
     }
 }

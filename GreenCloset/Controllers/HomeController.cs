@@ -39,6 +39,7 @@ public partial class HomeController : BaseController
     public IActionResult Shop(
         int page = 1,
         int pageSize = 12,
+        string? search = null,
         List<int>? categoryIds = null,
         List<ProductColor>? colors = null,
         List<SizeClother>? clotherSizes = null,
@@ -47,50 +48,20 @@ public partial class HomeController : BaseController
         double? priceTo = null
     )
     {
-        var productList = _facadeService.Product.GetAllProducts(
-            includeProperties: "Categories,ProductAvatar"
+        var productList = _facadeService.Product.GetProductsByFilter(
+            search,
+            categoryIds,
+            colors,
+            clotherSizes,
+            shoeSizes,
+            priceFrom,
+            priceTo
         );
-        if (categoryIds != null && categoryIds.Any())
-        {
-            productList = productList.Where(p =>
-                p.Categories != null && p.Categories.Any(c => categoryIds.Contains(c.Id))
-            );
-        }
-        if (colors != null && colors.Any())
-        {
-            productList = productList.Where(p =>
-                p.Color.HasValue && colors.Contains(p.Color.Value)
-            );
-        }
-        if ((clotherSizes != null && clotherSizes.Any()) || (shoeSizes != null && shoeSizes.Any()))
-        {
-            productList = productList.Where(p =>
-                (
-                    clotherSizes != null
-                    && clotherSizes.Any()
-                    && p.SizeClother != null
-                    && p.SizeClother.Any(s => clotherSizes.Contains(s))
-                )
-                || (
-                    shoeSizes != null
-                    && shoeSizes.Any()
-                    && p.SizeShoe != null
-                    && p.SizeShoe.Any(s => shoeSizes.Contains(s))
-                )
-            );
-        }
-        if (priceFrom.HasValue)
-        {
-            productList = productList.Where(p => p.Price >= priceFrom);
-        }
-        if (priceTo.HasValue)
-        {
-            productList = productList.Where(p => p.Price <= priceTo);
-        }
 
         //Pagination
         var paginatedProducts = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         var totalProducts = productList.Count();
+        ViewBag.Search = search;
         ViewBag.SelectedCategoryIds = categoryIds ?? new List<int>();
         ViewBag.SelectedColors = colors ?? new List<ProductColor>();
         ViewBag.SelectedClotherSizes = clotherSizes ?? new List<SizeClother>();

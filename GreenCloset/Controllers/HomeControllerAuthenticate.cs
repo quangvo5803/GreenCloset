@@ -1,9 +1,9 @@
 ﻿using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace GreenCloset.Controllers
 {
@@ -18,19 +18,16 @@ namespace GreenCloset.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var success = await _facadeService.User.Login(HttpContext, email, password);
-            if (!success)
+            var user = await _facadeService.User.Login(HttpContext, email, password);
+            if (user == null)
             {
-                TempData["error"] = "Email hoặc mật khẩu không đúng";
+                TempData["error"] = "Tài khoản hoặc mật khẩu không đúng!";
                 return View();
             }
-            var user = _facadeService.User.GetUserByEmail(email);
-            if (user == null || !user.IsEmailConfirmed)
+            if (user != null && !user.IsEmailConfirmed)
             {
-                {
-                    TempData["error"] = "Vui lòng xác thực email trước khi đang nhập";
-                    return View();
-                }
+                TempData["error"] = "Vui lòng xác thực email trước khi đang nhập!";
+                return View();
             }
             TempData["success"] = "Đăng nhập thành công";
             return user!.Role switch
@@ -45,13 +42,11 @@ namespace GreenCloset.Controllers
         [HttpGet("login-google")]
         public async Task LoginWithGoogle()
         {
-            await HttpContext.ChallengeAsync(
-                GoogleDefaults.AuthenticationScheme,
-                new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") }
-            );
+            var redirectUrl = Url.Action("GoogleResponse");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme, properties);
         }
 
-        [HttpGet]
         public async Task<IActionResult> GoogleResponse()
         {
             var authResult = await HttpContext.AuthenticateAsync(
@@ -59,21 +54,61 @@ namespace GreenCloset.Controllers
             );
             if (!authResult.Succeeded || authResult.Principal == null)
             {
+                TempData["error"] = "Đăng nhập không thành công";
                 return RedirectToAction("Login", "Home");
             }
-            var success = await _facadeService.User.LoginWithGoogle(
-                HttpContext,
-                authResult.Principal
-            );
-            if (!success)
+            var user = await _facadeService.User.LoginWithGoogle(HttpContext, authResult.Principal);
+            if (user == null)
             {
                 TempData["error"] = "Đăng nhập không thành công";
                 return RedirectToAction("Login", "Home");
             }
-
-            return RedirectToAction("Index", "Home");
+            TempData["success"] = "Đăng nhập thành công";
+            return user!.Role switch
+            {
+                UserRole.Admin => RedirectToAction("Index", "Admin"),
+                UserRole.Customer => RedirectToAction("Index", "Home"),
+                UserRole.Lessor => RedirectToAction("Index", "Home"),
+                _ => RedirectToAction("Index", "Home"),
+            };
         }
 
+        public async Task LoginWithFacebook()
+        {
+            var redirectUrl = Url.Action("FacebookResponse", "Home");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            await HttpContext.ChallengeAsync(FacebookDefaults.AuthenticationScheme, properties);
+        }
+
+        public async Task<IActionResult> FacebookResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+            if (!result.Succeeded || result.Principal == null)
+            {
+                TempData["error"] = "Đăng nhập không thành công";
+
+                return RedirectToAction("Login", "Home");
+            }
+
+            var user = await _facadeService.User.LoginWithFacebook(HttpContext, result.Principal);
+            if (user == null)
+            {
+                TempData["error"] = "Đăng nhập không thành công";
+                return RedirectToAction("Login", "Home");
+            }
+            TempData["success"] = "Đăng nhập thành công";
+            return user!.Role switch
+            {
+                UserRole.Admin => RedirectToAction("Index", "Admin"),
+                UserRole.Customer => RedirectToAction("Index", "Home"),
+                UserRole.Lessor => RedirectToAction("Index", "Home"),
+                _ => RedirectToAction("Index", "Home"),
+            };
+        }
+
+        [HttpGet]
         [HttpGet]
         public IActionResult Register(string? email)
         {

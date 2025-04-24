@@ -991,6 +991,27 @@ button {
     text-align: center;
 }
 
+.btn-outline-facebook {
+    color: #1877F2;
+    border: 1px solid #1877F2;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-facebook:hover,
+    .btn-outline-facebook:focus {
+        background-color: #1877F2;
+        color: #fff;
+        border-color: #1877F2;
+        text-decoration: none;
+    }
+
+    .btn-outline-facebook:active {
+        background-color: #155dc1;
+        border-color: #155dc1;
+        color: #fff;
+    }
+
 /* - Buttons Color Scheme
 ------------------------------------------------------------- */
 .btn.btn-dark {
@@ -2820,10 +2841,6 @@ a.blog-categories {
 
 /*----- Icon Box Section
 --------------------------------------------------------------*/
-#shipping-information {
-    padding-bottom: 100px;
-}
-
     #shipping-information .icon-box {
         display: flex;
         align-items: baseline;
@@ -2876,9 +2893,6 @@ a.blog-categories {
 
 /*----- Footer Bottom Section
 --------------------------------------------------------------*/
-#footer-bottom {
-    margin-bottom: 30px;
-}
 
     #footer-bottom p {
         margin-bottom: 0;

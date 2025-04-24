@@ -4,7 +4,7 @@
 <div class="search-popup">
     <div class="search-popup-container">
 
-        <form role="search" method="get" class="search-form" asp-action="Search" asp-controller="Home">
+        <form role="search" method="get" class="search-form" asp-action="Shop" asp-controller="Home">
             <input type="search" id="search-form" class="search-field" placeholder="Nhập và nhấn enter" value="" name="search" />
             <button type="submit" class="search-submit"><i class="icon icon-search"></i></button>
         </form>
@@ -16,12 +16,12 @@
             {
                 @foreach (var category in categories)
                 {
-                    <li style="padding: 10px"><a asp-action="" asp-controller="Hone" asp-asp-route-id="@category.Id" class="cat-list-item"> @category.CategoryName</a></li>
+                    <li class="cat-list-item"><a asp-action="Shop" asp-controller="Home" asp-route-categoryIds="@category.Id"> @category.CategoryName</a></li>
                 }
             }
             else
             {
-                <li style="padding: 10px"><a class="cat-list-item">Chưa có danh mục</a></li>
+                <li class="cat-list-item">Chưa có danh mục</li>
             }
 
         </ul>

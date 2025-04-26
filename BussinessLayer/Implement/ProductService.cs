@@ -228,6 +228,79 @@ namespace BussinessLayer.Implement
             return true;
         }
 
+        public IEnumerable<Product> GetProductsByFilter(
+            string? search,
+            List<int>? categoryIds,
+            List<ProductColor>? colors,
+            List<SizeClother>? clotherSizes,
+            List<int>? shoeSizes,
+            double? priceFrom,
+            double? priceTo
+        )
+        {
+            var productList = GetAllProducts(includeProperties: "Categories,ProductAvatar");
+            if (!string.IsNullOrEmpty(search))
+            {
+                productList = productList.Where(p =>
+                    p.Name.ToLower().Contains(search.ToLower())
+                    || (
+                        p.Categories != null
+                        && p.Categories.Any(c =>
+                            c.CategoryName.ToLower().Contains(search.ToLower())
+                        )
+                    )
+                    || (p.Description != null && p.Description.ToLower().Contains(search.ToLower()))
+                );
+            }
+
+            if (categoryIds != null && categoryIds.Any())
+            {
+                productList = productList.Where(p =>
+                    p.Categories != null && p.Categories.Any(c => categoryIds.Contains(c.Id))
+                );
+            }
+
+            if (colors != null && colors.Any())
+            {
+                productList = productList.Where(p =>
+                    p.Color != null && colors.Contains(p.Color.Value)
+                );
+            }
+
+            if (
+                (clotherSizes != null && clotherSizes.Any())
+                || (shoeSizes != null && shoeSizes.Any())
+            )
+            {
+                productList = productList.Where(p =>
+                    (
+                        clotherSizes != null
+                        && clotherSizes.Any()
+                        && p.SizeClother != null
+                        && p.SizeClother.Any(s => clotherSizes.Contains(s))
+                    )
+                    || (
+                        shoeSizes != null
+                        && shoeSizes.Any()
+                        && p.SizeShoe != null
+                        && p.SizeShoe.Any(s => shoeSizes.Contains(s))
+                    )
+                );
+            }
+
+            if (priceFrom.HasValue)
+            {
+                productList = productList.Where(p => p.Price >= priceFrom.Value);
+            }
+
+            if (priceTo.HasValue)
+            {
+                productList = productList.Where(p => p.Price <= priceTo.Value);
+            }
+
+            return productList;
+        }
+
         private async Task<string> SaveImageAsync(IFormFile file, string uploadFolder)
         {
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);

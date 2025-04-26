@@ -8,11 +8,13 @@
     var selectedShoeSizes = ViewBag.SelectedShoeSizes as List<int> ?? new List<int>();
     var priceFrom = ViewBag.PriceFrom as double? ?? null;
     var priceTo = ViewBag.PriceTo as double? ?? null;
+    var search = ViewBag.Search as string ?? string.Empty;
     var queryParams = new Dictionary<string, object>();
     queryParams.Add("categoryIds", selectedCategoryIds);    
     queryParams.Add("colors", selectedColors);
     queryParams.Add("clotherSizes", selectedClotherSizes);
     queryParams.Add("shoeSizes", selectedShoeSizes);
+    queryParams.Add("search", search);
     if (priceFrom != null)
     {
         queryParams.Add("priceFrom", priceFrom);
@@ -25,8 +27,13 @@
     }
 }
 <div id="shop-content" class="container py-4">
-    <h2 class="mb-4 text-center fw-bold">Danh Sách Sản Phẩm Cho Thuê</h2>
-
+    <div class="container-xxl py-5 bg-dark mb-5"
+         style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
+        <div class="container text-center my-5 pb-4">
+            <h1 class="text-dark"> @(!String.IsNullOrEmpty(search) ? "Tìm kiếm" : "Danh sách sản phẩm cho thuê")</h1>
+            <p class="text-dark fw-bold mb-3"> @(!String.IsNullOrEmpty(search) ? "Kết quả tìm kiếm: " + search : "")</p>
+        </div>
+    </div>
     <div class="row g-4">
         <!-- Filter Sidebar - Left Column -->
         <div class="col-lg-3">
@@ -34,7 +41,17 @@
                 <div class="card-header bg-primary text-white">
                     <h3 class="card-title text-white text-center mb-0 py-2">Lọc sản phẩm</h3>
                 </div>
-                <div class="card-body p-4">
+                <!--Searh string-->
+                <div class="card-body p-4">             
+                    <div class="mb-4 filter-section">
+                        <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('search-collapse')" style="cursor: pointer;">
+                            <span>Tìm kiếm</span>
+                            <i class="fa @(!String.IsNullOrEmpty(search)  ? "fa-minus" : "fa-plus")"></i>
+                        </h4>
+                        <div class="@(!String.IsNullOrEmpty(search) ? "" : "collapse")" id="search-collapse">
+                            <input type="text" class="form-control" placeholder="Nhập và bấm lọc" id="search-string" value="@search">
+                        </div>
+                    </div>
                     <!-- Category Filter -->
                     <div class="mb-4 filter-section">
                         <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('category-collapse')" style="cursor: pointer;">
@@ -122,21 +139,21 @@
                     <div class="mb-4 filter-section">
                         <h4 class="fw-bold mb-3 d-flex justify-content-between" onclick="toggleCollapse('price-collapse')" style="cursor: pointer;">
                             <span>Khoảng giá</span>
-                            <i class="fa @(priceFrom == null && priceFrom == null ? " fa-plus" : "fa-minus" )"></i>
+                            <i class="fa @(priceTo != null || priceFrom != null ? " fa-minus" : "fa-plus" )"></i>
                         </h4>
-                        <div class="@(priceFrom == null && priceFrom == null ? "collapse" : "")" id="price-collapse">
+                        <div class="@(priceTo != null || priceFrom != null ? "" : "collapse")" id="price-collapse">
                             <div class="row g-2">
                                 <div class="col">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Từ" id="price-from" value="@priceFrom">
+                                        <input type="number" step="1000" class="form-control" placeholder="Từ" id="price-from" value="@priceFrom">
                                     </div>
                                 </div>
                                 <div class="col-auto d-flex align-items-center">
-                                    <span>-</span>
+                                    <span class="mb-4">-</span>
                                 </div>
                                 <div class="col">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Đến" id="price-to" value="@priceFrom">
+                                        <input type="number" step="1000" class="form-control" placeholder="Đến" id="price-to" value="@priceTo">
                                     </div>
                                 </div>
                             </div>
@@ -198,7 +215,7 @@
 
 
             <!-- Pagination -->
-            @if (Model.ToList().Count >= 12)
+            @if (Model != null && Model.ToList().Count >= 12)
             {
                 <div class="mt-4">
                     <ul class="pagination justify-content-center">

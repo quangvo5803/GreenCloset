@@ -25,5 +25,14 @@ namespace BussinessLayer.Interface
             List<IFormFile>? gallery
         );
         bool DeleteProduct(Product product);
+        IEnumerable<Product> GetProductsByFilter(
+            string? search,
+            List<int>? categoryIds,
+            List<ProductColor>? colors,
+            List<SizeClother>? clotherSizes,
+            List<int>? shoeSizes,
+            double? priceFrom,
+            double? priceTo
+        );
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using BussinessLayer.Interface;
@@ -41,25 +42,25 @@ namespace BussinessLayer.Implement
             _unitOfWork.Save();
         }
 
-        public async Task<bool> Login(HttpContext httpContext, string email, string password)
+        public async Task<User?> Login(HttpContext httpContext, string email, string password)
         {
             var user = _unitOfWork.User.Get(u => u.Email == email);
             if (user == null || !PasswordHasher.VerifyPassword(password, user.PasswordHash))
             {
-                return false;
+                return null;
             }
 
             await SignInUser(httpContext, user);
-            return true;
+            return user;
         }
 
-        public async Task<bool> LoginWithGoogle(HttpContext httpContex, ClaimsPrincipal principal)
+        public async Task<User?> LoginWithGoogle(HttpContext httpContex, ClaimsPrincipal principal)
         {
             var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
             if (string.IsNullOrEmpty(email))
-                return false;
+                return null;
 
             var user = _unitOfWork.User.Get(u => u.Email == email);
             if (user == null)
@@ -79,7 +80,44 @@ namespace BussinessLayer.Implement
                 _emailSender.SendEmailAsync(email, subject, body).Wait();
             }
             await SignInUser(httpContex, user);
-            return true;
+            return user;
+        }
+
+        public async Task<User?> LoginWithFacebook(
+            HttpContext httpContex,
+            ClaimsPrincipal principal
+        )
+        {
+            var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var name =
+                principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                ?? principal.Identity?.Name;
+
+            if (string.IsNullOrEmpty(email))
+                return null;
+
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    UserName = name ?? email.Split('@')[0],
+                    PasswordHash = PasswordHasher.HashPassword("Abc123@"),
+                    Role = UserRole.Customer,
+                    IsEmailConfirmed = true,
+                };
+                _unitOfWork.User.Add(user);
+                _unitOfWork.Save();
+
+                string subject = "Xác nhận đăng kí tài khoản GreenCloset";
+                string body = GetComfirmationEmailGoogle();
+
+                await _emailSender.SendEmailAsync(email, subject, body);
+            }
+
+            await SignInUser(httpContex, user);
+            return user;
         }
 
         public bool Register(string email, string password)

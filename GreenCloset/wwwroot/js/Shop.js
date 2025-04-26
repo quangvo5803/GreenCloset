@@ -17,6 +17,7 @@ document.getElementById('apply-filter').addEventListener('click', function () {
     const selectedShoeSizes = [...document.querySelectorAll('input[name="SelectedShoeSizes"]:checked')].map(checkbox => checkbox.value);
     const priceFrom = document.getElementById('price-from').value;
     const priceTo = document.getElementById('price-to').value;
+    const searchString = document.getElementById('search-string').value;
 
     const params = new URLSearchParams();
     selectedCategories.forEach(category => params.append('categoryIds', category));
@@ -25,6 +26,7 @@ document.getElementById('apply-filter').addEventListener('click', function () {
     selectedShoeSizes.forEach(size => params.append('shoeSizes', size));
     if (priceFrom) params.append('priceFrom', priceFrom);
     if (priceTo) params.append('priceTo', priceTo);
+    if (searchString) params.append('search', searchString);
 
     window.location.href = `/Home/Shop?${params.toString()}`;
 });
@@ -37,5 +39,6 @@ document.getElementById('reset-filter').addEventListener('click', function () {
     // Reset price inputs
     document.getElementById('price-from').value = '';
     document.getElementById('price-to').value = '';
+    document.getElementById('search-string').value = '';
     window.location.href = `/Home/Shop`;
 });

@@ -8,10 +8,7 @@ namespace BussinessLayer.Interface
         Product? GetProductById(int id, string? includeProperties = null);
         IEnumerable<Product> GetAllProducts(string? includeProperties = null);
         IEnumerable<Product> GetFeatureProduct(string? includeProperties = null);
-        IEnumerable<Product> GetProductsByCategoryId(
-            int categoryId,
-            string? includeProperties = null
-        );
+        IEnumerable<Product> GetSimilarProduct(Product product, string? includeProperties = null);
         Task AddProduct(
             Product product,
             IEnumerable<int>? selectedCategories,

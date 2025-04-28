@@ -36,15 +36,21 @@ namespace BussinessLayer.Implement
                 .Take(8);
         }
 
-        public IEnumerable<Product> GetProductsByCategoryId(
-            int categoryId,
+        public IEnumerable<Product> GetSimilarProduct(
+            Product product,
             string? includeProperties = null
         )
         {
-            return _unitOfWork.Product.GetRange(
-                p => p.Categories != null && p.Categories.Any(c => c.Id == categoryId),
-                includeProperties
-            );
+            return _unitOfWork
+                .Product.GetAll(includeProperties)
+                .Where(p => p.Id != product.Id)
+                .Where(p =>
+                    product.Categories != null
+                    && p.Categories != null
+                    && p.Categories.Any(c => product.Categories.Contains(c))
+                )
+                .OrderBy(p => new Random().Next())
+                .Take(4);
         }
 
         public async Task AddProduct(

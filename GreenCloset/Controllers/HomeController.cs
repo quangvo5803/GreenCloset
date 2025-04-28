@@ -31,9 +31,20 @@ public partial class HomeController : BaseController
             id,
             includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
         );
-        ViewBag.PageNumber = pageNumber;
-        ViewBag.PageSize = pageSize;
-        return View(product);
+
+        if (product != null)
+        {
+            var similarProduct = _facadeService.Product.GetSimilarProduct(
+                product,
+                includeProperties: "ProductAvatar,Categories"
+            );
+            ViewBag.SimilarProducts = similarProduct;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            return View(product);
+        }
+        TempData["error"] = "Sản phẩm không tồn tại";
+        return RedirectToAction("Index", "Home");
     }
 
     public IActionResult Shop(

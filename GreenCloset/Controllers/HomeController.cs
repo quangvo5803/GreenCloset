@@ -49,21 +49,7 @@ public partial class HomeController : BaseController
 
     public IActionResult Shop(int page = 1, int pageSize = 12, ProductFilter? filter = null)
     {
-        var productList = _facadeService.Product.GetAllProducts(
-            includeProperties: "Categories,ProductAvatar"
-        );
-        if (filter != null)
-        {
-            productList = _facadeService.Product.GetProductsByFilter(
-                filter.Search,
-                filter.CategoryIds,
-                filter.Colors,
-                filter.ClotherSizes,
-                filter.ShoeSizes,
-                filter.PriceFrom,
-                filter.PriceTo
-            );
-        }
+        var productList = _facadeService.Product.GetProductsByFilter(filter);
 
         //Pagination
         var paginatedProducts = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();

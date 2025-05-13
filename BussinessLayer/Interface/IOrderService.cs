@@ -13,11 +13,11 @@ namespace BussinessLayer.Interface
     public interface IOrderService
     {
         IEnumerable<Cart> GetCartItems(List<int> selectedItems);
-        Order ProcessOrderByCOD(List<int> selectedItems, string phoneNumber, 
-            string deliveryOptions, string deliveryAddress, string paymentMethod, Guid userId);
+        Order? ProcessOrderByCOD(List<int> selectedItems, string phoneNumber, 
+            DeliveryOption deliveryOptions, string deliveryAddress, PaymentMethod paymentMethod, Guid userId);
 
-        string ProcessOrderByVnPay(List<int> selectedItems, string phoneNumber, string deliveryOptions, 
-            string deliveryAddress, string paymentMethod, Guid userId, HttpContext httpContext);
+        string? ProcessOrderByVnPay(List<int> selectedItems, string phoneNumber, DeliveryOption deliveryOptions, 
+            string deliveryAddress, PaymentMethod paymentMethod, Guid userId, HttpContext httpContext);
         bool VNPayReturn(IQueryCollection query, string userId, out int orderId);
     }
 }

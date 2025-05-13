@@ -13,18 +13,23 @@ namespace GreenCloset.Controllers
         public IActionResult Checkout(List<int> selectedItems)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
-            if (email == null) return RedirectToAction("Login", "Home");
-
-            var user = _facadeService.User.GetUserByEmail(email);
-            if (user == null) TempData["error"] = "userName null";
-
-            
+            if (email != null)
+            {
+                var user = _facadeService.User.GetUserByEmail(email);
+                if (user == null)
+                {
+                    TempData["error"] = "Không tìm thấy người dùng";
+                }
+                else {
+                    ViewBag.UserId = user.Id;
+                    ViewBag.userName = user.UserName;
+                }           
+            }
+      
             var productsInCart = _facadeService.Order.GetCartItems(selectedItems);
             if (!productsInCart.Any()) return RedirectToAction("Cart", "Customer");
 
             ViewBag.CartItems = productsInCart;
-            ViewBag.UserId = user.Id;
-            ViewBag.userName = user.UserName;
             return View(productsInCart);
         }
 
@@ -32,9 +37,9 @@ namespace GreenCloset.Controllers
         public IActionResult ProcessPayment(
             List<int> selectedItems,
             string phoneNumber,
-            string deliveryOptions,
+            DeliveryOption deliveryOptions,
             string deliveryAddress,
-            string paymentMethod)
+            PaymentMethod paymentMethod)
         {            
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -43,7 +48,7 @@ namespace GreenCloset.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            if(paymentMethod == "cod")
+            if(paymentMethod == PaymentMethod.PayByCash)
             {
                 var paymentByCOD = _facadeService.Order.ProcessOrderByCOD(
                     selectedItems, phoneNumber, deliveryOptions, 
@@ -57,7 +62,7 @@ namespace GreenCloset.Controllers
                 TempData["error"] = "Thanh toan by COD fail";
                 return RedirectToAction("Checkout", "Customer");
             }
-            else if(paymentMethod == "vnpay")
+            else if(paymentMethod == PaymentMethod.VNPay)
             {
                 var vnpayUrl = _facadeService.Order.ProcessOrderByVnPay(
                     selectedItems, phoneNumber, deliveryOptions, 
@@ -75,7 +80,7 @@ namespace GreenCloset.Controllers
         public IActionResult VNPayReturn()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (_facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId))
+            if (userId != null && _facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId))
             {
                 TempData["success"] = "Payment successful.";
                 return RedirectToAction("Cart", "Customer");

@@ -7,7 +7,8 @@ using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
-    [Authorize(Roles = "Customer")]
+    [Authorize]
+    [Authorize(Roles = "Customer")]  
     public partial class CustomerController : BaseController
     {
         public CustomerController(IFacedeService facedeService)
@@ -44,14 +45,14 @@ namespace GreenCloset.Controllers
         public IActionResult AddToCart(int productId, string? size, DateTime? startDate, DateTime? endDate, int count = 1)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
+            if(userId != null)
             {
                 _facadeService.Cart.AddToCart(productId, size, startDate, endDate, count, userId);
                 return Json(new { success = true, message = "Đã thêm sản phẩm vào giỏ hàng!" });
             }
-            catch (Exception ex)
+            else
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Không tìm thấy người dùng" });
             }
         }
 

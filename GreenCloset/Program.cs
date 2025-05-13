@@ -22,9 +22,9 @@ namespace GreenCloset
                 .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/User/Login";
-                    options.LogoutPath = "/User/Logout";
-                    options.AccessDeniedPath = "/User/AccessDenied";
+                    options.LoginPath = "/Home/Login";
+                    options.LogoutPath = "/Home/Logout";
+                    options.AccessDeniedPath = "/Home/AccessDenied";
                 })
                 //Login with Google
                 .AddGoogle(
@@ -40,22 +40,22 @@ namespace GreenCloset
                             return Task.CompletedTask;
                         };
                     }
-                )
-                //Login with Facebook
-                .AddFacebook(
-                    FacebookDefaults.AuthenticationScheme,
-                    options =>
-                    {
-                        options.AppId = builder.Configuration["FacebookKeys:AppID"];
-                        options.AppSecret = builder.Configuration["FacebookKeys:AppSecret"];
-                        options.Events.OnRemoteFailure = context =>
-                        {
-                            context.Response.Redirect("/Home/Login");
-                            context.HandleResponse();
-                            return Task.CompletedTask;
-                        };
-                    }
                 );
+                //Login with Facebook
+                //.AddFacebook(
+                //    FacebookDefaults.AuthenticationScheme,
+                //    options =>
+                //    {
+                //        options.AppId = builder.Configuration["FacebookKeys:AppID"];
+                //        options.AppSecret = builder.Configuration["FacebookKeys:AppSecret"];
+                //        options.Events.OnRemoteFailure = context =>
+                //        {
+                //            context.Response.Redirect("/Home/Login");
+                //            context.HandleResponse();
+                //            return Task.CompletedTask;
+                //        };
+                //    }
+                //);
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddAuthorization();
 
@@ -69,14 +69,12 @@ namespace GreenCloset
             builder.Services.AddScoped<IVnPayService, VnPayService>();
             builder.Services.AddSingleton<EmailSender>();
             
-            builder.Services.AddSession();
             var app = builder.Build();
 
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseSession();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"

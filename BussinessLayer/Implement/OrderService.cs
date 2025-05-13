@@ -1,9 +1,12 @@
 ﻿using BussinessLayer.Interface;
 using DataAccess.Models;
+using GreenCloset.Utility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Repository.Implement;
 using Repository.Interface;
 using System;
@@ -20,28 +23,35 @@ namespace BussinessLayer.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVnPayService _vpnPayService;
+        private readonly EmailSender _emailSender;
+        private readonly IConfiguration _configuration;
 
-
-        public OrderService(IUnitOfWork unitOfWork, IVnPayService vpnPayService)
+        public OrderService(IUnitOfWork unitOfWork, IVnPayService vpnPayService, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
             _vpnPayService = vpnPayService;
+            _emailSender = new EmailSender(
+            _configuration,
+                new LoggerFactory().CreateLogger<EmailSender>()
+            );
+           
         }
 
         //view checkout
         public IEnumerable<Cart> GetCartItems(List<int> selectedItems)
         {
             var productsInCart = _unitOfWork.Cart
-                .GetRange(c => selectedItems.Contains(c.Id), includeProperties: "Product")
+                .GetRange(c => selectedItems.Contains(c.Id), includeProperties: "Product,Product.ProductAvatar")
                 .ToList(); 
 
             return productsInCart;
         }
         //Payment by COD
-        public Order ProcessOrderByCOD(
+        public Order? ProcessOrderByCOD(
             List<int> selectedItems, string phoneNumber, 
-            string deliveryOptions, string deliveryAddress, 
-            string paymentMethod, Guid userId)
+            DeliveryOption deliveryOptions, string deliveryAddress,
+            PaymentMethod paymentMethod, Guid userId)
         {
             var productsInCart = _unitOfWork.Cart.GetRange
                 (c => selectedItems.Contains(c.Id), includeProperties: "Product").ToList();
@@ -58,7 +68,7 @@ namespace BussinessLayer.Implement
                     totalPrice += item.Product.Price * item.Count;
                 }
             }
-            if (deliveryOptions == "1")
+            if ( deliveryOptions == DeliveryOption.HomeDelivery)
             {
                 totalPrice += 50000;
             }
@@ -71,10 +81,10 @@ namespace BussinessLayer.Implement
         }
 
         //Payment by VnPay
-        public string ProcessOrderByVnPay(
+        public string? ProcessOrderByVnPay(
             List<int> selectedItems, string phoneNumber, 
-            string deliveryOptions, string deliveryAddress, 
-            string paymentMethod, Guid userId, HttpContext httpContext)
+            DeliveryOption deliveryOptions, string deliveryAddress, 
+            PaymentMethod paymentMethod, Guid userId, HttpContext httpContext)
         {
             var productsInCart = _unitOfWork.Cart.GetRange
                 (c => selectedItems.Contains(c.Id), includeProperties: "Product").ToList();
@@ -93,7 +103,7 @@ namespace BussinessLayer.Implement
                 }
             }
 
-            if (deliveryOptions == "1")
+            if (deliveryOptions == DeliveryOption.HomeDelivery)
             {
                 totalPrice += 50000;
             }
@@ -101,7 +111,7 @@ namespace BussinessLayer.Implement
             var order = CreateOrder(userId, totalPrice, phoneNumber, deliveryOptions, deliveryAddress, paymentMethod, productsInCart);
             _unitOfWork.Order.Add(order);
             _unitOfWork.Save();
-
+           
             var vnpayModel = new VnPaymentRequestModel
             {
                 OrderId = new Random().Next(10000, 100000),
@@ -113,6 +123,7 @@ namespace BussinessLayer.Implement
             
             return _vpnPayService.CreatePaymentUrl(httpContext, vnpayModel);
         }
+
 
         public bool VNPayReturn(IQueryCollection query, string userId, out int orderId)
         {
@@ -127,8 +138,11 @@ namespace BussinessLayer.Implement
                     _unitOfWork.Save();
 
                     var order = _unitOfWork.Order.Get(o => o.Id == failOrderId);
-                    _unitOfWork.Order.Remove(order);
-                    _unitOfWork.Save();
+                    if(order != null)
+                    {
+                        _unitOfWork.Order.Remove(order);
+                        _unitOfWork.Save();
+                    }
                 }
                 return false;
             }
@@ -157,9 +171,9 @@ namespace BussinessLayer.Implement
             Guid userId,
             double totalPrice,
             string phoneNumber,
-            string deliveryOptions,
+            DeliveryOption deliveryOptions,
             string deliveryAddress,
-            string paymentMethod,
+            PaymentMethod paymentMethod,
             IEnumerable<Cart> productsInCart)
         {
             return new Order
@@ -175,7 +189,7 @@ namespace BussinessLayer.Implement
                 {
                     ProductId = p.ProductId,
                     Quantity = p.Count,
-                    UnitPrice = p.Product.Price,
+                    UnitPrice = p.Product != null ? p.Product.Price : 0,
                 }).ToList()
             };
         }

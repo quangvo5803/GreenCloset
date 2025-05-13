@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
@@ -47,11 +48,12 @@ namespace GreenCloset.Controllers
             List<int> SelectedShoeSizes
         )
         {
-            if (ModelState.IsValid)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ModelState.IsValid && userId != null)
             {
                 product.SizeClother = SelectedClotherSizes;
                 product.SizeShoe = SelectedShoeSizes;
-                _facedeService.Product.AddProduct(product, selectedCategories, avatar, gallery);
+                _facedeService.Product.AddProduct(Guid.Parse(userId),product, selectedCategories, avatar, gallery);
                 TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }

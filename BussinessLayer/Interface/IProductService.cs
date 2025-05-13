@@ -10,6 +10,7 @@ namespace BussinessLayer.Interface
         IEnumerable<Product> GetFeatureProduct(string? includeProperties = null);
         IEnumerable<Product> GetSimilarProduct(Product product, string? includeProperties = null);
         Task AddProduct(
+            Guid userId,
             Product product,
             IEnumerable<int>? selectedCategories,
             IFormFile? avatar,

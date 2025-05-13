@@ -55,17 +55,15 @@ namespace BussinessLayer.Implement
         }
 
         public async Task AddProduct(
+            Guid userId,
             Product product,
             IEnumerable<int>? selectedCategories,
             IFormFile? avatar,
             List<IFormFile>? gallery
         )
         {
-            var userId = ClaimsPrincipal.Current?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId != null)
-            {
-                product.UserId = Guid.Parse(userId);
-            }
+
+            product.UserId = userId;
             // Add product
             _unitOfWork.Product.Add(product);
             if (selectedCategories != null)

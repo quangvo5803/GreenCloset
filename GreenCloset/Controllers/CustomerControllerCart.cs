@@ -21,7 +21,7 @@ namespace GreenCloset.Controllers
             {
                 return RedirectToAction("Login", "Home");
             }
-            var cartResult = _facadeService.Cart.GetAllCartById(userId);
+            var cartResult = _facadeService.Cart.GetAllCartGroupedByProductUser(userId);
             return View(cartResult);
         }
 

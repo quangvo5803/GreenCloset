@@ -18,13 +18,19 @@ namespace BussinessLayer.Implement
             _unitOfWork = unitOfWork;
         }
 
-        public IEnumerable<Cart> GetAllCartById(Guid userId)
+        public IEnumerable<IGrouping<Guid?, Cart>> GetAllCartGroupedByProductUser(Guid userId)
         {
-            return _unitOfWork.Cart.GetRange(
+            var carts = _unitOfWork.Cart.GetRange(
                 c => c.UserId == userId,
-                includeProperties: "Product,Product.ProductAvatar"
-            ).OrderByDescending(c => c.Id).ToList(); 
+                includeProperties: "Product,Product.User"
+            ).OrderByDescending(c => c.Id).ToList();
+
+            // Group by Product.UserId (assuming Product.UserId is a Guid)
+            var groupedCarts = carts.GroupBy(c => c.Product?.UserId);
+
+            return groupedCarts;
         }
+
 
         public void DeleteCart(Guid userId, int productId)
         {

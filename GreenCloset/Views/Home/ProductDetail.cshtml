@@ -2,18 +2,19 @@
 @Html.AntiForgeryToken()
 @{
     ViewData["Title"] = "Product Detail";
-    var feedbacks = ViewBag.Feedbacks as List<Feedback>;
+    var feedbacks = ViewBag.Feedbacks as IEnumerable<Feedback>;
     double avgRating = feedbacks != null && feedbacks.Any() ? feedbacks.Average(f => f.FeedbackStars) : 0;
     int totalReviews = feedbacks != null && feedbacks.Any() ?  feedbacks.Count() : 0;
     int thumbnail = 0;
     int totalPages = (int)Math.Ceiling((double)totalReviews / ViewBag.PageSize);
     int currentPage = ViewBag.PageNumber;
     var colorHex = GetColorHex(Model.Color);
+    var similarProducts = ViewBag.SimilarProducts as IEnumerable<Product>;
 }
 <section>
     <div id="pageContainer" data-page-type="product-detail">
         <div class="container-xxl py-5 bg-dark mb-5"
-             style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
+        style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
             <div class="container text-center my-5 pb-4">
                 <h1 class="text-dark mb-3">Thông tin chi tiết</h1>
                 <nav aria-label="breadcrumb">
@@ -69,9 +70,9 @@
                             {
                                 <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                                     <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
-                                         src="/image/products/@image.ImagePath"
-                                         data-bs-target="#imageCarousel"
-                                         data-bs-slide-to="@thumbnail" />
+                                    src="/image/products/@image.ImagePath"
+                                    data-bs-target="#imageCarousel"
+                                    data-bs-slide-to="@thumbnail" />
                                 </div>
                                 thumbnail++;
                             }
@@ -80,9 +81,9 @@
                         {
                             <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                                 <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
-                                     src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
-                                     data-bs-target="#imageCarousel"
-                                     data-bs-slide-to="@thumbnail" />
+                                src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                data-bs-target="#imageCarousel"
+                                data-bs-slide-to="@thumbnail" />
                             </div>
                         }
                     </div>
@@ -115,42 +116,41 @@
                             </span>
                         </div>
 
-                    <div class="mb-3" style="font-size:20px">
-                        <h3>
-                            Giá thuê: @Model.Price.ToString("C", new CultureInfo("vi-VN"))                          
-                        </h3>
-                        @if(Model.DepositPrice != 0)
-                        {
+                        <div class="mb-3" style="font-size:20px">
                             <h3>
-                                Giá cọc: @Model.DepositPrice.ToString("C", new CultureInfo("vi-VN"))
+                                Giá thuê: @Model.Price.ToString("C", new CultureInfo("vi-VN"))                          
                             </h3>
-                        }
-                        @if (Model.BuyPrice != 0)
+                            @if(Model.DepositPrice != 0)
+                            {
+                                <h3>
+                                    Giá cọc: @Model.DepositPrice.ToString("C", new CultureInfo("vi-VN"))
+                                </h3>
+                            }
+                            @if (Model.BuyPrice != 0)
+                            {
+                                <h3>
+                                    Giá mua: @Model.BuyPrice.ToString("C", new CultureInfo("vi-VN"))
+                                </h3>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <h4>
+                                Màu sắc:
+                            </h4>
+                            <input type="radio" class="form-check-input d-none color-radio" checked />
+                            <label class="color-circle position-relative" style="background-color: @colorHex;" title="@Model.Color">
+                            </label>
+                        </div>
+                        @if(Model.Categories != null)
                         {
-                            <h3>
-                                Giá mua: @Model.BuyPrice.ToString("C", new CultureInfo("vi-VN"))
-                            </h3>
-                        }
-                    </div>
-                    <div class="mb-3">
-                        <h4>
-                            Màu sắc:
-                        </h4>
-                        <input type="radio" class="form-check-input d-none color-radio" checked />
-                        <label class="color-circle position-relative" style="background-color: @colorHex;" title="@Model.Color">
-                            <span class="checkmark">✔</span>
-                        </label>
-                    </div>
-                    @if(Model.Categories != null)
-                    {
-                        <dl class="row">
-                            <dt class="col-3">Danh mục:</dt>
-                            <dd class="col-9">
-                                @foreach (var category in Model.Categories)
-                                {
-                                    <span class="badge bg-primary rounded-pill me-1">@category.CategoryName</span>
-                                }
-                            </dd>
+                            <dl class="row">
+                                <dt class="col-3">Danh mục:</dt>
+                                <dd class="col-9">
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <span class="badge bg-primary rounded-pill me-1">@category.CategoryName</span>
+                                    }
+                                </dd>
 
                             </dl>
                         }
@@ -221,8 +221,8 @@
                             </div>
                         </div>
                         <a href="#"
-                           class="btn btn-primary shadow-0 add-to-cart-btn"
-                           data-product-id="@Model.Id">
+                        class="btn btn-primary shadow-0 add-to-cart-btn"
+                        data-product-id="@Model.Id">
                             <i class="me-1 fa fa-shopping-basket"></i>
                             Thêm vào giỏ hàng
                         </a>
@@ -231,7 +231,7 @@
             </div>
         </div>
     </div>
-    
+
 </section>
 <!-- content -->
 
@@ -280,58 +280,58 @@
                         </div>
                         <div class="tab-pane fade" id="feedback" role="tabpanel" aria-labelledby="feedback">
                             <!--Review -->
-                                @if (feedbacks != null && feedbacks.Any())
-                                {
-                                    <div class="review-item border-bottom pb-3 mb-3">
+                            @if (feedbacks != null && feedbacks.Any())
+                            {
+                                <div class="review-item border-bottom pb-3 mb-3">
 
-                                        @foreach(var f in feedbacks)
-                                        {
-                                            <div class="d-flex justify-content-between">
-                                                <div class="review-header">
-                                                    <strong>@(f.User?.UserName ?? f.User?.Email)</strong>
-                                                    <div class="rating">
-                                                        @for (int i = 1; i <= 5; i++)
-                                                        {
-                                                            if (i <= f.FeedbackStars)
-                                                            {
-                                                                <i class="fa fa-star"></i>
-                                                            }
-                                                            else if (i - 0.5 <= f.FeedbackStars)
-                                                            {
-                                                                <i class="fa fa-star-half-stroke"></i>
-                                                            }
-                                                            else
-                                                            {
-                                                                <i class="fa-regular fa-star"></i>
-                                                            }
-                                                        }
-                                                    </div>
-                                                </div>
-                                            <small class="text-muted">@f.CreatedAt.ToString("dd/MM/yyyy")</small>
-                                            </div>
-                                            <p class="mt-2">@f.FeedbackContent</p>
-
-                                            <!-- Review Images -->
-                                            @if (f.Images != null)
-                                            {
-                                                <div class="review-images">
-                                                    @foreach (var image in f.Images)
+                                    @foreach(var f in feedbacks)
+                                    {
+                                        <div class="d-flex justify-content-between">
+                                            <div class="review-header">
+                                                <strong>@(f.User?.UserName ?? f.User?.Email)</strong>
+                                                <div class="rating">
+                                                    @for (int i = 1; i <= 5; i++)
                                                     {
-                                                        <a class="venobox" data-gall="gallery01" data-fitview="true" href="/img/products/@image.ImagePath">
-                                                            <img src="/img/products/@image.ImagePath" alt="Review Image" />
-                                                        </a>
+                                                        if (i <= f.FeedbackStars)
+                                                        {
+                                                            <i class="fa fa-star"></i>
+                                                        }
+                                                        else if (i - 0.5 <= f.FeedbackStars)
+                                                        {
+                                                            <i class="fa fa-star-half-stroke"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa-regular fa-star"></i>
+                                                        }
                                                     }
                                                 </div>
-                                            }
+                                            </div>
+                                            <small class="text-muted">@f.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                        </div>
+                                        <p class="mt-2">@f.FeedbackContent</p>
+
+                                        <!-- Review Images -->
+                                        @if (f.Images != null)
+                                        {
+                                            <div class="review-images">
+                                                @foreach (var image in f.Images)
+                                                {
+                                                    <a class="venobox" data-gall="gallery01" data-fitview="true" href="/img/products/@image.ImagePath">
+                                                        <img src="/img/products/@image.ImagePath" alt="Review Image" />
+                                                    </a>
+                                                }
+                                            </div>
                                         }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <p>
-                                       Chưa có đánh giá
-                                    </p>
-                                }
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p>
+                                    Chưa có đánh giá
+                                </p>
+                            }
 
                             <!--Pagenation -->
                             <nav aria-label="Review pagination" class="d-flex justify-content-center">
@@ -362,7 +362,47 @@
                     </div>
                     <!-- Pills content -->
                 </div>
-            </div>         
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="border rounded-3 px-4 py-3 bg-light h-100 shadow-sm">
+                    <h3 class="mb-3 fw-bold border-bottom pb-2">Sản phẩm tương tự</h3>
+                    @if (similarProducts != null && similarProducts.Any())
+                    {
+                        <div class="similar-products">
+                            @foreach (var product in similarProducts)
+                            {
+                                <a asp-action="ProductDetail" asp-route-id="@product.Id" class="text-decoration-none">
+                                    <div class="mb-3 d-flex align-items-center border-bottom pb-3 product-item" style="cursor: pointer;">
+                                        <div class="flex-shrink-0">
+                                            @if (product.ProductAvatar != null)
+                                            {
+                                                <img src="/img/products/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                                     class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                                     alt="@product.Name" class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                                            }
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1 fw-semibold text-truncate text-body">@product.Name</h4>
+                                            <p class="mb-0 text-muted fw-bold">@product.Price.ToString("C", new CultureInfo("vi-VN"))</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-search fs-3 text-muted"></i>
+                            <p class="mt-2 mb-0 text-muted">Không có sản phẩm tương tự</p>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </section>

@@ -31,43 +31,30 @@ public partial class HomeController : BaseController
             id,
             includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
         );
-        ViewBag.PageNumber = pageNumber;
-        ViewBag.PageSize = pageSize;
-        return View(product);
+
+        if (product != null)
+        {
+            var similarProduct = _facadeService.Product.GetSimilarProduct(
+                product,
+                includeProperties: "ProductAvatar,Categories"
+            );
+            ViewBag.SimilarProducts = similarProduct;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            return View(product);
+        }
+        TempData["error"] = "Sản phẩm không tồn tại";
+        return RedirectToAction("Index", "Home");
     }
 
-    public IActionResult Shop(
-        int page = 1,
-        int pageSize = 12,
-        string? search = null,
-        List<int>? categoryIds = null,
-        List<ProductColor>? colors = null,
-        List<SizeClother>? clotherSizes = null,
-        List<int>? shoeSizes = null,
-        double? priceFrom = null,
-        double? priceTo = null
-    )
+    public IActionResult Shop(int page = 1, int pageSize = 12, ProductFilter? filter = null)
     {
-        var productList = _facadeService.Product.GetProductsByFilter(
-            search,
-            categoryIds,
-            colors,
-            clotherSizes,
-            shoeSizes,
-            priceFrom,
-            priceTo
-        );
+        var productList = _facadeService.Product.GetProductsByFilter(filter);
 
         //Pagination
         var paginatedProducts = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         var totalProducts = productList.Count();
-        ViewBag.Search = search;
-        ViewBag.SelectedCategoryIds = categoryIds ?? new List<int>();
-        ViewBag.SelectedColors = colors ?? new List<ProductColor>();
-        ViewBag.SelectedClotherSizes = clotherSizes ?? new List<SizeClother>();
-        ViewBag.SelectedShoeSizes = shoeSizes ?? new List<int>();
-        ViewBag.PriceFrom = priceFrom;
-        ViewBag.PriceTo = priceTo;
+        ViewBag.Filter = filter;
         ViewBag.CurrentPage = page;
         ViewBag.TotalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
         return View(paginatedProducts);

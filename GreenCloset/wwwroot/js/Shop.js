@@ -20,13 +20,13 @@ document.getElementById('apply-filter').addEventListener('click', function () {
     const searchString = document.getElementById('search-string').value;
 
     const params = new URLSearchParams();
-    selectedCategories.forEach(category => params.append('categoryIds', category));
-    selectedColors.forEach(color => params.append('colors', color));
-    selectedClotherSizes.forEach(size => params.append('clotherSizes', size));
-    selectedShoeSizes.forEach(size => params.append('shoeSizes', size));
-    if (priceFrom) params.append('priceFrom', priceFrom);
-    if (priceTo) params.append('priceTo', priceTo);
-    if (searchString) params.append('search', searchString);
+    selectedCategories.forEach(category => params.append('CategoryIds', category));
+    selectedColors.forEach(color => params.append('Colors', color));
+    selectedClotherSizes.forEach(size => params.append('ClotherSizes', size));
+    selectedShoeSizes.forEach(size => params.append('ShoeSizes', size));
+    if (priceFrom) params.append('PriceFrom', priceFrom);
+    if (priceTo) params.append('PriceTo', priceTo);
+    if (searchString) params.append('Search', searchString);
 
     window.location.href = `/Home/Shop?${params.toString()}`;
 });

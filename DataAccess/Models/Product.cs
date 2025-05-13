@@ -36,11 +36,15 @@ namespace DataAccess.Models
         public int RentalCount { get; set; } = 0;
         public IEnumerable<SizeClother>? SizeClother { get; set; }
         public List<int>? SizeShoe { get; set; }
+        public Guid? UserId { get; set; }
 
         //Foreign key
 
         [ForeignKey("ProductAvatarId")]
         public ItemImage? ProductAvatar { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         //Navigation property
         public virtual ICollection<Category>? Categories { get; set; }

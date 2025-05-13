@@ -1,11 +1,12 @@
 ﻿@model IEnumerable<Product>
 @{
     ViewData["Title"] = "Sản phẩm";
+    var filter = ViewBag.Filter as ProductFilter;
     var categories = ViewBag.Categories as IEnumerable<Category>;
-    var selectedCategoryIds = ViewBag.SelectedCategoryIds as List<int> ?? new List<int>();
-    var selectedColors = ViewBag.SelectedColors as List<ProductColor> ?? new List<ProductColor>();
-    var selectedClotherSizes = ViewBag.SelectedClotherSizes as List<SizeClother> ?? new List<SizeClother>();
-    var selectedShoeSizes = ViewBag.SelectedShoeSizes as List<int> ?? new List<int>();
+    var selectedCategoryIds = filter?.CategoryIds as List<int> ?? new List<int>();
+    var selectedColors = filter?.Colors as List<ProductColor> ?? new List<ProductColor>();
+    var selectedClotherSizes = filter?.ClotherSizes as List<SizeClother> ?? new List<SizeClother>();
+    var selectedShoeSizes = filter?.ShoeSizes as List<int> ?? new List<int>();
     var priceFrom = ViewBag.PriceFrom as double? ?? null;
     var priceTo = ViewBag.PriceTo as double? ?? null;
     var search = ViewBag.Search as string ?? string.Empty;

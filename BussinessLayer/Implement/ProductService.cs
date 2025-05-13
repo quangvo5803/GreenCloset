@@ -1,4 +1,5 @@
-﻿using BussinessLayer.Interface;
+﻿using System.Security.Claims;
+using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,15 +37,21 @@ namespace BussinessLayer.Implement
                 .Take(8);
         }
 
-        public IEnumerable<Product> GetProductsByCategoryId(
-            int categoryId,
+        public IEnumerable<Product> GetSimilarProduct(
+            Product product,
             string? includeProperties = null
         )
         {
-            return _unitOfWork.Product.GetRange(
-                p => p.Categories != null && p.Categories.Any(c => c.Id == categoryId),
-                includeProperties
-            );
+            return _unitOfWork
+                .Product.GetAll(includeProperties)
+                .Where(p => p.Id != product.Id)
+                .Where(p =>
+                    product.Categories != null
+                    && p.Categories != null
+                    && p.Categories.Any(c => product.Categories.Contains(c))
+                )
+                .OrderBy(p => new Random().Next())
+                .Take(4);
         }
 
         public async Task AddProduct(
@@ -54,6 +61,11 @@ namespace BussinessLayer.Implement
             List<IFormFile>? gallery
         )
         {
+            var userId = ClaimsPrincipal.Current?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId != null)
+            {
+                product.UserId = Guid.Parse(userId);
+            }
             // Add product
             _unitOfWork.Product.Add(product);
             if (selectedCategories != null)
@@ -228,74 +240,62 @@ namespace BussinessLayer.Implement
             return true;
         }
 
-        public IEnumerable<Product> GetProductsByFilter(
-            string? search,
-            List<int>? categoryIds,
-            List<ProductColor>? colors,
-            List<SizeClother>? clotherSizes,
-            List<int>? shoeSizes,
-            double? priceFrom,
-            double? priceTo
-        )
+        public IEnumerable<Product> GetProductsByFilter(ProductFilter? filter = null)
         {
             var productList = GetAllProducts(includeProperties: "Categories,ProductAvatar");
-            if (!string.IsNullOrEmpty(search))
+            if (filter != null)
             {
-                productList = productList.Where(p =>
-                    p.Name.ToLower().Contains(search.ToLower())
-                    || (
-                        p.Categories != null
-                        && p.Categories.Any(c =>
-                            c.CategoryName.ToLower().Contains(search.ToLower())
+                if (!string.IsNullOrEmpty(filter.Search))
+                {
+                    productList = productList.Where(p =>
+                        p.Name.ToLower().Contains(filter.Search.ToLower())
+                        || (
+                            p.Categories != null
+                            && p.Categories.Any(c =>
+                                c.CategoryName.ToLower().Contains(filter.Search.ToLower())
+                            )
                         )
-                    )
-                    || (p.Description != null && p.Description.ToLower().Contains(search.ToLower()))
-                );
-            }
+                        || (
+                            p.Description != null
+                            && p.Description.ToLower().Contains(filter.Search.ToLower())
+                        )
+                    );
+                }
 
-            if (categoryIds != null && categoryIds.Any())
-            {
-                productList = productList.Where(p =>
-                    p.Categories != null && p.Categories.Any(c => categoryIds.Contains(c.Id))
-                );
-            }
+                if (filter.CategoryIds != null && filter.CategoryIds.Any())
+                {
+                    productList = productList.Where(p =>
+                        p.Categories != null
+                        && p.Categories.Any(c => filter.CategoryIds.Contains(c.Id))
+                    );
+                }
 
-            if (colors != null && colors.Any())
-            {
-                productList = productList.Where(p =>
-                    p.Color != null && colors.Contains(p.Color.Value)
-                );
-            }
+                if (filter.Colors != null && filter.Colors.Any())
+                {
+                    productList = productList.Where(p =>
+                        p.Color != null && filter.Colors.Contains(p.Color.Value)
+                    );
+                }
 
-            if (
-                (clotherSizes != null && clotherSizes.Any())
-                || (shoeSizes != null && shoeSizes.Any())
-            )
-            {
-                productList = productList.Where(p =>
-                    (
-                        clotherSizes != null
-                        && clotherSizes.Any()
-                        && p.SizeClother != null
-                        && p.SizeClother.Any(s => clotherSizes.Contains(s))
-                    )
-                    || (
-                        shoeSizes != null
-                        && shoeSizes.Any()
-                        && p.SizeShoe != null
-                        && p.SizeShoe.Any(s => shoeSizes.Contains(s))
-                    )
-                );
-            }
+                if ((filter.ClotherSizes?.Any() ?? false) || (filter.ShoeSizes?.Any() ?? false))
+                {
+                    productList = productList.Where(p =>
+                        (filter.ClotherSizes?.Any() ?? false)
+                            && (p.SizeClother?.Any(s => filter.ClotherSizes.Contains(s)) ?? false)
+                        || (filter.ShoeSizes?.Any() ?? false)
+                            && (p.SizeShoe?.Any(s => filter.ShoeSizes.Contains(s)) ?? false)
+                    );
+                }
 
-            if (priceFrom.HasValue)
-            {
-                productList = productList.Where(p => p.Price >= priceFrom.Value);
-            }
+                if (filter.PriceFrom.HasValue)
+                {
+                    productList = productList.Where(p => p.Price >= filter.PriceFrom.Value);
+                }
 
-            if (priceTo.HasValue)
-            {
-                productList = productList.Where(p => p.Price <= priceTo.Value);
+                if (filter.PriceFrom.HasValue)
+                {
+                    productList = productList.Where(p => p.Price <= filter.PriceFrom.Value);
+                }
             }
 
             return productList;

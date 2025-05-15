@@ -17,11 +17,11 @@ namespace DataAccess.Models
         public double TotalPrice { get; set; }
 
         [Required]
-        public string PaymentMethod { get; set; } // "PayByCash" hoặc "VNPay"
+        public PaymentMethod PaymentMethod { get; set; } // "PayByCash" hoặc "VNPay"
 
         [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
-
+        public DeliveryOption DeliveryOption { get; set; }
         public string? ShippingAddress { get; set; }
         public string? PhoneNumber { get; set; }
 
@@ -36,5 +36,18 @@ namespace DataAccess.Models
         Pending,
         Completed,
         Cancelled,
+    }
+
+    public enum PaymentMethod
+    {
+        PayByCash,
+        VNPay,
+        MoMo
+    }
+
+    public enum DeliveryOption
+    {
+        HomeDelivery,
+        StorePickup
     }
 }

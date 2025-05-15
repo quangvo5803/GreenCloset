@@ -20,6 +20,8 @@ namespace DataAccess.Models
         [Required]
         public double UnitPrice { get; set; }
 
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         //Foreign Key
 
         [ForeignKey("OrderId")]

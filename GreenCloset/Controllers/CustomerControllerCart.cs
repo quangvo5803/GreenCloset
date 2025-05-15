@@ -1,11 +1,14 @@
 ﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
+    [Authorize]
+    [Authorize(Roles = "Customer")]  
     public partial class CustomerController : BaseController
     {
         public CustomerController(IFacedeService facedeService)
@@ -18,7 +21,7 @@ namespace GreenCloset.Controllers
             {
                 return RedirectToAction("Login", "Home");
             }
-            var cartResult = _facadeService.Cart.GetAllCartById(userId);
+            var cartResult = _facadeService.Cart.GetAllCartGroupedByProductUser(userId);
             return View(cartResult);
         }
 
@@ -42,14 +45,14 @@ namespace GreenCloset.Controllers
         public IActionResult AddToCart(int productId, string? size, DateTime? startDate, DateTime? endDate, int count = 1)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
+            if(userId != null)
             {
                 _facadeService.Cart.AddToCart(productId, size, startDate, endDate, count, userId);
                 return Json(new { success = true, message = "Đã thêm sản phẩm vào giỏ hàng!" });
             }
-            catch (Exception ex)
+            else
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Không tìm thấy người dùng" });
             }
         }
 

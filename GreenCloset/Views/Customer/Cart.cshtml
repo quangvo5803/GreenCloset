@@ -1,79 +1,80 @@
-﻿@model List<DataAccess.Models.Cart>
+﻿@model IEnumerable<IGrouping<Guid?, Cart>>
 @Html.AntiForgeryToken()
 @{
     ViewData["Title"] = "Cart";
 }
 <style>
     :root {
-        --main-color: rgb(141, 198, 63);
-        --main-hover: rgb(121, 178, 53); 
-        --text-color: #333;
-        --bg-color: #fff;
+    --main-color: rgb(141, 198, 63);
+    --main-hover: rgb(121, 178, 53); 
+    --text-color: #333;
+    --bg-color: #fff;
     }
     .product-total {
-        min-width: 120px;
-        text-align: right;
-        font-weight: 500;
-        display: flex;  
-        margin-left:40px;
+    min-width: 120px;
+    text-align: right;
+    font-weight: 500;
+    display: flex;  
+    margin-left:40px;
     }
 
     #sticky-footer {
-        box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.1);
-        z-index: 999;
-        background-color: var(--bg-color);
+    box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    background-color: var(--bg-color);
     }
 
     .img-thumbnail {
-        object-fit: cover;
-        border: none;
+    object-fit: cover;
+    border: none;
     }
 
     .input-group .btn {
-        width: 30px;
-        padding: 0;
-        font-size: 1rem;
-        color: var(--main-color);
-        border-color: var(--main-color);
+    width: 30px;
+    padding: 0;
+    font-size: 1rem;
+    color: var(--main-color);
+    border-color: var(--main-color);
     }
 
     .input-group .btn:hover {
-        background-color: var(--main-color);
-        color: white;
+    background-color: var(--main-color);
+    color: white;
     }
 
     .input-group .form-control {
-        padding: 0.25rem 0.5rem;
-        height: auto;
+    padding: 0.25rem 0.5rem;
+    height: auto;
     }
 
     .btn-danger {
-        background-color: var(--main-color);
-        border-color: var(--main-color);
+    background-color: var(--main-color);
+    border-color: var(--main-color);
+
     }
 
     .text-dangers {
-        color: var(--main-color) !important;
+    color: var(--main-color) !important;
     }
 
     .shadow-sm {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     }
 
     .size-option.selected-size {
-        background-color: rgb(141, 198, 63);
-        color: white;
+    background-color: rgb(141, 198, 63);
+    color: white;
     }
 
     .size-popup {
-        position: absolute;
-        z-index: 1000;
-        min-width: 200px;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        padding: 10px;
+    position: absolute;
+    z-index: 1000;
+    min-width: 200px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 10px;
     }
 
 </style>
@@ -81,145 +82,175 @@
 @if (!Model.Any())
 {
     <div class="d-flex justify-content-center align-items-center vh-100">
-        <a href="~/Home" class="btn text-white px-4 py-2" style="background:rgb(141, 198, 63);">
+        <a asp-controller="Home" asp-action="Shop" class="btn text-white px-4 py-2" style="background:rgb(141, 198, 63);">
             Đi mua sắm nào
         </a>
     </div>
 }else{
-<div class="bg-light py-4">
-    <div class="container">
-        <div class="bg-white p-4 rounded shadow-sm">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
-                <div class="d-flex align-items-center gap-2">
-                    <label class="d-flex align-items-center m-0" for="selectAllProducts">
-                        <strong class="m-0" id="selectAllProducts">Sản Phẩm</strong>
-                    </label>
-                </div>
-                <div class="d-flex gap-5">
-                    <span>Đơn Giá</span>
-                    <span>Số Lượng</span>
-                    <span>Thành Tiền</span>
-                    <span>Thao Tác</span>
-                </div>
-            </div>
 
-
-            <!-- Shop Header 
-            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="checkbox" class="shopCheckbox" />
-                    
-                    <span class="text-danger">Trail Echo</span>
-                </div>
-            </div>
-            -->
-            <!-- Product Rows -->
-            @foreach (var item in Model)
-            {
-                <div class="border-bottom py-3 product-row" data-cart-id="@item.Id" data-product-id="@item.Product.Id">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                                <input type="checkbox" class="productCheckbox align-self-center" data-price="@item.Product.Price"/>
-                            <div class="d-flex align-items-center gap-3">
-                                <img src="~/image/headerlogo.png" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
-                                <div>
-                                    <p class="fw-semibold mb-1">@item.Product.Name</p>
-                                    <p class="text-muted small">
-                                        Kích Cỡ:
-                                        <span id="size-display-@item.Id">
-                                            @if (item.SizeShoe.HasValue)
-                                            {
-                                                @item.SizeShoe
-                                            }
-                                            else if (item.SizeClother.HasValue)
-                                            {
-                                                @item.SizeClother
-                                            }
-                                            else
-                                            {
-                                                <span>Chọn kích cỡ</span>
-                                            }
-                                        </span>
-                                        <i class="bi bi-pencil size-edit-icon" style="cursor: pointer;" data-item-id="@item.Id"></i>
-
-                                        <!-- Popup nổi chọn size -->
-                                        <div class="size-popup shadow-sm border rounded p-3 bg-white" id="size-dropdown-@item.Id" style="display: none; position: absolute; z-index: 1000;">
-                                            @if (item.Product.SizeShoe != null && item.Product.SizeShoe.Any())
-                                            {
-                                                <div class="d-flex flex-wrap gap-2 size-options" data-item-id="@item.Id" data-size-type="shoe">
-                                                    @foreach (var size in item.Product.SizeShoe)
-                                                    {
-                                                        var selected = item.SizeShoe == size ? "selected-size" : "";
-                                                        <button type="button" class="btn btn-outline-primary btn-sm size-option @selected" data-size="@size">@size</button>
-                                                    }
-                                                </div>
-                                            }
-                                            else if (item.Product.SizeClother != null && item.Product.SizeClother.Any())
-                                            {
-                                                <div class="d-flex flex-wrap gap-2 size-options" data-item-id="@item.Id" data-size-type="clother">
-                                                    @foreach (var size in item.Product.SizeClother)
-                                                    {
-                                                        var selected = item.SizeClother == size ? "selected-size" : "";
-                                                        <button type="button" class="btn btn-outline-primary btn-sm size-option @selected" data-size="@size">@size</button>
-                                                    }
-                                                </div>
-                                            }
-                                            <div class="mt-2 text-end">
-                                                <button class="btn btn-sm btn-primary size-confirm-btn" data-item-id="@item.Id">Xác nhận</button>
-                                            </div>
-                                        </div>
-                                    </p>
-                                    <div class="row mt-2">
-                                        <div class="col-md-6 mb-2">
-                                            <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-primary text-white" style="height:34px">
-                                                    <i class="fas fa-calendar-alt"></i>
-                                                </span>
-                                                <input type="date" class="form-control" id="startDate" name="startDate"
-                                                    value="@item.StartDate?.ToString("yyyy-MM-dd")" required
-                                                    onchange="handleDateChange(this)" required />
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="endDate" class="form-label">Ngày trả</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-primary text-white" style="height:34px">
-                                                    <i class="fas fa-calendar-alt"></i>
-                                                </span>
-                                                <input type="date" class="form-control" id="endDate" name="endDate"
-                                                    value="@item.EndDate?.ToString("yyyy-MM-dd")" required
-                                                    onchange="handleDateChange(this)" required />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>                              
-                            </div>
+    <div class="bg-light py-4">
+        <form id="checkoutForm" method="post" asp-action="Checkout" asp-controller="Customer" style="width:100%;">
+            <div id="selectedItemsContainer"></div>
+            <div class="container">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="d-flex align-items-center m-0" for="selectAllProducts">
+                                <strong class="m-0" id="selectAllProducts">Sản Phẩm</strong>
+                            </label>
                         </div>
-                        <div class="d-flex gap-4 align-items-center">
-                            <span class="text-dangers">₫@item.Product.Price.ToString("#,##0")</span>
-                                <div class="input-group" style="width:100px; margin-left: 6px;" data-product-id="@item.Product.Id">
-                                <button class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
-                                <input type="text" class="form-control text-center quantity" value="@item.Count" style="margin-bottom: 16px; margin-top:16px;"/>
-                                <button class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
-                            </div>
-                            <span class="text-dangers product-total">₫@(item.Product.Price * item.Count)</span>
-                            <a href="#" class="text-dangers delete-item"
-                               data-user-id="@item.UserId"
-                               data-product-id="@item.ProductId">
-                                Xóa
-                            </a>
+                        <div class="d-flex gap-5">
+                            <span>Đơn Giá</span>
+                            <span>Số Lượng</span>
+                            <span>Thành Tiền</span>
+                            <span>Thao Tác</span>
                         </div>
                     </div>
-                </div>
-            }
-            
+
+
+                    @foreach (var group in Model)
+                    {
+                        var sellerName = group.FirstOrDefault()?.Product?.User?.UserName ?? "Người bán không xác định";
+                        <div class="shop-section">
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-3 bg-light">
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="checkbox" class="shopCheckbox" style="margin-bottom:0px"/>
+                                    <span class="text-primary">
+                                        <i class="fa-solid fa-shop"></i> @sellerName
+                                    </span>
+                                </div>
+                            </div>
+                            @foreach (var item in group)
+                            {
+                                if (item.Product != null)
+                                {
+                                    <div class="border-bottom py-3 product-row" data-cart-id="@item.Id" data-product-id="@item.Product.Id">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <input type="checkbox" class="productCheckbox align-self-center" value="@item.Id" data-price="@item.Product.Price" />
+                                                <div class="d-flex align-items-center gap-3">
+                                                    @if (item.Product.ProductAvatar != null)
+                                                    {
+                                                        <img src="/image/products/@item.Product.ProductAvatar.ImagePath" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                    }
+                                                    <div>
+                                                        <p class="fw-semibold mb-1" style="margin-bottom:0px !important;">@item.Product.Name</p>
+                                                        @if (item.Product.Color != null)
+                                                        {
+                                                            <p class="text-muted small" style="margin-bottom:0px;">Màu: @item.Product.Color</p>
+                                                        }
+
+                                                        <p class="text-muted small" style="margin-bottom:0px;">
+                                                            Kích Cỡ:
+                                                            <span id="size-display-@item.Id">
+                                                                @if (item.SizeShoe.HasValue)
+                                                                {
+                                                                    @item.SizeShoe
+                                                                }
+                                                                else if (item.SizeClother.HasValue)
+                                                                {
+                                                                    @item.SizeClother
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>Chọn kích cỡ</span>
+                                                                }
+                                                            </span>
+                                                            <i class="bi bi-pencil size-edit-icon" style="cursor: pointer;" data-item-id="@item.Id"></i>
+
+                                                            <!-- Popup nổi chọn size -->
+                                                            <div class="size-popup shadow-sm border rounded p-3 bg-white" id="size-dropdown-@item.Id" style="display: none; position: absolute; z-index: 1000;">
+                                                                @if (item.Product.SizeShoe != null && item.Product.SizeShoe.Any())
+                                                                {
+                                                                    <div class="d-flex flex-wrap gap-2 size-options" data-item-id="@item.Id" data-size-type="shoe">
+                                                                        @foreach (var size in item.Product.SizeShoe)
+                                                                        {
+                                                                            var selected = item.SizeShoe == size ? "selected-size" : "";
+                                                                            <button type="button" class="btn btn-outline-primary btn-sm size-option @selected" data-size="@size">@size</button>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else if (item.Product.SizeClother != null && item.Product.SizeClother.Any())
+                                                                {
+                                                                    <div class="d-flex flex-wrap gap-2 size-options" data-item-id="@item.Id" data-size-type="clother">
+                                                                        @foreach (var size in item.Product.SizeClother)
+                                                                        {
+                                                                            var selected = item.SizeClother == size ? "selected-size" : "";
+                                                                            <button type="button" class="btn btn-outline-primary btn-sm size-option @selected" data-size="@size">@size</button>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                <div class="mt-2 text-end">
+                                                                    <button type="button" class="btn btn-sm btn-primary size-confirm-btn" data-item-id="@item.Id">Xác nhận</button>
+                                                                </div>
+                                                            </div>
+                                                        </p>
+                                                        <div class="row mt-2 cart-item-group">
+                                                            <div class="col-md-6 mb-2">
+                                                                <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text bg-primary text-white" style="height:34px">
+                                                                        <i class="fas fa-calendar-alt"></i>
+                                                                    </span>
+                                                                    <input type="date" class="form-control startDate" data-item-id="@item.Id" 
+                                                                    name="startDate_@item.Id"
+                                                                    value="@item.StartDate?.ToString("yyyy-MM-dd")"
+                                                                    onchange="handleDateChange(this)" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label for="endDate" class="form-label">Ngày trả</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text bg-primary text-white" style="height:34px">
+                                                                        <i class="fas fa-calendar-alt"></i>
+                                                                    </span>
+                                                                    <input type="date" class="form-control endDate" data-item-id="@item.Id" name="endDate_@item.Id"
+                                                                    value="@item.EndDate?.ToString("yyyy-MM-dd")"
+                                                                    onchange="handleDateChange(this)" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-4 align-items-center">
+                                                <span class="text-dangers">@item.Product.Price.ToString("C", new CultureInfo("vi-VN"))</span>
+                                                <div class="input-group" style="width:100px; margin-left: 6px;" data-product-id="@item.Product.Id">
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
+                                                    <input type="text" class="form-control text-center quantity" value="@item.Count" style="margin-bottom: 16px; margin-top:16px;" />
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
+                                                </div>
+                                                @if(item.StartDate != null && item.EndDate != null){   
+                                                        var duration = item.EndDate.Value - item.StartDate.Value;
+                                                        var totalPrice = item.Product.Price * item.Count * duration.TotalDays;  
+                                                    <span class="text-dangers product-total">@totalPrice.ToString("C", new CultureInfo("vi-VN"))</span>
+                                                } else {
+                                                    <span class="text-dangers product-total">@((item.Product.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))</span>
+                                                }
+
+                                            <a href="#" class="text-dangers delete-item"
+                                               data-user-id="@item.UserId"
+                                               data-product-id="@item.ProductId">
+                                                Xóa
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        </div>
+           }  
         </div>
 
         
     </div>
     <!-- Sticky Footer -->
+        
     <div class="bg-white border-top mt-4 py-3 position-sticky bottom-0" id="sticky-footer">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
@@ -228,11 +259,24 @@
             </div>
             <div class="text-end ms-auto">
                 <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
-                <button class="btn btn-danger">Mua Hàng</button>
+                
+                    
+                    <button type="submit" id="buyNowBtn" class="btn btn-danger"
+                            style="background:rgb(141, 198, 63);
+                        border-bottom-color:white;
+                        border-left-color:white;
+                        border-right-color:white;
+                        border-top-color:white;
+                            ">
+                        Mua Hàng
+                    </button>
+                    
             </div>
         </div>
     </div>
+        </form>
 </div>
+    
 }
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -257,19 +301,18 @@
         // Cập nhật tổng số lượng đã chọn và tổng tiền
         function updateCartDisplay() {
             let selectedCount = 0, totalPrice = 0;
-
-            productCheckboxes.forEach(checkbox => {
+            document.querySelectorAll('.productCheckbox').forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('.product-row');
-                    const quantity = parseInt(row.querySelector('.quantity').value);
-                    const price = parseFloat(checkbox.dataset.price);
+                    const productTotalText = row.querySelector('.product-total').textContent;
+                    const productTotal = parseFloat(productTotalText.replace(/[^\d]/g, ''));
                     selectedCount++;
-                    totalPrice += price * quantity;
+                    totalPrice += productTotal;
                 }
             });
 
             selectedCountSpan.textContent = `Chọn Tất Cả (${selectedCount})`;
-            totalPriceSpan.textContent = `Tổng cộng (${selectedCount} Sản phẩm): ₫${totalPrice.toLocaleString()}`;
+            totalPriceSpan.textContent = `Tổng cộng (${selectedCount} Sản phẩm): ${totalPrice.toLocaleString()} ₫`;
         }
 
         // Cập nhật trạng thái "Chọn tất cả"
@@ -324,15 +367,24 @@
         function updateProductTotal(row) {
             const quantity = parseInt(row.querySelector('.quantity').value);
             const price = parseFloat(row.querySelector('.productCheckbox').dataset.price);
-            row.querySelector('.product-total').textContent = `₫${(price * quantity).toLocaleString()}`;
+            const startDate = new Date(row.querySelector('.startDate').value);
+            const endDate = new Date(row.querySelector('.endDate').value);
+
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
+
+            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) || 1;
+            const total = price * quantity * days;
+
+            row.querySelector('.product-total').textContent = `${total.toLocaleString()} ₫`;
         }
 
         // Cập nhật giỏ hàng bằng Ajax
         function updateCart(group, selectedSize = null, sizeType = null) {
             const productId = group.dataset.productId;
+            const cartId = group.dataset.cartId;
             const quantity = parseInt(group.querySelector('.quantity').value);
-            const startDate = group.querySelector('input[name="startDate"]')?.value;
-            const endDate = group.querySelector('input[name="endDate"]')?.value;
+            const startDate = group.querySelector(`input[name="startDate_${cartId}"]`)?.value;
+            const endDate = group.querySelector(`input[name="endDate_${cartId}"]`)?.value;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
 
@@ -430,11 +482,43 @@
             if (group) updateCart(group, size, type);
         });
 
-        // Ngày bắt đầu/kết thúc thay đổi
-        window.handleDateChange = function (input) {
+        //// Ngày bắt đầu/kết thúc thay đổi
+        window.handleDateChange = function(input) {
             const row = input.closest('.product-row');
-            if (row) updateCart(row);
-        };
+            if (!row) {
+                console.error("Không tìm thấy product-row.");
+                return;
+            }
+
+            const cartId = row.dataset.cartId;
+            console.log('Cart Id:', cartId);  
+
+            if (!cartId) {
+                console.error("Không tìm thấy cartId từ data-cart-id.");
+                return;
+            }
+
+            const startDateInput = row.querySelector(`input[name="startDate_${cartId}"]`);
+            const endDateInput = row.querySelector(`input[name="endDate_${cartId}"]`);
+
+            // Kiểm tra nếu các input tồn tại và lấy giá trị
+            if (startDateInput && endDateInput) {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+
+                console.log(`Start Date: ${startDate}, End Date: ${endDate}`);
+                if(startDate && endDate){
+                    if (endDate <= startDate) {
+                        return;
+                    }
+                }
+                    updateProductTotal(row);
+                    updateCartDisplay();
+                    updateCart(row);
+            } else {
+                console.error("Không tìm thấy startDate hoặc endDate");
+            }
+        }
 
         // Xóa sản phẩm khỏi giỏ
         $(document).on('click', '.delete-item', function (e) {
@@ -442,7 +526,7 @@
             const userId = $(this).data('user-id');
             const productId = $(this).data('product-id');
             const row = $(this).closest('.product-row');
-
+            const shopSection = row.closest('.shop-section');
             console.log('Deleting:', { userId, productId, row });
 
             $.ajax({
@@ -457,6 +541,9 @@
                     if (response.success) {
                         toastr.success(response.message);
                         row.remove();
+                        if (shopSection.find('.product-row').length === 0) {
+                            shopSection.remove();
+                        }
                         updateCartDisplay();
                     } else {
                         alert("Không thể xóa sản phẩm: " + response.message);
@@ -469,19 +556,133 @@
             });
         });
 
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').min = today;
-        document.getElementById('endDate').min = today;
+        //validate ngày
+        document.querySelectorAll('.product-row').forEach(row => {
+            const startDateInput = row.querySelector('.startDate');
+            const endDateInput = row.querySelector('.endDate');
 
-        // Khi ngày bắt đầu thay đổi, cập nhật ngày tối thiểu cho ngày trả
-        document.getElementById('startDate').addEventListener('change', function() {
-            const startDate = this.value;
-            document.getElementById('endDate').min = startDate;
+            const today = new Date().toISOString().split('T')[0];
+            if (startDateInput) startDateInput.min = today;
+            if (endDateInput) endDateInput.min = today;
 
-            // Nếu ngày trả nhỏ hơn ngày bắt đầu mới, cập nhật ngày trả
-            if (document.getElementById('endDate').value < startDate) {
-                document.getElementById('endDate').value = startDate;
+            let previousEndDate = endDateInput?.value;
+
+            if (startDateInput) {
+                startDateInput.addEventListener('change', function () {
+                    const startDate = this.value;
+                    if (endDateInput) {
+                        // Cập nhật min cho endDate
+                        endDateInput.min = startDate;
+
+                        // Nếu endDate chưa được chọn hoặc nhỏ hơn hoặc bằng startDate, thì tự động +1 ngày
+                        if (!endDateInput.value || endDateInput.value <= startDate) {
+                            const nextDay = new Date(startDate);
+                            nextDay.setDate(nextDay.getDate() + 1);
+                            const formattedNextDay = nextDay.toISOString().split('T')[0];
+                            endDateInput.value = formattedNextDay;
+                            previousEndDate = formattedNextDay;
+                        }
+
+                        // Nếu endDate đã hợp lệ (lớn hơn startDate), giữ nguyên giá trị
+                    }
+                    handleDateChange(this);
+                });
+
+            }
+
+            if (endDateInput) {
+                endDateInput.addEventListener('focus', function () {
+                    previousEndDate = this.value;
+                });
+
+                endDateInput.addEventListener('change', function () {
+                    const startDate = startDateInput?.value;
+                    const endDate = this.value;
+
+                    if (startDate && endDate <= startDate) {
+                        toastr.error("Ngày trả phải lớn hơn ngày bắt đầu thuê.");
+                        this.value = previousEndDate;
+                        return;
+                    }
+
+                    previousEndDate = endDate;
+                    handleDateChange(this);
+                });
             }
         });
     });
+
+    //Validate khi bấm mua
+    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+        const selectedItemsContainer = document.getElementById("selectedItemsContainer");
+        selectedItemsContainer.innerHTML = ""; 
+
+        const selectedCheckboxes = document.querySelectorAll(".productCheckbox:checked");
+
+        if (selectedCheckboxes.length === 0) {
+            e.preventDefault();
+            toastr.error("Vui lòng chọn ít nhất một sản phẩm để mua.");
+            return;
+        }
+
+        let hasError = false;
+
+        // Reset các màu lỗi trước đó
+        document.querySelectorAll('.product-row input, .product-row span').forEach(el => {
+            el.style.borderColor = "";
+            el.style.color = "";
+        });
+
+        selectedCheckboxes.forEach(cb => {
+            const productRow = cb.closest(".product-row");
+            const productName = productRow.querySelector(".fw-semibold").innerText.trim();
+
+            const sizeDisplay = productRow.querySelector(`#size-display-${cb.value}`);
+            const sizeText = sizeDisplay?.innerText.trim();
+
+            if (sizeText === "Chọn kích cỡ") {
+                hasError = true;
+                toastr.error(`Chưa chọn kích cỡ cho sản phẩm: ${productName}`);
+                sizeDisplay.style.color = "red";
+                return;
+            }
+
+            const cartId = cb.value; // hoặc item.Id tùy cấu trúc
+            const startDateInput = productRow.querySelector(`input[name="startDate_${cartId}"]`);
+            const endDateInput = productRow.querySelector(`input[name="endDate_${cartId}"]`);
+            const startDate = startDateInput?.value;
+            const endDate = endDateInput?.value;
+
+            if (!startDate || !endDate) {
+                hasError = true;
+                toastr.error(`Chưa chọn ngày thuê cho sản phẩm: ${productName}`);
+                if (startDateInput) startDateInput.style.borderColor = "red";
+                if (endDateInput) endDateInput.style.borderColor = "red";
+                return;
+            }
+
+            // Nếu hợp lệ thì thêm input vào form
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "selectedItems";
+            input.value = cb.value;
+            selectedItemsContainer.appendChild(input);
+        });
+
+        if (hasError) {
+            e.preventDefault();
+        }
+    });
+
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+        input.addEventListener('change', function () {
+            if (this.value === '') {
+                const group = this.closest('.cart-item-group');
+                updateCart(group);
+            }
+        });
+    });
+
+
+
 </script>

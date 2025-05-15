@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250509160528_UpdateOrder_Payment_And_Delivery_Enum")]
+    partial class UpdateOrder_Payment_And_Delivery_Enum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,9 +187,6 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -195,9 +195,6 @@ namespace DataAccess.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<double>("UnitPrice")
                         .HasColumnType("float");
@@ -253,16 +250,11 @@ namespace DataAccess.Migrations
                     b.PrimitiveCollection<string>("SizeShoe")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductAvatarId")
                         .IsUnique()
                         .HasFilter("[ProductAvatarId] IS NOT NULL");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Products");
                 });
@@ -416,13 +408,7 @@ namespace DataAccess.Migrations
                         .HasForeignKey("DataAccess.Models.Product", "ProductAvatarId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("DataAccess.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
                     b.Navigation("ProductAvatar");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProductCategory", b =>

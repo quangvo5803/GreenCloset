@@ -37,7 +37,7 @@ namespace BussinessLayer.Implement
             Product = new ProductService(_unitOfWork, _webHostEnvironment);
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);
             Cart = new CartService(_unitOfWork);
-            Order = new OrderService(_unitOfWork, _vpnPayService, _configuration);           
+            Order = new OrderService(_unitOfWork, _vpnPayService, _configuration, _emailQueue);           
         }
     }
 }

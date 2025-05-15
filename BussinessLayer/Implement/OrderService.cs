@@ -1,6 +1,5 @@
 ﻿using BussinessLayer.Interface;
 using DataAccess.Models;
-using GreenCloset.Utility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +15,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.Email;
 
 namespace BussinessLayer.Implement
 {
@@ -23,18 +23,15 @@ namespace BussinessLayer.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVnPayService _vpnPayService;
-        private readonly EmailSender _emailSender;
+        private readonly IEmailQueue _emailQueue;
         private readonly IConfiguration _configuration;
 
-        public OrderService(IUnitOfWork unitOfWork, IVnPayService vpnPayService, IConfiguration configuration)
+        public OrderService(IUnitOfWork unitOfWork, IVnPayService vpnPayService, IConfiguration configuration, IEmailQueue emailQueue)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _vpnPayService = vpnPayService;
-            _emailSender = new EmailSender(
-            _configuration,
-                new LoggerFactory().CreateLogger<EmailSender>()
-            );
+            _emailQueue = emailQueue;
            
         }
 
@@ -300,7 +297,7 @@ namespace BussinessLayer.Implement
                     string body = SellerEmailInformation(userId, storeTotal, productDetails, paymentMethod, deliveryOptions, deliveryAddress, phoneNumber);
                     string subject = $"Đơn hàng mới từ khách hàng {customerName}";
 
-                    _emailSender.SendEmailAsync(storeEmail, subject, body).Wait();
+                    _emailQueue.QueueEmail(storeEmail, subject, body);
                 }
             }
             
@@ -376,7 +373,7 @@ namespace BussinessLayer.Implement
                 totalPrices);
 
                 string buyerSubject = "Xác nhận đơn hàng của bạn";
-                _emailSender.SendEmailAsync(user.Email, buyerSubject, buyerBody).Wait();
+                _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
             }       
         }
         private string SellerEmailInformation(Guid userId, double storeTotal, string productDetails, PaymentMethod paymentMethod, DeliveryOption deliveryOptions, string deliveryAddress,string phoneNumber)

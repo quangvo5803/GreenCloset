@@ -40,22 +40,21 @@ namespace GreenCloset
                             return Task.CompletedTask;
                         };
                     }
-                );
-                //Login with Facebook
-                //.AddFacebook(
-                //    FacebookDefaults.AuthenticationScheme,
-                //    options =>
-                //    {
-                //        options.AppId = builder.Configuration["FacebookKeys:AppID"];
-                //        options.AppSecret = builder.Configuration["FacebookKeys:AppSecret"];
-                //        options.Events.OnRemoteFailure = context =>
-                //        {
-                //            context.Response.Redirect("/Home/Login");
-                //            context.HandleResponse();
-                //            return Task.CompletedTask;
-                //        };
-                //    }
-                //);
+                )
+            .AddFacebook(
+                FacebookDefaults.AuthenticationScheme,
+                options =>
+                {
+                    options.AppId = builder.Configuration["FacebookKeys:AppID"];
+                    options.AppSecret = builder.Configuration["FacebookKeys:AppSecret"];
+                    options.Events.OnRemoteFailure = context =>
+                    {
+                        context.Response.Redirect("/Home/Login");
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    };
+                }
+            );
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddAuthorization();
 

@@ -1,16 +1,15 @@
-﻿using System.Net.Http;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using BussinessLayer.Interface;
 using DataAccess.Models;
-using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Repository.Implement;
+using Utility.Email;
+using Utility.Password;
 
 namespace BussinessLayer.Implement
 {
@@ -18,16 +17,17 @@ namespace BussinessLayer.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
-        private readonly EmailSender _emailSender;
+        private readonly IEmailQueue _emailQueue;
 
-        public UserService(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public UserService(
+            IUnitOfWork unitOfWork,
+            IConfiguration configuration,
+            IEmailQueue emailQueue
+        )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
-            _emailSender = new EmailSender(
-                _configuration,
-                new LoggerFactory().CreateLogger<EmailSender>()
-            );
+            _emailQueue = emailQueue;
         }
 
         public User? GetUserByEmail(string email)
@@ -77,7 +77,7 @@ namespace BussinessLayer.Implement
                 _unitOfWork.Save();
                 string subject = "Xác nhận đăng kí tài khoản GreenCloset";
                 string body = GetComfirmationEmailGoogle();
-                _emailSender.SendEmailAsync(email, subject, body).Wait();
+                _emailQueue.QueueEmail(email, subject, body);
             }
             await SignInUser(httpContex, user);
             return user;
@@ -113,7 +113,7 @@ namespace BussinessLayer.Implement
                 string subject = "Xác nhận đăng kí tài khoản GreenCloset";
                 string body = GetComfirmationEmailGoogle();
 
-                await _emailSender.SendEmailAsync(email, subject, body);
+                _emailQueue.QueueEmail(email, subject, body);
             }
 
             await SignInUser(httpContex, user);
@@ -185,7 +185,7 @@ namespace BussinessLayer.Implement
                     $"{_configuration["AppSettings:BaseUrl"]}/Home/ConfirmEmail?token={token}";
                 string subject = "Xác nhận đăng kí tài khoản Green Closet";
                 string body = GetComfirmationEmail(confirmUrl);
-                _emailSender.SendEmailAsync(email, subject, body).Wait();
+                _emailQueue.QueueEmail(email, subject, body);
             }
         }
 
@@ -241,7 +241,7 @@ namespace BussinessLayer.Implement
                 $"{_configuration["AppSettings:BaseUrl"]}/Home/ResetPassword?token={token}";
             string subject = "Đặt lại mật khẩu tài khoản GreenCloset";
             string body = GetForgotPasswordEmail(confirmUrl);
-            _emailSender.SendEmailAsync(email, subject, body).Wait();
+            _emailQueue.QueueEmail(email, subject, body);
         }
 
         public string? IsValidToken(string token)

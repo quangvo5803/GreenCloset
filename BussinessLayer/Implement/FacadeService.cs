@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Repository.Implement;
+using Utility.Email;
 
 namespace BussinessLayer.Implement
 {
@@ -11,6 +12,7 @@ namespace BussinessLayer.Implement
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IVnPayService _vpnPayService;
+        private readonly IEmailQueue _emailQueue;
         public IUserService User { get; private set; }
         public ICategoryService Category { get; private set; }
         public IProductService Product { get; private set; }
@@ -21,14 +23,16 @@ namespace BussinessLayer.Implement
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
             IWebHostEnvironment webHostEnvironment,
-            IVnPayService vnPayService
+            IVnPayService vnPayService,
+            IEmailQueue emailQueue
         )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
             _vpnPayService = vnPayService;
-            User = new UserService(_unitOfWork, _configuration);
+            _emailQueue = emailQueue;
+            User = new UserService(_unitOfWork, _configuration, _emailQueue);
             Category = new CategoryService(_unitOfWork);
             Product = new ProductService(_unitOfWork, _webHostEnvironment);
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);

@@ -1,13 +1,13 @@
 ﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Data;
-using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Repository.Implement;
 using Repository.Interface;
+using Utility.Email;
 
 namespace GreenCloset
 {
@@ -66,9 +66,10 @@ namespace GreenCloset
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IFacedeService, FacadeService>();
-            builder.Services.AddScoped<IVnPayService, VnPayService>();
+            builder.Services.AddScoped<IVnPayService, VnPayService>();        
+            builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
             builder.Services.AddSingleton<EmailSender>();
-            
+            builder.Services.AddHostedService<BackgroundEmailSender>();
             var app = builder.Build();
 
             app.UseStaticFiles();

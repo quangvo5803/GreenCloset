@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
+    [Authorize]
     [Authorize(Roles = "Customer")]
     public partial class CustomerController : BaseController
     {
@@ -26,10 +27,11 @@ namespace GreenCloset.Controllers
                 }           
             }
       
-            var productsInCart = _facadeService.Order.GetCartItems(selectedItems);
+            var productsInCart = _facadeService.Order.GetGroupedCartItems(selectedItems);
+            var cartItems = productsInCart.SelectMany(g => g).ToList();
             if (!productsInCart.Any()) return RedirectToAction("Cart", "Customer");
 
-            ViewBag.CartItems = productsInCart;
+            ViewBag.CartItems = cartItems;
             return View(productsInCart);
         }
 
@@ -56,11 +58,11 @@ namespace GreenCloset.Controllers
 
                 if (paymentByCOD != null) 
                 {
-                    TempData["success"] = "Thanh toan ok";
+                    TempData["success"] = "Thanh toán thành công";
                     return RedirectToAction("Cart", "Customer");
                 }
-                TempData["error"] = "Thanh toan by COD fail";
-                return RedirectToAction("Checkout", "Customer");
+                TempData["error"] = "Thanh toán thất bại";
+                return RedirectToAction("Cart", "Customer");
             }
             else if(paymentMethod == PaymentMethod.VNPay)
             {
@@ -73,8 +75,8 @@ namespace GreenCloset.Controllers
                 }
 
             }
-            TempData["error"] = "thanh toan fail";
-            return RedirectToAction("Checkout", "Customer");
+            TempData["error"] = "Thanh toán thất bại";
+            return RedirectToAction("Cart", "Customer");
         }
 
         public IActionResult VNPayReturn()
@@ -82,13 +84,13 @@ namespace GreenCloset.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId != null && _facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId))
             {
-                TempData["success"] = "Payment successful.";
+                TempData["success"] = "Thanh toán thành công";
                 return RedirectToAction("Cart", "Customer");
             }
             else
             {
-                TempData["error"] = "Payment failed.";
-                return RedirectToAction("Checkout");
+                TempData["error"] = "Thanh toán thất bại";
+                return RedirectToAction("Cart", "Customer");
             }
         }
 

@@ -12,7 +12,7 @@ namespace BussinessLayer.Interface
 {
     public interface IOrderService
     {
-        IEnumerable<Cart> GetCartItems(List<int> selectedItems);
+        IEnumerable<IGrouping<User?, Cart>> GetGroupedCartItems(List<int> selectedItems);
         Order? ProcessOrderByCOD(List<int> selectedItems, string phoneNumber, 
             DeliveryOption deliveryOptions, string deliveryAddress, PaymentMethod paymentMethod, Guid userId);
 

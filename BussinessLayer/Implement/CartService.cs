@@ -136,16 +136,8 @@ namespace BussinessLayer.Implement
                     }
 
                 }
-                
-                if (startDate.HasValue)
-                {
-                    cartItem.StartDate = startDate;
-                }
-                if (endDate.HasValue)
-                {
-                    cartItem.EndDate = endDate;
-                }
-
+                cartItem.StartDate = startDate.HasValue ? startDate : null;
+                cartItem.EndDate = endDate.HasValue ? endDate : null;
                 _unitOfWork.Cart.Update(cartItem);
                 _unitOfWork.Save();  
             }

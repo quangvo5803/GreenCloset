@@ -33,6 +33,7 @@ namespace GreenCloset.Controllers
             {
                 _facadeService.User.UpdateUser(user);
                 TempData["success"] = "Cập nhật thông tin thành công";
+                return View();
             }
             TempData["error"] = "Cập nhật thông tin không thành công";
             return View();

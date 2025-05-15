@@ -1,4 +1,5 @@
-﻿.item-anchor {
+﻿
+.item-anchor {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -16,10 +17,200 @@ input[type="search"]::-webkit-search-cancel-button {
     display: none;
 }
 #header-wrap {
-    background-color: rgba(255, 255, 255);
-    backdrop-filter: blur(5px);
+    background-color: rgb(255, 255, 255);
     border-bottom: 1px solid #ddd;
 }
+.pagination {
+    margin-top: 20px;
+}
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        text-decoration: none;
+    }
+
+    .pagination .active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+.customer-reviews {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.review-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+    .review-item:hover {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .review-header strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+.rating {
+    display: flex;
+    gap: 2px;
+}
+
+    .rating .fa-star {
+        color: #ffc107;
+    }
+
+        .rating .fa-star.text-muted {
+            color: #e0e0e0;
+        }
+
+.overall-rating {
+    background-color: #f1f3f5;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.rating-breakdown .progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-link {
+    color: var(--primary-color);
+
+}
+
+    .page-link:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+.review-item {
+    padding: 10px;
+}
+
+.review-images {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+    .review-images img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+        .review-images img:hover {
+            transform: scale(1.05);
+        }
+.color-circle {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+}
+
+    .color-circle:hover {
+        border-color: #333;
+    }
+
+.checkmark {
+    color: white;
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.color-radio:checked + .color-circle .checkmark {
+    display: block;
+}
+
+.color-radio:checked + .color-circle {
+    border-color: #28a745;
+    box-shadow: 0 0 6px #28a745;
+}
+.size-option {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.size-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:40px;
+    height: 40px; 
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px; 
+    background-color: #fff; 
+    color: #333;
+}
+
+    .size-btn:hover {
+        background-color: #f8f9fa; 
+        border-color: #888; 
+    }
+
+    .size-btn:active {
+        background-color: #e2e6ea;
+    }
+
+input[type="checkbox"]:checked + label.size-btn {
+    background-color: #28a745;
+    color: #fff; 
+    border-color: #28a745; 
+}
+
+    input[type="checkbox"]:checked + label.size-btn:hover {
+        background-color: #218838; 
+    }
+
+    input[type="checkbox"]:checked + label.size-btn:active {
+        background-color: #1e7e34;
+    }
+
+
 /*---------------------------------------------------------------------Template---------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------
 /** 1. VARIABLES
@@ -615,7 +806,6 @@ form {
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
     -moz-user-select: none; /* Old versions of Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; /* Non-prefixed version, currently
@@ -685,12 +875,10 @@ input[type="submit"],
 input[type="reset"],
 input[type="file"],
 button {
-    background-image: none;
-    background: var(--dark-color);
+   
     text-decoration: none !important;
     display: inline-block;
     position: relative;
-    border: 2px solid transparent;
     border-radius: 0;
     padding: 0.75em 1.5em;
     margin-top: 15px;
@@ -700,7 +888,6 @@ button {
     line-height: normal;
     text-align: center;
     text-transform: uppercase;
-    color: var(--light-color);
     z-index: 1;
     cursor: pointer;
     white-space: nowrap;
@@ -714,59 +901,6 @@ button {
     -ms-user-select: none;
     user-select: none;
 }
-
-    .btn:hover,
-    .btn:focus,
-    input[type="button"]:focus,
-    input[type="button"]:hover,
-    input[type="submit"]:focus,
-    input[type="submit"]:hover,
-    input[type="reset"]:focus,
-    input[type="reset"]:hover,
-    input[type="file"]:focus,
-    input[type="file"]:hover,
-    button:focus,
-    button:hover {
-        text-decoration: none;
-        outline: 0;
-    }
-
-.light .btn:hover {
-    color: var(--light-color);
-}
-
-.btn:last-child {
-    margin-right: 0;
-}
-
-.btn:active,
-.btn.btn-outline-light:active,
-.btn.btn-outline-dark:active,
-.btn.btn-outline-accent:active,
-input[type="button"]:active,
-input[type="submit"]:active,
-input[type="reset"]:active,
-input[type="file"]:active,
-button:active {
-    outline: 0;
-    background-image: none;
-    -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.btn.disabled,
-.btn[disabled],
-fieldset[disabled] .btn {
-    cursor: not-allowed;
-    opacity: 0.65;
-    box-shadow: none;
-}
-
-a.btn.disabled,
-fieldset[disabled] a.btn {
-    pointer-events: none;
-}
-
 /* - Button Sizes
 ------------------------------------------------------------- */
 .btn.btn-small {
@@ -857,6 +991,27 @@ fieldset[disabled] a.btn {
     text-align: center;
 }
 
+.btn-outline-facebook {
+    color: #1877F2;
+    border: 1px solid #1877F2;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-facebook:hover,
+    .btn-outline-facebook:focus {
+        background-color: #1877F2;
+        color: #fff;
+        border-color: #1877F2;
+        text-decoration: none;
+    }
+
+    .btn-outline-facebook:active {
+        background-color: #155dc1;
+        border-color: #155dc1;
+        color: #fff;
+    }
+
 /* - Buttons Color Scheme
 ------------------------------------------------------------- */
 .btn.btn-dark {
@@ -866,6 +1021,7 @@ fieldset[disabled] a.btn {
 
     .btn.btn-dark:hover {
         background: var(--primary-color);
+        border: var(--primary-color);
     }
 
 .btn.btn-light {
@@ -903,10 +1059,6 @@ fieldset[disabled] a.btn {
     color: var(--light-color);
 }
 
-    .btn.btn-primary:hover {
-        background-color: var(--dark-color);
-        color: var(--light-color);
-    }
 
 /* - Buttons Aligns
 ------------------------------------------------------------- */
@@ -954,8 +1106,10 @@ img.video-image,
 img.post-image,
 img.insta-image {
     width: 100%;
-    height: auto;
+    height: 300px;
     object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
 }
 
 img.large-image {
@@ -1580,28 +1734,6 @@ blockquote cite {
         border-radius: 0;
     }
 
-/*--- Tooltip
------------------------------------------------*/
-.tooltip .tooltip-text {
-    width: 120px;
-    background-color: var(--primary-color);
-    color: var(--light-color);
-    font-size: 14px;
-    text-align: center;
-    position: absolute;
-    top: -49px;
-    left: -40px;
-    z-index: 1;
-    padding: 10px 0;
-    visibility: hidden;
-    border-radius: 20px;
-}
-
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-}
-
-
 /*====================================================================*/
 /* 5. BLOG STYLES */
 /*====================================================================*/
@@ -1667,7 +1799,7 @@ blockquote cite {
     width: 100%;
     height: 100vh;
     margin: 0 auto;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 999900;
@@ -1752,6 +1884,7 @@ blockquote cite {
 /* submenu */
 .stellarnav ul ul {
     background: var(--dark-color);
+    margin-top: 10px;
 }
 
     .stellarnav ul ul a {
@@ -1775,13 +1908,11 @@ blockquote cite {
 }
 
 .menu-list .submenu a.item-anchor:hover {
-    color: var(--light-color);
-    background-color: #343434;
+    color: var(--primary-color);
 }
 
 .menu-list .submenu a.item-anchor.active {
     color: var(--light-color);
-    background-color: #343434;
 }
 
 /* Search Bar
@@ -1831,7 +1962,6 @@ blockquote cite {
     .search-popup.is-visible {
         opacity: 1;
         visibility: visible;
-        cursor: -webkit-image-set(url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23FFF' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23000' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E") 2x), pointer;
         cursor: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23000' d='M20 1l-1-1-9 9-9-9-1 1 9 9-9 9 1 1 9-9 9 9 1-1-9-9'/%3E%3C/svg%3E"), pointer;
         -webkit-transition: opacity 0.3s 0s, visibility 0s 0s;
         -moz-transition: opacity 0.3s 0s, visibility 0s 0s;
@@ -2098,6 +2228,7 @@ blockquote cite {
         padding: 10px;
         background: rgba(255,255,255,0.4);
         color: #191919;
+        border:none;
     }
 
     #billboard .button-prev {
@@ -2175,19 +2306,59 @@ blockquote cite {
 
 /*----- Featured Products Section
 --------------------------------------------------------------*/
+#featured-products {
+    position: relative;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+    color: #000;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    padding: 30px;
+}
+
+    .swiper-button-prev:hover,
+    .swiper-button-next:hover {
+        color: var(--light-color);
+        background-color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+    .swiper-button-prev {
+        left: 0px; /* chỉnh ra ngoài container */
+    }
+
+.swiper-button-next {
+    right: 0px; /* chỉnh ra ngoài container */
+}
+
 .product-store .product-item {
     position: relative;
     margin-bottom: 30px;
 }
-
+.image-holder {
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    overflow: hidden;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+}
 .product-item img.product-image {
     background: var(--light-color);
-    border: 1px solid var(--grey-color);
-    border-radius: 6px;
     padding: 10px;
     cursor: pointer;
     margin-bottom: 20px;
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 .product-item .cart-concern {
@@ -2198,7 +2369,7 @@ blockquote cite {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 300px;
+    bottom: 200px;
     z-index: 9;
     transition: 0.5s ease-out;
     padding: 20px 30px;
@@ -2206,7 +2377,7 @@ blockquote cite {
 }
 
 .product-item:hover .cart-concern {
-    bottom: 280px;
+    bottom: 250px;
     opacity: 1;
 }
 
@@ -2300,7 +2471,7 @@ i.icon.icon-arrow-io {
 }
 
 .product-collection .product-entry h3.item-title {
-    font-size: 4.4em;
+    font-size: 3em;
     line-height: 1;
     font-weight: 900;
 }
@@ -2670,10 +2841,6 @@ a.blog-categories {
 
 /*----- Icon Box Section
 --------------------------------------------------------------*/
-#shipping-information {
-    padding-bottom: 100px;
-}
-
     #shipping-information .icon-box {
         display: flex;
         align-items: baseline;
@@ -2726,9 +2893,6 @@ a.blog-categories {
 
 /*----- Footer Bottom Section
 --------------------------------------------------------------*/
-#footer-bottom {
-    margin-bottom: 30px;
-}
 
     #footer-bottom p {
         margin-bottom: 0;

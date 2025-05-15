@@ -1,0 +1,563 @@
+﻿@model Product
+@Html.AntiForgeryToken()
+@{
+    ViewData["Title"] = "Product Detail";
+    var feedbacks = ViewBag.Feedbacks as IEnumerable<Feedback>;
+    double avgRating = feedbacks != null && feedbacks.Any() ? feedbacks.Average(f => f.FeedbackStars) : 0;
+    int totalReviews = feedbacks != null && feedbacks.Any() ?  feedbacks.Count() : 0;
+    int thumbnail = 0;
+    int totalPages = (int)Math.Ceiling((double)totalReviews / ViewBag.PageSize);
+    int currentPage = ViewBag.PageNumber;
+    var colorHex = GetColorHex(Model.Color);
+    var similarProducts = ViewBag.SimilarProducts as IEnumerable<Product>;
+}
+<section>
+    <div id="pageContainer" data-page-type="product-detail">
+        <div class="container-xxl py-5 bg-dark mb-5"
+        style="background: url('https://fashionlawjournal.com/wp-content/uploads/2023/01/conscious-consumption-slow-fashion-concept-with-sh-2022-11-11-18-26-44-utc-1024x683.jpg') no-repeat center center; background-size: cover;">
+            <div class="container text-center my-5 pb-4">
+                <h1 class="text-dark mb-3">Thông tin chi tiết</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center text-uppercase">
+                        <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a asp-action="Category" asp-controller="Home" style="color:black" onmouseover="this.style.color='green'" onmouseout="this.style.color='black'">Danh mục</a></li>
+                        <li class="breadcrumb-item text-black">@Model.Name</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row gx-5">
+                <div class="col-lg-6">
+                    <div id="imageCarousel" class="carousel slide rounded-4 mb-3" data-bs-ride="carousel">
+                        <div class="carousel-inner mb-5">
+                            @if (Model.ProductImages != null && Model.ProductImages.Any())
+                            {
+                                int imageIndex = 0;
+                                foreach (var image in Model.ProductImages)
+                                {
+                                    <div class="carousel-item @(imageIndex == 0 ? "active" : "")">
+                                        <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: darkgrey;">
+                                            <a class="venobox" data-gallary="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
+                                                <img class="rounded-4" src="/image/products/@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    imageIndex++;
+                                }
+                                <!-- Controls -->
+                                <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: #f8f9fa;">
+                                    <img class="rounded-4" src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" style="max-height: 450px; max-width: 100%; object-fit: contain;" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail Row -->
+                    <div class="d-flex justify-content-center flex-wrap" style="margin-top: -30px; margin-bottom: 20px;">
+                        @if (Model.ProductImages != null && Model.ProductImages.Any())
+                        {
+                            foreach (var image in Model.ProductImages)
+                            {
+                                <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                    <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
+                                    src="/image/products/@image.ImagePath"
+                                    data-bs-target="#imageCarousel"
+                                    data-bs-slide-to="@thumbnail" />
+                                </div>
+                                thumbnail++;
+                            }
+                        }
+                        else
+                        {
+                            <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
+                                src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                data-bs-target="#imageCarousel"
+                                data-bs-slide-to="@thumbnail" />
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ps-lg-3">
+                        <h2 class="title text-dark">
+                            @Model.Name
+                        </h2>
+                        <div class="d-flex flex-row my-3">
+                            <div class="text-warning mb-1 me-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= avgRating)
+                                    {
+                                        <i class="fa fa-star"></i>
+                                    }
+                                    else if (i - 0.5 <= avgRating)
+                                    {
+                                        <i class="fa fa-star-half-stroke"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-regular fa-star"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="ms-1">
+                                @avgRating (@totalReviews đánh giá)
+                            </span>
+                        </div>
+
+                        <div class="mb-3" style="font-size:20px">
+                            <h3>
+                                Giá thuê: @Model.Price.ToString("C", new CultureInfo("vi-VN"))                          
+                            </h3>
+                            @if(Model.DepositPrice != 0)
+                            {
+                                <h3>
+                                    Giá cọc: @Model.DepositPrice.ToString("C", new CultureInfo("vi-VN"))
+                                </h3>
+                            }
+                            @if (Model.BuyPrice != 0)
+                            {
+                                <h3>
+                                    Giá mua: @Model.BuyPrice.ToString("C", new CultureInfo("vi-VN"))
+                                </h3>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <h4>
+                                Màu sắc:
+                            </h4>
+                            <input type="radio" class="form-check-input d-none color-radio" checked />
+                            <label class="color-circle position-relative" style="background-color: @colorHex;" title="@Model.Color">
+                            </label>
+                        </div>
+                        @if(Model.Categories != null)
+                        {
+                            <dl class="row">
+                                <dt class="col-3">Danh mục:</dt>
+                                <dd class="col-9">
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <span class="badge bg-primary rounded-pill me-1">@category.CategoryName</span>
+                                    }
+                                </dd>
+
+                            </dl>
+                        }
+                        <hr />
+                        <div class="mb-3">
+                            <h5>Chọn Size:</h5>
+                            <div class="d-flex">
+                                <!-- Clothing Size -->
+                                @if (Model.SizeClother != null && Model.SizeClother.Any())
+                                {
+                                    <div class="mb-4">
+                                        <div class="size-selector">
+                                            @foreach (var size in Model.SizeClother)
+                                            {
+                                                <div class="size-option">
+                                                    <input type="radio" class="size-checkbox" name="size" value="@size" id="size_@size" required />
+                                                    <label class="size-label" for="size_@size">@size</label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Shoe Size -->
+                                @if (Model.SizeShoe != null && Model.SizeShoe.Any())
+                                {
+                                    <div class="mb-4">
+                                        <div class="size-selector">
+                                            @foreach (var size in Model.SizeShoe)
+                                            {
+                                                <div class="size-option">
+                                                    <input type="radio" class="size-checkbox" name="size" value="@size" id="size_@size" required />
+                                                    <label class="size-label" for="size_@size">@size</label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                <!-- Size error message -->
+                                <div id="size-error" class="text-danger mt-2" style="display: none;"></div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold fs-5 mb-3">Thời gian thuê:</label>
+                                </div>
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="date-input-container">
+                                        <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </span>
+                                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="date-input-container">
+                                        <label for="endDate" class="form-label">Ngày trả</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </span>
+                                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#"
+                        class="btn btn-primary shadow-0 add-to-cart-btn"
+                        data-product-id="@Model.Id">
+                            <i class="me-1 fa fa-shopping-basket"></i>
+                            Thêm vào giỏ hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<!-- content -->
+
+<section class="bg-white py-4">
+    <div class="container">
+        <div class="row d-flex align-items-stretch gx-4">
+            <div class="col-lg-8 mb-4">
+                <div class="border rounded-2 px-3 py-2 bg-white h-100">
+                    <!-- Pills navs -->
+                    <ul class="nav nav-tabs nav-justified mb-3" id="ex1" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active w-100" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-tshirt fa-2x text-primary"></i>
+                                    <div class="ps-3">
+                                        <h4 class="mt-n1 mb-0">Mô tả</h4>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link w-100" id="feedback-tab" data-bs-toggle="tab" data-bs-target="#feedback" type="button" role="tab" aria-controls="feedback" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-star fa-2x text-warning"></i>
+                                    <div class="ps-3">
+                                        <h4 class="mt-n1 mb-0">Đánh giá</h4>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                    <!-- Pills navs -->
+                    <!-- Pills content -->
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description">
+                            @if(Model.Description != null)
+                            {
+                                <p>
+                                    @Model.Description
+                                </p>
+                            }else{
+                                <p>
+                                    Không có mô tả
+                                </p>
+                            }
+                        </div>
+                        <div class="tab-pane fade" id="feedback" role="tabpanel" aria-labelledby="feedback">
+                            <!--Review -->
+                            @if (feedbacks != null && feedbacks.Any())
+                            {
+                                <div class="review-item border-bottom pb-3 mb-3">
+
+                                    @foreach(var f in feedbacks)
+                                    {
+                                        <div class="d-flex justify-content-between">
+                                            <div class="review-header">
+                                                <strong>@(f.User?.UserName ?? f.User?.Email)</strong>
+                                                <div class="rating">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        if (i <= f.FeedbackStars)
+                                                        {
+                                                            <i class="fa fa-star"></i>
+                                                        }
+                                                        else if (i - 0.5 <= f.FeedbackStars)
+                                                        {
+                                                            <i class="fa fa-star-half-stroke"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa-regular fa-star"></i>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">@f.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                        </div>
+                                        <p class="mt-2">@f.FeedbackContent</p>
+
+                                        <!-- Review Images -->
+                                        @if (f.Images != null)
+                                        {
+                                            <div class="review-images">
+                                                @foreach (var image in f.Images)
+                                                {
+                                                    <a class="venobox" data-gall="gallery01" data-fitview="true" href="/img/products/@image.ImagePath">
+                                                        <img src="/img/products/@image.ImagePath" alt="Review Image" />
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p>
+                                    Chưa có đánh giá
+                                </p>
+                            }
+
+                            <!--Pagenation -->
+                            <nav aria-label="Review pagination" class="d-flex justify-content-center">
+                                <ul class="pagination">
+                                    @if (currentPage > 1)
+                                    {
+                                        <li>
+                                            <a asp-action="ProductDetail" asp-route-id="@Model.Id" asp-route-pageNumber="@(currentPage - 1)" asp-route-pageSize="ViewBag.PageSize">← Trước</a>
+                                        </li>
+                                    }
+
+                                    @for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" asp-action="ProductDetail" asp-route-id="@Model.Id" asp-route-pageNumber="@i" asp-route-pageSize="ViewBag.PageSize">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (currentPage < totalPages)
+                                    {
+                                        <li>
+                                            <a asp-action="ProductDetail" asp-route-id="@Model.Id" asp-route-pageNumber="@(currentPage + 1)" asp-route-pageSize="ViewBag.PageSize">Tiếp →</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav> 
+                        </div>
+                    </div>
+                    <!-- Pills content -->
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="border rounded-3 px-4 py-3 bg-light h-100 shadow-sm">
+                    <h3 class="mb-3 fw-bold border-bottom pb-2">Sản phẩm tương tự</h3>
+                    @if (similarProducts != null && similarProducts.Any())
+                    {
+                        <div class="similar-products">
+                            @foreach (var product in similarProducts)
+                            {
+                                <a asp-action="ProductDetail" asp-route-id="@product.Id" class="text-decoration-none">
+                                    <div class="mb-3 d-flex align-items-center border-bottom pb-3 product-item" style="cursor: pointer;">
+                                        <div class="flex-shrink-0">
+                                            @if (product.ProductAvatar != null)
+                                            {
+                                                <img src="/img/products/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                                     class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                                     alt="@product.Name" class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                                            }
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1 fw-semibold text-truncate text-body">@product.Name</h4>
+                                            <p class="mb-0 text-muted fw-bold">@product.Price.ToString("C", new CultureInfo("vi-VN"))</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-search fs-3 text-muted"></i>
+                            <p class="mt-2 mb-0 text-muted">Không có sản phẩm tương tự</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').min = today;
+    document.getElementById('endDate').min = today;
+
+    // Khi ngày bắt đầu thay đổi, cập nhật ngày tối thiểu cho ngày trả
+    document.getElementById('startDate').addEventListener('change', function() {
+        const startDate = this.value;
+        document.getElementById('endDate').min = startDate;
+
+        // Nếu ngày trả nhỏ hơn ngày bắt đầu mới, cập nhật ngày trả
+        if (document.getElementById('endDate').value < startDate) {
+            document.getElementById('endDate').value = startDate;
+        }
+    });
+
+    
+</script>
+<style>
+    h1 {
+        font-family: 'Quicksand', sans-serif;
+        font-weight: 700; 
+        color: #333;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .input-group-text {
+        display: flex;
+        align-items: center;
+        height: 100%; 
+        padding: 0.375rem 0.75rem;
+    }
+
+    .form-control {
+        margin: 0;
+    }
+    .nav-tabs {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+        .nav-tabs .nav-link {
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            position: relative;
+            color: #495057;
+            text-align: left;
+        }
+
+            .nav-tabs .nav-link::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background-color: transparent;
+                transition: all 0.3s ease;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: var(--primary-color);
+                background-color: transparent;
+            }
+
+                .nav-tabs .nav-link.active::after {
+                    background-color: var(--primary-color);
+                }
+
+            .nav-tabs .nav-link:hover:not(.active)::after {
+                background-color: #dee2e6;
+            }
+    .size-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .size-option {
+        position: relative;
+    }
+
+    .size-checkbox {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .size-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .size-checkbox:checked + .size-label {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .size-checkbox:focus + .size-label {
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+
+    .size-label:hover {
+        background-color: #f8f9fa;
+    }
+
+    .size-checkbox:checked + .size-label:hover {
+        background-color: var(--primary-color);
+    }
+</style>
+@functions {
+    public string GetColorHex(ProductColor? color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
+}

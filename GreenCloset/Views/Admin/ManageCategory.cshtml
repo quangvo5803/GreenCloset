@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Quản lí danh mục";
+}
+<div class="pc-container">
+    <div class="pc-content">
+            <h2 class="text-center">Danh sách danh mục</h2>
+            <p class="text-end">
+                <a asp-action="CreateCategory" class="btn btn-primary">Tạo danh mục mới</a>
+            </p>
+
+            <table id="tblData" class="table table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên danh mục</th>
+                        <th>Số sản phẩm</th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+
+        <p class="text-end mt-2">
+            <a asp-action="Index" class="btn btn-secondary">Trở về trang chính</a>
+        </p>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/Admin/Category.js"></script>
+}
+

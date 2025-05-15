@@ -9,5 +9,9 @@ namespace BussinessLayer.Interface
     public interface IFacedeService
     {
         IUserService User { get; }
+        ICategoryService Category { get; }
+        IProductService Product { get; }
+        IItemImageService ItemImage { get; }
+        ICartService Cart { get; }
     }
 }

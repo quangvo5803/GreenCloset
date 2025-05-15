@@ -3,13 +3,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using BussinessLayer.Interface;
 using DataAccess.Models;
-using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Repository.Implement;
+using Utility.Email;
+using Utility.Password;
 
 namespace BussinessLayer.Implement
 {
@@ -17,11 +17,17 @@ namespace BussinessLayer.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
+        private readonly IEmailQueue _emailQueue;
 
-        public UserService(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public UserService(
+            IUnitOfWork unitOfWork,
+            IConfiguration configuration,
+            IEmailQueue emailQueue
+        )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
+            _emailQueue = emailQueue;
         }
 
         public User? GetUserByEmail(string email)
@@ -36,25 +42,25 @@ namespace BussinessLayer.Implement
             _unitOfWork.Save();
         }
 
-        public async Task<bool> Login(HttpContext httpContext, string email, string password)
+        public async Task<User?> Login(HttpContext httpContext, string email, string password)
         {
             var user = _unitOfWork.User.Get(u => u.Email == email);
             if (user == null || !PasswordHasher.VerifyPassword(password, user.PasswordHash))
             {
-                return false;
+                return null;
             }
 
             await SignInUser(httpContext, user);
-            return true;
+            return user;
         }
 
-        public async Task<bool> LoginWithGoogle(HttpContext httpContex, ClaimsPrincipal principal)
+        public async Task<User?> LoginWithGoogle(HttpContext httpContex, ClaimsPrincipal principal)
         {
             var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
             if (string.IsNullOrEmpty(email))
-                return false;
+                return null;
 
             var user = _unitOfWork.User.Get(u => u.Email == email);
             if (user == null)
@@ -69,16 +75,49 @@ namespace BussinessLayer.Implement
                 };
                 _unitOfWork.User.Add(user);
                 _unitOfWork.Save();
-                var emailSender = new EmailSender(
-                    _configuration,
-                    new LoggerFactory().CreateLogger<EmailSender>()
-                );
                 string subject = "Xác nhận đăng kí tài khoản GreenCloset";
                 string body = GetComfirmationEmailGoogle();
-                emailSender.SendEmailAsync(email, subject, body).Wait();
+                _emailQueue.QueueEmail(email, subject, body);
             }
             await SignInUser(httpContex, user);
-            return true;
+            return user;
+        }
+
+        public async Task<User?> LoginWithFacebook(
+            HttpContext httpContex,
+            ClaimsPrincipal principal
+        )
+        {
+            var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var name =
+                principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                ?? principal.Identity?.Name;
+
+            if (string.IsNullOrEmpty(email))
+                return null;
+
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    UserName = name ?? email.Split('@')[0],
+                    PasswordHash = PasswordHasher.HashPassword("Abc123@"),
+                    Role = UserRole.Customer,
+                    IsEmailConfirmed = true,
+                };
+                _unitOfWork.User.Add(user);
+                _unitOfWork.Save();
+
+                string subject = "Xác nhận đăng kí tài khoản GreenCloset";
+                string body = GetComfirmationEmailGoogle();
+
+                _emailQueue.QueueEmail(email, subject, body);
+            }
+
+            await SignInUser(httpContex, user);
+            return user;
         }
 
         public bool Register(string email, string password)
@@ -88,32 +127,17 @@ namespace BussinessLayer.Implement
                 return false;
             }
             string hashedPassword = PasswordHasher.HashPassword(password);
-            var comformationToken = Guid.NewGuid().ToString();
             var user = new User
             {
                 Email = email,
                 PasswordHash = hashedPassword,
-                ComfirmationToken = comformationToken,
                 Role = UserRole.Customer,
                 IsEmailConfirmed = false,
             };
             _unitOfWork.User.Add(user);
             _unitOfWork.Save();
             //Tạo token
-            var token = Convert.ToBase64String(
-                Encoding.UTF8.GetBytes($"{user.Email}:{comformationToken}")
-            );
-            //Tạo link xác nhận
-            var emailSender = new EmailSender(
-                _configuration,
-                new LoggerFactory().CreateLogger<EmailSender>()
-            );
-
-            string confirmUrl =
-                $"{_configuration["AppSettings:BaseUrl"]}/User/ConfirmEmail?token={token}";
-            string subject = "Xác nhận đăng kí tài khoản GreenCloset";
-            string body = GetComfirmationEmail(confirmUrl);
-            emailSender.SendEmailAsync(email, subject, body).Wait();
+            SendEmailComfirm(email);
             return true;
         }
 
@@ -130,13 +154,46 @@ namespace BussinessLayer.Implement
             return true;
         }
 
+        public bool ResetPassword(string email, string password)
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                return false;
+            }
+            user.ComfirmationToken = null;
+            user.PasswordHash = PasswordHasher.HashPassword(password);
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public void SendEmailComfirm(string email)
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user != null)
+            {
+                var comformationToken = Guid.NewGuid().ToString();
+                var token = Convert.ToBase64String(
+                    Encoding.UTF8.GetBytes($"{email}:{comformationToken}")
+                );
+                user.ComfirmationToken = comformationToken;
+                _unitOfWork.User.Update(user);
+                _unitOfWork.Save();
+                //Tạo link xác nhận
+                string confirmUrl =
+                    $"{_configuration["AppSettings:BaseUrl"]}/Home/ConfirmEmail?token={token}";
+                string subject = "Xác nhận đăng kí tài khoản Green Closet";
+                string body = GetComfirmationEmail(confirmUrl);
+                _emailQueue.QueueEmail(email, subject, body);
+            }
+        }
+
         public bool ConfirmEmail(string token)
         {
-            var decodedBytes = Convert.FromBase64String(token);
-            var decodedString = Encoding.UTF8.GetString(decodedBytes);
-            var email = decodedString.Split(':')[0];
+            var email = IsValidToken(token);
             var user = _unitOfWork.User.Get(u => u.Email == email);
-            if (user == null || user.ComfirmationToken != token)
+            if (user == null)
             {
                 return false;
             }
@@ -164,6 +221,41 @@ namespace BussinessLayer.Implement
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity)
             );
+        }
+
+        public void SendResetPasswordEmail(string email)
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                return;
+            }
+            var comfirmationToken = Guid.NewGuid().ToString();
+            user.ComfirmationToken = comfirmationToken;
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+            var token = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes($"{email}:{comfirmationToken}")
+            );
+            string confirmUrl =
+                $"{_configuration["AppSettings:BaseUrl"]}/Home/ResetPassword?token={token}";
+            string subject = "Đặt lại mật khẩu tài khoản GreenCloset";
+            string body = GetForgotPasswordEmail(confirmUrl);
+            _emailQueue.QueueEmail(email, subject, body);
+        }
+
+        public string? IsValidToken(string token)
+        {
+            var decodedBytes = Convert.FromBase64String(token);
+            var decodedString = Encoding.UTF8.GetString(decodedBytes);
+            var email = decodedString.Split(':')[0];
+            var comfirmationToken = decodedString.Split(':')[1];
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null || user.ComfirmationToken != comfirmationToken)
+            {
+                return null;
+            }
+            return email;
         }
 
         public bool IsValidPassword(string password)
@@ -198,10 +290,10 @@ namespace BussinessLayer.Implement
                 + $"</tr>"
                 + $"</tbody>"
                 + $"</table>"
-                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Cảm ơn bạn đã tin tưởng Vi-Learning</p>"
-                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Vi-Learning</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Cảm ơn bạn đã tin tưởng Green Closet</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Green Closet</p>"
                 + $"<div style=\"text-align: center; margin-top: 20px;\">"
-                + $"<img src=\"https://imgur.com/a/QeTgPbz\" alt=\"Vi-Learning Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
+                + $"<img src=\"https://i.imgur.com/0Iphozz.png\" alt=\"Green Closet Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
                 + $"</div>"
                 + $"</td>"
                 + $"</tr>"
@@ -230,7 +322,49 @@ namespace BussinessLayer.Implement
                 + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Cảm ơn bạn đã tin tưởng Green Closet</p>"
                 + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Green Closet</p>"
                 + $"<div style=\"text-align: center; margin-top: 20px;\">"
-                + $"<img src=\"https://imgur.com/a/QeTgPbz\" alt=\"Vi-Learning Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
+                + $"<img src=\"https://i.imgur.com/0Iphozz.png\" alt=\"Green Closet Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
+                + $"</div>"
+                + $"</td>"
+                + $"</tr>"
+                + $"</table>"
+                + $"</div>"
+                + $"</td>"
+                + $"<td></td>"
+                + $"</tr>"
+                + $"</table>";
+        }
+
+        private string GetForgotPasswordEmail(string confirmUrl)
+        {
+            return $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\">"
+                + $"<tr>"
+                + $"<td></td>"
+                + $"<td class=\"container\" style=\"margin: 0 auto !important; max-width: 600px; padding: 0; padding-top: 24px; width: 600px;\">"
+                + $"<div class=\"content\" style=\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;\">"
+                + $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"main\" style=\"background: #f0f8f0; border: 1px solid #2e7d32; border-radius: 16px; width: 100%; text-align: center;\">"
+                + $"<tr>"
+                + $"<td class=\"wrapper\" style=\"box-sizing: border-box; padding: 24px;\">"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Chào bạn</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Green Closet của mình. Nhấp vào nút bên dưới để đặt lại mật khẩu của bạn.</p>"
+                + $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"btn btn-primary\" style=\"min-width: 100% !important; width: 100%;\">"
+                + $"<tbody>"
+                + $"<tr>"
+                + $"<td align=\"center\" style=\"padding-bottom: 16px;\">"
+                + $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">"
+                + $"<tbody>"
+                + $"<tr>"
+                + $"<td><a href='{confirmUrl}' style=\"background-color: #2e7d32; border: solid 2px #2e7d32; border-radius: 4px; box-sizing: border-box; color: #ffffff; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize;\">Đặt lại mật khẩu</a></td>"
+                + $"</tr>"
+                + $"</tbody>"
+                + $"</table>"
+                + $"</td>"
+                + $"</tr>"
+                + $"</tbody>"
+                + $"</table>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #bf360c;\">Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này hoặc liên hệ với nhóm hỗ trợ của chúng tôi nếu bạn có bất kỳ thắc mắc nào.</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #bf360c;\">Green Closet</p>"
+                + $"<div style=\"text-align: center; margin-top: 20px;\">"
+                + $"<img src=\"https://i.imgur.com/0Iphozz.png\" alt=\"Green Closet Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
                 + $"</div>"
                 + $"</td>"
                 + $"</tr>"

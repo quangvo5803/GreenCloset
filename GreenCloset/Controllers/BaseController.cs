@@ -15,6 +15,7 @@ namespace GreenCloset.Controllers
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            ViewBag.Categories = _facadeService.Category.GetAllCategories();
             base.OnActionExecuting(context);
         }
     }

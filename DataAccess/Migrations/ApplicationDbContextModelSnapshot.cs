@@ -22,21 +22,6 @@ namespace DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CategoryProduct", b =>
-                {
-                    b.Property<int>("CategoriesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CategoriesId", "ProductsId");
-
-                    b.HasIndex("ProductsId");
-
-                    b.ToTable("ProductCategory", (string)null);
-                });
-
             modelBuilder.Entity("DataAccess.Models.Cart", b =>
                 {
                     b.Property<int>("Id")
@@ -48,8 +33,20 @@ namespace DataAccess.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("SizeClother")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SizeShoe")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -214,6 +211,18 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Available")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("BuyPrice")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("Color")
+                        .HasColumnType("int");
+
+                    b.Property<double>("DepositPrice")
+                        .HasColumnType("float");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -227,11 +236,25 @@ namespace DataAccess.Migrations
                     b.Property<int?>("ProductAvatarId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RentalCount")
+                        .HasColumnType("int");
+
+                    b.PrimitiveCollection<string>("SizeClother")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("SizeShoe")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductAvatarId")
                         .IsUnique()
                         .HasFilter("[ProductAvatarId] IS NOT NULL");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Products");
                 });
@@ -279,19 +302,19 @@ namespace DataAccess.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CategoryProduct", b =>
+            modelBuilder.Entity("ProductCategory", b =>
                 {
-                    b.HasOne("DataAccess.Models.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("CategoriesId")
+                        .HasColumnType("int");
 
-                    b.HasOne("DataAccess.Models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("ProductsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoriesId", "ProductsId");
+
+                    b.HasIndex("ProductsId");
+
+                    b.ToTable("ProductCategory");
                 });
 
             modelBuilder.Entity("DataAccess.Models.Cart", b =>
@@ -385,7 +408,28 @@ namespace DataAccess.Migrations
                         .HasForeignKey("DataAccess.Models.Product", "ProductAvatarId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("DataAccess.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("ProductAvatar");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProductCategory", b =>
+                {
+                    b.HasOne("DataAccess.Models.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DataAccess.Models.Feedback", b =>

@@ -1,4 +1,4 @@
-﻿namespace GreenCloset.Utility
+﻿namespace Utility.Password
 {
     public static class PasswordHasher
     {

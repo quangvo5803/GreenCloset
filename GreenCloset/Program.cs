@@ -1,12 +1,13 @@
-using BussinessLayer.Implement;
+﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Data;
-using GreenCloset.Utility;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Repository.Implement;
 using Repository.Interface;
+using Utility.Email;
 
 namespace GreenCloset
 {
@@ -32,6 +33,27 @@ namespace GreenCloset
                     {
                         options.ClientId = builder.Configuration["GoogleKeys:ClientID"];
                         options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
+                        options.Events.OnRemoteFailure = context =>
+                        {
+                            context.Response.Redirect("/Home/Login");
+                            context.HandleResponse();
+                            return Task.CompletedTask;
+                        };
+                    }
+                )
+                //Login with Facebook
+                .AddFacebook(
+                    FacebookDefaults.AuthenticationScheme,
+                    options =>
+                    {
+                        options.AppId = builder.Configuration["FacebookKeys:AppID"];
+                        options.AppSecret = builder.Configuration["FacebookKeys:AppSecret"];
+                        options.Events.OnRemoteFailure = context =>
+                        {
+                            context.Response.Redirect("/Home/Login");
+                            context.HandleResponse();
+                            return Task.CompletedTask;
+                        };
                     }
                 );
             builder.Services.AddDistributedMemoryCache();
@@ -44,8 +66,9 @@ namespace GreenCloset
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IFacedeService, FacadeService>();
-
+            builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
             builder.Services.AddSingleton<EmailSender>();
+            builder.Services.AddHostedService<BackgroundEmailSender>();
             var app = builder.Build();
 
             app.UseStaticFiles();

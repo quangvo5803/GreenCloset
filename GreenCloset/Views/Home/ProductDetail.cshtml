@@ -1,7 +1,7 @@
 ﻿@model Product
 @Html.AntiForgeryToken()
 @{
-    ViewData["Title"] = "Product Detail";
+    ViewData["Title"] = "Thông tin sản phẩm";
     var feedbacks = ViewBag.Feedbacks as IEnumerable<Feedback>;
     double avgRating = feedbacks != null && feedbacks.Any() ? feedbacks.Average(f => f.FeedbackStars) : 0;
     int totalReviews = feedbacks != null && feedbacks.Any() ?  feedbacks.Count() : 0;
@@ -38,7 +38,7 @@
                                 {
                                     <div class="carousel-item @(imageIndex == 0 ? "active" : "")">
                                         <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: darkgrey;">
-                                            <a class="venobox" data-gallary="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
+                                            <a class="venobox" data-gall="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
                                                 <img class="rounded-4" src="/image/products/@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
                                             </a>
                                         </div>
@@ -376,7 +376,7 @@
                                         <div class="flex-shrink-0">
                                             @if (product.ProductAvatar != null)
                                             {
-                                                <img src="/img/products/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                                <img src="/image/products/@product.ProductAvatar.ImagePath" alt="@product.Name"
                                                      class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
                                             }
                                             else

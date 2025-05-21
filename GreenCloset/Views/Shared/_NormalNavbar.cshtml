@@ -1,5 +1,5 @@
 ﻿@{
-    var isLoggedIn = User.Identity.IsAuthenticated;
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
     var pageTile = ViewData["Title"] as string;
     var categories = ViewBag.Categories as IEnumerable<Category>;
     categories = categories?.Take(8);

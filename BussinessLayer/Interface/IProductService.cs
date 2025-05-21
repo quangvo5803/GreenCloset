@@ -7,6 +7,11 @@ namespace BussinessLayer.Interface
     {
         Product? GetProductById(int id, string? includeProperties = null);
         IEnumerable<Product> GetAllProducts(string? includeProperties = null);
+        IEnumerable<Product> GetLessorProducts(
+            string? email = null,
+            string? includeProperties = null
+        );
+
         IEnumerable<Product> GetFeatureProduct(string? includeProperties = null);
         IEnumerable<Product> GetSimilarProduct(Product product, string? includeProperties = null);
         Task AddProduct(

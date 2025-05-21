@@ -1,20 +1,8 @@
 ﻿using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Repository.Implement;
-using Repository.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Utility.Email;
 
 namespace BussinessLayer.Implement
@@ -26,20 +14,24 @@ namespace BussinessLayer.Implement
         private readonly IEmailQueue _emailQueue;
         private readonly IConfiguration _configuration;
 
-        public OrderService(IUnitOfWork unitOfWork, IVnPayService vpnPayService, IConfiguration configuration, IEmailQueue emailQueue)
+        public OrderService(
+            IUnitOfWork unitOfWork,
+            IVnPayService vpnPayService,
+            IConfiguration configuration,
+            IEmailQueue emailQueue
+        )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _vpnPayService = vpnPayService;
             _emailQueue = emailQueue;
-           
         }
 
         //view checkout
         public IEnumerable<IGrouping<User?, Cart>> GetGroupedCartItems(List<int> selectedItems)
         {
-            var productsInCart = _unitOfWork.Cart
-                .GetRange(
+            var productsInCart = _unitOfWork
+                .Cart.GetRange(
                     c => selectedItems.Contains(c.Id),
                     includeProperties: "Product,Product.ProductAvatar,Product.User"
                 )
@@ -54,20 +46,35 @@ namespace BussinessLayer.Implement
 
         //Payment by COD
         public Order? ProcessOrderByCOD(
-            List<int> selectedItems, string phoneNumber, 
-            DeliveryOption deliveryOptions, string deliveryAddress,
-            PaymentMethod paymentMethod, Guid userId)
+            List<int> selectedItems,
+            string phoneNumber,
+            DeliveryOption deliveryOptions,
+            string deliveryAddress,
+            PaymentMethod paymentMethod,
+            Guid userId
+        )
         {
-            var productsInCart = _unitOfWork.Cart.GetRange
-                (c => selectedItems.Contains(c.Id), includeProperties: "Product,Product.User").ToList();
+            var productsInCart = _unitOfWork
+                .Cart.GetRange(
+                    c => selectedItems.Contains(c.Id),
+                    includeProperties: "Product,Product.User"
+                )
+                .ToList();
             if (!productsInCart.Any())
             {
                 return null;
             }
-                var order = CreateOrder(userId, phoneNumber, deliveryOptions, deliveryAddress, paymentMethod, productsInCart);
-                _unitOfWork.Order.Add(order);
-                var removeCartItem = _unitOfWork.Cart.GetRange(c => selectedItems.Contains(c.Id));
-                _unitOfWork.Cart.RemoveRange(removeCartItem);
+            var order = CreateOrder(
+                userId,
+                phoneNumber,
+                deliveryOptions,
+                deliveryAddress,
+                paymentMethod,
+                productsInCart
+            );
+            _unitOfWork.Order.Add(order);
+            var removeCartItem = _unitOfWork.Cart.GetRange(c => selectedItems.Contains(c.Id));
+            _unitOfWork.Cart.RemoveRange(removeCartItem);
 
             try
             {
@@ -76,13 +83,28 @@ namespace BussinessLayer.Implement
                 var customerName = user?.UserName ?? "Khách hàng";
 
                 //Người bán
-                SendEmailsToSellers(productsInCart, userId, paymentMethod, deliveryOptions, deliveryAddress, phoneNumber);
+                SendEmailsToSellers(
+                    productsInCart,
+                    userId,
+                    paymentMethod,
+                    deliveryOptions,
+                    deliveryAddress,
+                    phoneNumber
+                );
 
                 //người mua
                 var totalPrices = order.TotalPrice;
                 if (user != null && !string.IsNullOrWhiteSpace(user.Email))
                 {
-                    SendEmailToBuyer(productsInCart, userId, phoneNumber, paymentMethod, deliveryOptions, deliveryAddress, totalPrices);
+                    SendEmailToBuyer(
+                        productsInCart,
+                        userId,
+                        phoneNumber,
+                        paymentMethod,
+                        deliveryOptions,
+                        deliveryAddress,
+                        totalPrices
+                    );
                 }
                 return order;
             }
@@ -90,24 +112,39 @@ namespace BussinessLayer.Implement
             {
                 throw new Exception("Thanh toán COD thất bại", ex);
             }
-
         }
 
         //Payment by VnPay
         public string? ProcessOrderByVnPay(
-            List<int> selectedItems, string phoneNumber, 
-            DeliveryOption deliveryOptions, string deliveryAddress, 
-            PaymentMethod paymentMethod, Guid userId, HttpContext httpContext)
+            List<int> selectedItems,
+            string phoneNumber,
+            DeliveryOption deliveryOptions,
+            string deliveryAddress,
+            PaymentMethod paymentMethod,
+            Guid userId,
+            HttpContext httpContext
+        )
         {
-            var productsInCart = _unitOfWork.Cart.GetRange
-                (c => selectedItems.Contains(c.Id), includeProperties: "Product,Product.User").ToList();
+            var productsInCart = _unitOfWork
+                .Cart.GetRange(
+                    c => selectedItems.Contains(c.Id),
+                    includeProperties: "Product,Product.User"
+                )
+                .ToList();
 
             if (!productsInCart.Any())
             {
                 return null;
             }
 
-            var order = CreateOrder(userId, phoneNumber, deliveryOptions, deliveryAddress, paymentMethod, productsInCart);
+            var order = CreateOrder(
+                userId,
+                phoneNumber,
+                deliveryOptions,
+                deliveryAddress,
+                paymentMethod,
+                productsInCart
+            );
             _unitOfWork.Order.Add(order);
             _unitOfWork.Save();
             var totalPrice = order.TotalPrice;
@@ -124,18 +161,20 @@ namespace BussinessLayer.Implement
 
         public bool VNPayReturn(IQueryCollection query, string userId, out int orderId)
         {
-            orderId = 0;     
+            orderId = 0;
             var response = _vpnPayService.PaymentExecute(query);
             if (response == null || response.VnPayResponseCode != "00")
             {
                 if (int.TryParse(response?.OrderDescription, out int failOrderId))
                 {
-                    var orderDetailList = _unitOfWork.OrderDetail.GetRange(o => o.Id == failOrderId);
+                    var orderDetailList = _unitOfWork.OrderDetail.GetRange(o =>
+                        o.Id == failOrderId
+                    );
                     _unitOfWork.OrderDetail.RemoveRange(orderDetailList);
                     _unitOfWork.Save();
 
                     var order = _unitOfWork.Order.Get(o => o.Id == failOrderId);
-                    if(order != null)
+                    if (order != null)
                     {
                         _unitOfWork.Order.Remove(order);
                         _unitOfWork.Save();
@@ -146,9 +185,14 @@ namespace BussinessLayer.Implement
 
             if (int.TryParse(response.OrderDescription, out int orderSuccessId))
             {
-                var order =_unitOfWork.Order.Get(o => o.Id ==  orderSuccessId, includeProperties: "User");
-                var orderDetail = _unitOfWork.OrderDetail
-                    .GetRange(od => od.OrderId == orderSuccessId, includeProperties: "Product,Product.User");
+                var order = _unitOfWork.Order.Get(
+                    o => o.Id == orderSuccessId,
+                    includeProperties: "User"
+                );
+                var orderDetail = _unitOfWork.OrderDetail.GetRange(
+                    od => od.OrderId == orderSuccessId,
+                    includeProperties: "Product,Product.User"
+                );
                 //người bán
                 SendEmailsToSellers(
                     orderDetail.Select(od => new Cart
@@ -156,7 +200,7 @@ namespace BussinessLayer.Implement
                         Product = od.Product,
                         Count = od.Quantity,
                         StartDate = od.StartDate,
-                        EndDate = od.EndDate
+                        EndDate = od.EndDate,
                     }),
                     order!.UserId,
                     order.PaymentMethod,
@@ -171,7 +215,7 @@ namespace BussinessLayer.Implement
                         Product = od.Product,
                         Count = od.Quantity,
                         StartDate = od.StartDate,
-                        EndDate = od.EndDate
+                        EndDate = od.EndDate,
                     }),
                     order.UserId,
                     order.PhoneNumber!,
@@ -180,20 +224,23 @@ namespace BussinessLayer.Implement
                     order.ShippingAddress!,
                     order.TotalPrice
                 );
-                var purchasedProductIds = _unitOfWork.OrderDetail
-                    .GetRange(od =>  od.OrderId == orderSuccessId, includeProperties: "Product")
+                var purchasedProductIds = _unitOfWork
+                    .OrderDetail.GetRange(
+                        od => od.OrderId == orderSuccessId,
+                        includeProperties: "Product"
+                    )
                     .Select(od => od.ProductId)
                     .ToList();
-  
-                var cartItemRemove = _unitOfWork.Cart
-                    .GetRange(c => c.UserId.ToString() == userId && purchasedProductIds.Contains(c.ProductId));
+
+                var cartItemRemove = _unitOfWork.Cart.GetRange(c =>
+                    c.UserId.ToString() == userId && purchasedProductIds.Contains(c.ProductId)
+                );
 
                 _unitOfWork.Cart.RemoveRange(cartItemRemove);
                 _unitOfWork.Save();
 
                 orderId = orderSuccessId;
                 return true;
-                
             }
 
             return false;
@@ -202,12 +249,12 @@ namespace BussinessLayer.Implement
         //Tạo order
         private Order CreateOrder(
             Guid userId,
-
             string phoneNumber,
             DeliveryOption deliveryOptions,
             string deliveryAddress,
             PaymentMethod paymentMethod,
-            IEnumerable<Cart> productsInCart)
+            IEnumerable<Cart> productsInCart
+        )
         {
             double totalPrice = productsInCart.Sum(p =>
             {
@@ -229,31 +276,32 @@ namespace BussinessLayer.Implement
                 DeliveryOption = deliveryOptions,
                 ShippingAddress = deliveryAddress,
                 PaymentMethod = paymentMethod,
-                OrderDetails = productsInCart.Select(p => new OrderDetail
-                {
-                    ProductId = p.ProductId,
-                    Quantity = p.Count,
-                    UnitPrice = p.Product != null ? p.Product.Price : 0,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate
-                }).ToList()
+                OrderDetails = productsInCart
+                    .Select(p => new OrderDetail
+                    {
+                        ProductId = p.ProductId,
+                        Quantity = p.Count,
+                        UnitPrice = p.Product != null ? p.Product.Price : 0,
+                        StartDate = p.StartDate,
+                        EndDate = p.EndDate,
+                    })
+                    .ToList(),
             };
         }
+
         private void SendEmailsToSellers(
             IEnumerable<Cart> productsInCart,
             Guid userId,
             PaymentMethod paymentMethod,
             DeliveryOption deliveryOptions,
             string deliveryAddress,
-            string phoneNumber)
+            string phoneNumber
+        )
         {
             var storeProductMap = productsInCart
                 .Where(item => item.Product != null)
                 .GroupBy(item => item.Product?.User?.Email ?? "abc@gmail.com")
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.ToList()
-                );
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             var customerName = user?.UserName ?? "Khách hàng";
@@ -276,15 +324,17 @@ namespace BussinessLayer.Implement
                         return i.Product!.Price * i.Count * rentalDays;
                     });
 
-                    string productDetails = string.Join("", items.Select(i =>
-                    {
-                        var product = i.Product!;
-                        var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                        var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                        var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
-                        double itemTotal = product.Price * i.Count * rentalDays;
+                    string productDetails = string.Join(
+                        "",
+                        items.Select(i =>
+                        {
+                            var product = i.Product!;
+                            var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                            var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                            var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
+                            double itemTotal = product.Price * i.Count * rentalDays;
 
-                        return $@"
+                            return $@"
                     <tr>
                         <td style='padding: 8px; border: 1px solid #ddd;'>{product.Name}</td>
                         <td style='padding: 8px; border: 1px solid #ddd;'>{product.Price:N0} đ</td>
@@ -292,15 +342,23 @@ namespace BussinessLayer.Implement
                         <td style='padding: 8px; border: 1px solid #ddd;'>{rentalDays} ngày ({startDate} - {endDate})</td>
                         <td style='padding: 8px; border: 1px solid #ddd;'>{itemTotal:N0} đ</td>
                     </tr>";
-                    }));
+                        })
+                    );
 
-                    string body = SellerEmailInformation(userId, storeTotal, productDetails, paymentMethod, deliveryOptions, deliveryAddress, phoneNumber);
+                    string body = SellerEmailInformation(
+                        userId,
+                        storeTotal,
+                        productDetails,
+                        paymentMethod,
+                        deliveryOptions,
+                        deliveryAddress,
+                        phoneNumber
+                    );
                     string subject = $"Đơn hàng mới từ khách hàng {customerName}";
 
                     _emailQueue.QueueEmail(storeEmail, subject, body);
                 }
             }
-            
         }
 
         private void SendEmailToBuyer(
@@ -310,7 +368,8 @@ namespace BussinessLayer.Implement
             PaymentMethod paymentMethod,
             DeliveryOption deliveryOptions,
             string deliveryAddress,
-            double totalPrices)
+            double totalPrices
+        )
         {
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             if (user == null || string.IsNullOrWhiteSpace(user.Email))
@@ -322,20 +381,25 @@ namespace BussinessLayer.Implement
                 .ToList();
             if (productGroupsByStore != null)
             {
-                string groupedProductDetail = string.Join("<br/>", productGroupsByStore.Select(group =>
-                {
-                    Guid? storeId = group.Key;
-                    var storeName = _unitOfWork.User.Get(u => u.Id == storeId)?.UserName ?? "Không rõ";
-
-                    string productRows = string.Join("", group.Select(i =>
+                string groupedProductDetail = string.Join(
+                    "<br/>",
+                    productGroupsByStore.Select(group =>
                     {
-                        var product = i.Product!;
-                        var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                        var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                        var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
-                        double itemTotal = product.Price * i.Count * rentalDays;
+                        Guid? storeId = group.Key;
+                        var storeName =
+                            _unitOfWork.User.Get(u => u.Id == storeId)?.UserName ?? "Không rõ";
 
-                        return $@"
+                        string productRows = string.Join(
+                            "",
+                            group.Select(i =>
+                            {
+                                var product = i.Product!;
+                                var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                                var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                                var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
+                                double itemTotal = product.Price * i.Count * rentalDays;
+
+                                return $@"
                         <tr>
                             <td style='padding: 8px; border: 1px solid #ddd;'>{product.Name}</td>
                             <td style='padding: 8px; border: 1px solid #ddd;'>{product.Price:N0} đ</td>
@@ -343,9 +407,10 @@ namespace BussinessLayer.Implement
                             <td style='padding: 8px; border: 1px solid #ddd;'>{rentalDays} ngày ({startDate} - {endDate})</td>
                             <td style='padding: 8px; border: 1px solid #ddd;'>{itemTotal:N0} đ</td>
                         </tr>";
-                        }));
+                            })
+                        );
 
-                    return $@"
+                        return $@"
                     <h3 style='color: #2e7d32;'>Cửa hàng: {storeName}</h3>
                     <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
                         <thead>
@@ -361,22 +426,33 @@ namespace BussinessLayer.Implement
                             {productRows}
                         </tbody>
                     </table>";
-                }));
+                    })
+                );
 
                 string buyerBody = BuyerEmailInformation(
-                userId,
-                phoneNumber,
-                paymentMethod,
-                deliveryOptions,
-                deliveryAddress,
-                groupedProductDetail,
-                totalPrices);
+                    userId,
+                    phoneNumber,
+                    paymentMethod,
+                    deliveryOptions,
+                    deliveryAddress,
+                    groupedProductDetail,
+                    totalPrices
+                );
 
                 string buyerSubject = "Xác nhận đơn hàng của bạn";
                 _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
-            }       
+            }
         }
-        private string SellerEmailInformation(Guid userId, double storeTotal, string productDetails, PaymentMethod paymentMethod, DeliveryOption deliveryOptions, string deliveryAddress,string phoneNumber)
+
+        private string SellerEmailInformation(
+            Guid userId,
+            double storeTotal,
+            string productDetails,
+            PaymentMethod paymentMethod,
+            DeliveryOption deliveryOptions,
+            string deliveryAddress,
+            string phoneNumber
+        )
         {
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             var customerName = user?.UserName ?? "Khách hàng";
@@ -419,13 +495,14 @@ namespace BussinessLayer.Implement
         }
 
         private string BuyerEmailInformation(
-        Guid userId,
-        string phoneNumber,
-        PaymentMethod paymentMethod,
-        DeliveryOption deliveryOptions,
-        string deliveryAddress,
-        string groupedProductDetail,
-        double totalPrices)
+            Guid userId,
+            string phoneNumber,
+            PaymentMethod paymentMethod,
+            DeliveryOption deliveryOptions,
+            string deliveryAddress,
+            string groupedProductDetail,
+            double totalPrices
+        )
         {
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             var customerName = user?.UserName ?? "Khách hàng";
@@ -454,6 +531,27 @@ namespace BussinessLayer.Implement
             </div>";
         }
 
-        
+        public IEnumerable<Order> GetOrdersByProductOwner(string? email = null)
+        {
+            if (string.IsNullOrEmpty(email))
+                return _unitOfWork.Order.GetAll(includeProperties: "OrderDetails.Product");
+
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+                return new List<Order>();
+
+            var orders = _unitOfWork
+                .Order.GetRange(
+                    order =>
+                        order.OrderDetails != null
+                        && order.OrderDetails.Any(od =>
+                            od.Product != null && od.Product.UserId == user.Id
+                        ),
+                    includeProperties: "OrderDetails.Product"
+                )
+                .ToList();
+
+            return orders;
+        }
     }
 }

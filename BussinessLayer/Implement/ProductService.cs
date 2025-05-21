@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using BussinessLayer.Interface;
+﻿using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +25,19 @@ namespace BussinessLayer.Implement
         public IEnumerable<Product> GetAllProducts(string? includeProperties = null)
         {
             return _unitOfWork.Product.GetAll(includeProperties);
+        }
+
+        public IEnumerable<Product> GetLessorProducts(
+            string? email = null,
+            string? includeProperties = null
+        )
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                return _unitOfWork.Product.GetAll();
+            }
+            return _unitOfWork.Product.GetRange(p => p.UserId == user.Id, includeProperties);
         }
 
         public IEnumerable<Product> GetFeatureProduct(string? includeProperties = null)
@@ -62,7 +74,6 @@ namespace BussinessLayer.Implement
             List<IFormFile>? gallery
         )
         {
-
             product.UserId = userId;
             // Add product
             _unitOfWork.Product.Add(product);
@@ -97,8 +108,17 @@ namespace BussinessLayer.Implement
                     ImagePath = avatarFileName,
                     ProductId = product.Id,
                 };
-                _unitOfWork.ItemImage.Add(productAvatar);
-                _unitOfWork.Save();
+                try
+                {
+                    _unitOfWork.ItemImage.Add(productAvatar);
+                    _unitOfWork.Save();
+                }
+                catch (Exception ex)
+                {
+                    // Log hoặc xem ex.Message, ex.StackTrace để biết lỗi gì
+                    Console.WriteLine(ex.Message);
+                    throw; // hoặc xử lý khác
+                }
                 product.ProductAvatarId = productAvatar.Id;
             }
             //Add gallery

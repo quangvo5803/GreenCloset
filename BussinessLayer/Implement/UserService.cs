@@ -204,7 +204,7 @@ namespace BussinessLayer.Implement
             return true;
         }
 
-        private async Task SignInUser(HttpContext httpContext, User user)
+        public async Task SignInUser(HttpContext httpContext, User user)
         {
             var claims = new List<Claim>
             {
@@ -261,6 +261,26 @@ namespace BussinessLayer.Implement
         public bool IsValidPassword(string password)
         {
             return Regex.IsMatch(password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$");
+        }
+
+        public void RegisterLessor(
+            string email,
+            string storeName,
+            string phoneNumber,
+            string adresss
+        )
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                return;
+            }
+            user.Role = UserRole.Lessor;
+            user.ShopName = storeName;
+            user.PhoneNumber = phoneNumber;
+            user.Address = adresss;
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
         }
 
         private string GetComfirmationEmail(string confirmUrl)

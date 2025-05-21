@@ -24,15 +24,25 @@
                     <div class="footer-menu">
                         <h5 class="widget-title">Danh mục cho thuê</h5>
                         <ul class="menu-list list-unstyled">                           
-                            @foreach(var category in categories)
+                            @if (categories != null)
                             {
+                                foreach (var category in categories)
+                                {
+                                    <li class="menu-item">
+                                        <a asp-action="" asp-controller="Home" asp-route-id="@category.Id">@category.CategoryName</a>
+                                    </li>
+                                }
                                 <li class="menu-item">
-                                    <a asp-action="" asp-controller="Home">@category.CategoryName</a>
+                                    <a asp-action="" asp-controller="Home">Xem thêm</a>
                                 </li>
                             }
-                            <li class="menu-item">
-                                <a asp-action="" asp-controller="Home">Xem thêm</a>
-                            </li>
+                            else
+                            {
+                                <li class="menu-item">
+                                    <a href="#">Không có danh mục nào</a>
+                                </li>
+                            })
+
                         </ul>
                     </div>
                 </div>

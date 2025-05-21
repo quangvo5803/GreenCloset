@@ -22,6 +22,8 @@ namespace DataAccess.Models
 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public SizeClother? SizeClother { get; set; }
+        public int? SizeShoe { get; set; }
         //Foreign Key
 
         [ForeignKey("OrderId")]

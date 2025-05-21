@@ -146,7 +146,7 @@
                                                         }
 
                                                         <p class="text-muted small" style="margin-bottom:0px;">
-                                                            Kích Cỡ:
+                                                            Size:
                                                             <span id="size-display-@item.Id">
                                                                 @if (item.SizeShoe.HasValue)
                                                                 {
@@ -565,29 +565,27 @@
             if (startDateInput) startDateInput.min = today;
             if (endDateInput) endDateInput.min = today;
 
+            let previousStartDate = startDateInput?.value;
             let previousEndDate = endDateInput?.value;
 
             if (startDateInput) {
+                startDateInput.addEventListener('focus', function () {
+                    previousStartDate = this.value;
+                });
+
                 startDateInput.addEventListener('change', function () {
                     const startDate = this.value;
                     if (endDateInput) {
-                        // Cập nhật min cho endDate
                         endDateInput.min = startDate;
 
-                        // Nếu endDate chưa được chọn hoặc nhỏ hơn hoặc bằng startDate, thì tự động +1 ngày
-                        if (!endDateInput.value || endDateInput.value <= startDate) {
-                            const nextDay = new Date(startDate);
-                            nextDay.setDate(nextDay.getDate() + 1);
-                            const formattedNextDay = nextDay.toISOString().split('T')[0];
-                            endDateInput.value = formattedNextDay;
-                            previousEndDate = formattedNextDay;
+                        if (endDateInput.value && startDate >= endDateInput.value) {
+                            toastr.error("Ngày bắt đầu phải nhỏ hơn ngày trả.");
+                            this.value = previousStartDate; 
+                            return;
                         }
-
-                        // Nếu endDate đã hợp lệ (lớn hơn startDate), giữ nguyên giá trị
                     }
                     handleDateChange(this);
                 });
-
             }
 
             if (endDateInput) {

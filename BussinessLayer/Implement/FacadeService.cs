@@ -19,6 +19,7 @@ namespace BussinessLayer.Implement
         public IItemImageService ItemImage { get; private set; }
         public ICartService Cart { get; private set; }
         public IOrderService Order { get; private set; }
+        public IOrderHistoryService OrderHistory { get; private set; }
         public FacadeService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
@@ -37,7 +38,8 @@ namespace BussinessLayer.Implement
             Product = new ProductService(_unitOfWork, _webHostEnvironment);
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);
             Cart = new CartService(_unitOfWork);
-            Order = new OrderService(_unitOfWork, _vpnPayService, _configuration, _emailQueue);           
+            Order = new OrderService(_unitOfWork, _vpnPayService, _configuration, _emailQueue); 
+            OrderHistory = new OrderHistoryService(_unitOfWork);
         }
     }
 }

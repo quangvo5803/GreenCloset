@@ -34,6 +34,7 @@ namespace DataAccess.Models
     public enum OrderStatus
     {
         Pending,
+        Delivering,
         Completed,
         Cancelled,
     }

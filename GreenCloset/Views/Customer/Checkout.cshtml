@@ -21,6 +21,7 @@
         }
     }
 
+    double storeCount = Model.Count();
     var index = 0;
     var cartItems = ViewBag.CartItems as IEnumerable<Cart>;
 }
@@ -197,10 +198,9 @@
                         </div>
                         index++;
                     }
-                </div>
-                
+                </div> 
             }
-            <hr />
+            <hr/>
             <div class="d-flex justify-content-between" style="font-size: 20px;" id="subtotalSection">
                 <span>
                     Tổng tạm tính
@@ -214,7 +214,7 @@
                     Tổng phí giao hàng
                 </span>
                 <span id="shippingFeeAmount">
-                    25.000đ
+                    Lỗi
                 </span>
             </div>
             <div class="d-flex justify-content-between fw-bold"
@@ -415,7 +415,7 @@
         const subtotalAmount = document.getElementById("subtotalAmount");
         const totalAmount = document.getElementById("totalAmount");
 
-        const shippingFee = 25000;
+        const storeCount = @storeCount;
         const subtotal = @subtotal;
 
         function formatCurrency(value) {
@@ -424,6 +424,7 @@
 
         function updateTotals() {
             let total = subtotal;
+            let shippingFee = (storeCount >= 2) ? 50000 : 25000;
 
             subtotalAmount.textContent = formatCurrency(subtotal);
 

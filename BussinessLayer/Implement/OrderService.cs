@@ -10,6 +10,7 @@ using Repository.Implement;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -218,7 +219,20 @@ namespace BussinessLayer.Implement
 
             if (deliveryOptions == DeliveryOption.HomeDelivery)
             {
-                totalPrice += 25000;
+                int storeCount = productsInCart
+                    .Select(p => p.Product?.UserId)
+                    .Where(id => id != null)
+                    .Distinct()
+                    .Count();
+                if (storeCount < 2)
+                {
+                    totalPrice += 25000;
+                }
+                else
+                {
+                    totalPrice += 50000;
+                }
+                
             }
             return new Order
             {
@@ -235,7 +249,10 @@ namespace BussinessLayer.Implement
                     Quantity = p.Count,
                     UnitPrice = p.Product != null ? p.Product.Price : 0,
                     StartDate = p.StartDate,
-                    EndDate = p.EndDate
+                    EndDate = p.EndDate,
+                    SizeClother = p.SizeClother,
+                    SizeShoe = p.SizeShoe
+                    
                 }).ToList()
             };
         }
@@ -320,6 +337,7 @@ namespace BussinessLayer.Implement
                 .Where(i => i.Product != null)
                 .GroupBy(i => i.Product!.User!.Id)
                 .ToList();
+            int storeCount = productGroupsByStore.Count;
             if (productGroupsByStore != null)
             {
                 string groupedProductDetail = string.Join("<br/>", productGroupsByStore.Select(group =>
@@ -370,7 +388,9 @@ namespace BussinessLayer.Implement
                 deliveryOptions,
                 deliveryAddress,
                 groupedProductDetail,
-                totalPrices);
+                totalPrices,
+                storeCount
+                );
 
                 string buyerSubject = "Xác nhận đơn hàng của bạn";
                 _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
@@ -425,10 +445,22 @@ namespace BussinessLayer.Implement
         DeliveryOption deliveryOptions,
         string deliveryAddress,
         string groupedProductDetail,
-        double totalPrices)
+        double totalPrices,
+        int storeCount
+        )
         {
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             var customerName = user?.UserName ?? "Khách hàng";
+
+            string shippingFeeDis;
+            var shippingFee = storeCount >= 2 ? 50.000 : 25.000;
+            shippingFeeDis = $"{shippingFee.ToString("N0", new CultureInfo("vi-VN"))}đ";
+            
+            string shippingHtml = "";
+            if(deliveryOptions == DeliveryOption.HomeDelivery)
+            {
+                shippingHtml = $"<p style = 'margin-bottom: 16px;' ><strong> Phí vận chuyển: </strong> {shippingFeeDis}</ p>";
+            }
             return $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #2e7d32;'>Cảm ơn {customerName} đã đặt hàng tại Green Closet!</h2>
@@ -438,7 +470,9 @@ namespace BussinessLayer.Implement
                 <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(paymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
                 <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(deliveryOptions == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Vận chuyển tận nơi")}</p>
                 <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(deliveryOptions == DeliveryOption.HomeDelivery ? deliveryAddress : "Nhận tại cửa hàng")}</p>
-
+                
+                {shippingHtml}
+                
                 {groupedProductDetail}
                 <p style='margin-bottom: 8px; font-size: 25px;'>Tổng giá trị đơn hàng: <strong style='color: #c62828;'>{totalPrices:N0} đ</strong></p>
 

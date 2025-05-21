@@ -1,6 +1,10 @@
 ﻿@model Product
 @Html.AntiForgeryToken()
 @{
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var userId = isLoggedIn ? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
+}
+@{
     ViewData["Title"] = "Thông tin sản phẩm";
     var feedbacks = ViewBag.Feedbacks as IEnumerable<Feedback>;
     double avgRating = feedbacks != null && feedbacks.Any() ? feedbacks.Average(f => f.FeedbackStars) : 0;
@@ -222,7 +226,7 @@
                         </div>
                         <a href="#"
                         class="btn btn-primary shadow-0 add-to-cart-btn"
-                        data-product-id="@Model.Id">
+                           data-product-id="@Model.Id" data-user-id="@userId">
                             <i class="me-1 fa fa-shopping-basket"></i>
                             Thêm vào giỏ hàng
                         </a>

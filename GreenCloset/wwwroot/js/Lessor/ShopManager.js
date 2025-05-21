@@ -6,18 +6,11 @@ $(document).ready(function () {
 function loadDataTable() {
     dataTable = $('#tblData').DataTable({
         "ajax": {
-            url: '/admin/getallproduct',
+            url: '/lessor/getallproduct',
             type: 'GET',
             dataSrc: 'data'
         },
         "columns": [
-            {
-                "data": null,
-                "width": "5%",
-                "render": function (data, type, row, meta) {
-                    return meta.row + 1;
-                }
-            },
             {
                 "data": 'name',
                 "width": "10%"
@@ -47,7 +40,7 @@ function loadDataTable() {
                 "data": null,
                 "width": "10%",
                 "render": function (data) {
-                    return `${data.avgRating.toFixed(1)} ⭐ | ${data.feedbackCount} feedback(s)`;
+                    return `${data.avgRating.toFixed(1)} ⭐ | ${data.feedbackCount} đánh giá`;
                 }
             },
             {
@@ -56,9 +49,9 @@ function loadDataTable() {
                 "render": function (data, type, row) {
                     return `
                     <div class="btn-group d-flex justify-content-between" role="group">
-                       <a href="/Admin/UpdateProduct?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Chỉnh sửa</a>
-                       <a href="/Admin/ViewProductFeedback?id=${row.id}" class="btn btn-primary flex-grow-1 mx-1">Xem đánh giá</a>
-                       <a onClick=Delete('/Admin/DeleteProduct?id=${row.id}') class="btn btn-danger flex-grow-1 mx-1">Xóa</a>
+                       <a href="/Lessor/UpdateProduct?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Chỉnh sửa</a>
+                       <a href="/Lessor/ViewProductFeedback?id=${row.id}" class="btn btn-primary flex-grow-1 mx-1">Xem đánh giá</a>
+                       <a onClick=Delete('/Lessor/DeleteProduct?id=${row.id}') class="btn btn-danger flex-grow-1 mx-1">Xóa</a>
                     </div>`;
                 }
             }

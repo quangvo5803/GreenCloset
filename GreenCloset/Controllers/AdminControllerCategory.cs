@@ -8,16 +8,11 @@ namespace GreenCloset.Controllers
     [Authorize(Roles = "Admin")]
     public partial class AdminController : Controller
     {
-        private IFacedeService _facedeService;
+        private IFacedeService _facadeService;
 
         public AdminController(IFacedeService facedeService)
         {
-            _facedeService = facedeService;
-        }
-
-        public IActionResult Index()
-        {
-            return View();
+            _facadeService = facedeService;
         }
 
         public IActionResult ManageCategory()
@@ -27,7 +22,7 @@ namespace GreenCloset.Controllers
 
         public IActionResult GetAllCategory()
         {
-            var categories = _facedeService
+            var categories = _facadeService
                 .Category.GetAllCategories(includeProperties: "Products")
                 .Select(c => new
                 {
@@ -50,7 +45,7 @@ namespace GreenCloset.Controllers
         {
             if (ModelState.IsValid)
             {
-                _facedeService.Category.AddCategory(category);
+                _facadeService.Category.AddCategory(category);
                 TempData["success"] = "Tạo danh mục thành công";
                 return RedirectToAction("ManageCategory");
             }
@@ -60,7 +55,7 @@ namespace GreenCloset.Controllers
 
         public IActionResult UpdateCategory(int id)
         {
-            var category = _facedeService.Category.GetCategoryById(id);
+            var category = _facadeService.Category.GetCategoryById(id);
             if (category == null)
             {
                 TempData["error"] = "Lỗi! Không tìm thấy danh mục";
@@ -74,7 +69,7 @@ namespace GreenCloset.Controllers
         {
             if (ModelState.IsValid)
             {
-                _facedeService.Category.UpdateCategory(category);
+                _facadeService.Category.UpdateCategory(category);
                 TempData["success"] = "Cập nhật danh mục thành công";
                 return RedirectToAction("ManageCategory");
             }
@@ -85,12 +80,12 @@ namespace GreenCloset.Controllers
         [HttpDelete]
         public IActionResult DeleteCategory(int id)
         {
-            var category = _facedeService.Category.GetCategoryById(id);
+            var category = _facadeService.Category.GetCategoryById(id);
             if (category == null)
             {
                 return Json(new { success = false, message = "Lỗi! Không tìm thấy danh mục" });
             }
-            _facedeService.Category.DeleteCategory(category);
+            _facadeService.Category.DeleteCategory(category);
             TempData["success"] = "Xóa danh mục thành công";
             return Json(new { success = true, message = "Xóa danh mục thành công" });
         }

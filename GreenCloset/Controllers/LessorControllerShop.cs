@@ -1,23 +1,63 @@
 ﻿using System.Security.Claims;
+using BussinessLayer.Interface;
 using DataAccess.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GreenCloset.Controllers
 {
-    [Authorize(Roles = "Admin")]
-    public partial class AdminController : Controller
+    public partial class LessorController : BaseController
     {
-        public IActionResult ManageProduct()
+        public LessorController(IFacedeService facedeService)
+            : base(facedeService) { }
+
+        [Authorize(Roles = "Customer,Lessor")]
+        public IActionResult Index()
         {
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> RegisterLessor(
+            string storeName,
+            string phoneNumber,
+            string address
+        )
+        {
+            var emailUser = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(emailUser))
+            {
+                TempData["error"] = "Có lỗi xảy ra, vui lòng thử lại sau";
+                return RedirectToAction("Index", "Lessor");
+            }
+
+            _facadeService.User.RegisterLessor(emailUser, storeName, phoneNumber, address);
+
+            var user = _facadeService.User.GetUserByEmail(emailUser);
+
+            if (user != null)
+            {
+                await HttpContext.SignOutAsync();
+
+                await _facadeService.User.SignInUser(HttpContext, user);
+            }
+
+            TempData["success"] = "Đăng kí bán hàng thành công";
+            return RedirectToAction("Index", "Lessor");
+        }
+
+        [Authorize(Roles = "Lessor")]
+        [HttpGet]
         public IActionResult GetAllProduct()
         {
+            var emailUser = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(emailUser))
+            {
+                return Json(new { data = new List<Product>() });
+            }
             var products = _facadeService
-                .Product.GetAllProducts(includeProperties: "Categories")
+                .Product.GetLessorProducts(emailUser, includeProperties: "Categories")
                 .Select(p => new
                 {
                     p.Id,
@@ -32,12 +72,14 @@ namespace GreenCloset.Controllers
             return Json(new { data = products });
         }
 
+        [Authorize(Roles = "Lessor")]
         public IActionResult CreateProduct()
         {
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View();
         }
 
+        [Authorize(Roles = "Lessor")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(
             Product product,
@@ -61,13 +103,14 @@ namespace GreenCloset.Controllers
                     gallery
                 );
                 TempData["success"] = "Tạo sản phẩm thành công";
-                return RedirectToAction("ManageProduct");
+                return RedirectToAction("Index", "Lessor");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View(product);
         }
 
+        [Authorize(Roles = "Lessor")]
         public IActionResult UpdateProduct(int id)
         {
             var product = _facadeService.Product.GetProductById(
@@ -77,12 +120,13 @@ namespace GreenCloset.Controllers
             if (product == null)
             {
                 TempData["error"] = "Không tìm thấy sản phẩm";
-                return RedirectToAction("ManageProduct");
+                return RedirectToAction("Index", "Lessor");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View(product);
         }
 
+        [Authorize(Roles = "Lessor")]
         [HttpPost]
         public async Task<IActionResult> UpdateProduct(
             Product product,
@@ -103,7 +147,7 @@ namespace GreenCloset.Controllers
                 if (existingProduct == null)
                 {
                     TempData["error"] = "Không tìm thấy sản phẩm";
-                    return RedirectToAction("ManageProduct");
+                    return RedirectToAction("Index", "Lessor");
                 }
                 existingProduct.Available = product.Available;
                 existingProduct.SizeClother = SelectedClotherSizes;
@@ -121,13 +165,14 @@ namespace GreenCloset.Controllers
                     gallery
                 );
                 TempData["success"] = "Cập nhật sản phẩm thành công";
-                return RedirectToAction("ManageProduct");
+                return RedirectToAction("Index", "Lessor");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             TempData["error"] = "Cập nhật sản phẩm không thành công";
             return View(product);
         }
 
+        [Authorize(Roles = "Lessor")]
         [HttpDelete]
         public IActionResult DeleteProduct(int id)
         {
@@ -147,6 +192,7 @@ namespace GreenCloset.Controllers
             return Json(new { success = false, message = "Xóa sản phẩm không thành công" });
         }
 
+        [Authorize(Roles = "Lessor")]
         [HttpDelete]
         public IActionResult DeleteImageProduct(int imageId)
         {
@@ -157,7 +203,7 @@ namespace GreenCloset.Controllers
             }
 
             _facadeService.ItemImage.RemoveItemImage(image);
-            return Ok(new { success = true });
+            return Ok(new { successuccess = true });
         }
     }
 }

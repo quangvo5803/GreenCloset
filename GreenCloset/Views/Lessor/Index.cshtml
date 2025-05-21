@@ -1,0 +1,121 @@
+﻿@model List<Product>
+@{
+    ViewData["Title"] = "Sản phẩm cho thuê";
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var roles = isLoggedIn ? User?.FindFirst(ClaimTypes.Role)?.Value : null;
+}
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link  text-black" asp-controller="User" asp-action="Profile">
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="User" asp-action="ChangePassword"><i class="fa fa-lock me-3"></i>Bảo mật</a>
+                                    <a class="nav-link text-black" asp-controller="User" asp-action="ManageOrder">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link active text-white" asp-controller="Lessor" asp-action="Index" style="background-color: #198754 !important;">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+                                @if (roles == "Lessor")
+                                {
+                                    <h2 class="text-center">Danh sách sản phẩm</h2>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 text-start">
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <a asp-controller="Lessor" asp-action="Statistic" class="btn btn-outline-primary"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
+                                            <a asp-controller="Lessor" asp-action="CreateProduct" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Tạo sản phẩm mới</a>
+                                        </div>
+                                    </div>
+
+
+                                    <table id="tblData" class="table table-bordered" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Tên sản phẩm</th>
+                                                <th>Giá thuê</th>
+                                                <th>Danh mục</th>
+                                                <th>Đánh giá</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                }
+                                else if(roles == "Customer")
+                                {
+                                        <form asp-controller="Lessor" asp-action="RegisterLessor" method="post">
+                                            <div class="terms-section border p-4 rounded shadow-sm bg-light">
+                                                <h3 class="mb-3 text-center">Điều khoản & Quyền lợi khi trở thành người cho thuê</h3>
+
+                                                <p>Khi đăng ký trở thành người cho thuê, bạn sẽ đồng ý với các điều khoản và được hưởng các quyền lợi sau:</p>
+
+                                                <h5>📌 Điều khoản</h5>
+                                                <ul>
+                                                    <li>Bạn phải cung cấp tên cửa hàng hợp lệ và chính xác.</li>
+                                                    <li>
+                                                        Doanh thu sẽ được tính theo mô hình sau:
+                                                        <ul>
+                                                            <li>Nếu doanh thu <strong>≤ 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ</strong>.</li>
+                                                            <li>Nếu doanh thu <strong>> 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ + 10% doanh thu</strong>.</li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>Bạn cần tuân thủ các chính sách về chất lượng sản phẩm và dịch vụ do hệ thống quy định.</li>
+                                                </ul>
+
+                                                <h5 class="mt-4">🎁 Quyền lợi</h5>
+                                                <ul>
+                                                    <li>Miễn phí khởi tạo gian hàng trên nền tảng.</li>
+                                                    <li>Tiếp cận hàng ngàn khách hàng tiềm năng mỗi ngày.</li>
+                                                    <li>Thống kê doanh thu và đơn hàng trực tuyến, dễ dàng quản lý.</li>
+                                                    <li>Hỗ trợ marketing và quảng bá sản phẩm định kỳ.</li>
+                                                    <li>Được hỗ trợ kỹ thuật 24/7 từ đội ngũ chuyên nghiệp.</li>
+                                                </ul>
+
+                                                <div class="form-group mt-4">
+                                                    <label for="storeName">📝 Nhập tên cửa hàng của bạn:</label>
+                                                    <input type="text" id="storeName" name="storeName" class="form-control" placeholder="Nhập tên cửa hàng..." required />
+                                                </div>
+                                                <div class="form-group mt-4">
+                                                    <label for="phoneNumber"><i class="fa-solid fa-phone"></i> Nhập số điện thoại cửa hàng của bạn:</label>
+                                                    <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
+                                                </div>
+                                                <div class="form-group mt-4">
+                                                <label for="address"><i class="fa-solid fa-location-dot"></i>Nhập địa chỉ cửa hàng của bạn:</label>
+                                                <input type="text" id="address" name="address" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
+                                                </div>
+                                                <div class="text-center mt-3">
+                                                    <button type="submit" class="btn btn-primary">Đăng ký trở thành người cho thuê</button>
+                                                </div>
+                                            </div>
+                                        </form>                                 
+                                }
+                            </div>
+                        </div> 
+                        <!-- End Content Area -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (roles == "Lessor")
+{
+    @section Scripts {
+        <script src="~/js/Lessor/ShopManager.js"></script>
+    }
+}

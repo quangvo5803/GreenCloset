@@ -1,4 +1,12 @@
-﻿
+﻿.equal-height-inputs .input-group-text,
+.equal-height-inputs .form-control {
+    height: 38px;
+}
+
+.equal-height-inputs .input-group-text {
+    display: flex;
+    align-items: center;
+}
 .item-anchor {
     display: inline-flex;
     align-items: center;

@@ -1,21 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Trang chủ Admin";
+﻿@model Product
+@{
+    ViewData["Title"] = "Thông kê";
 }
-<div class="pc-container">
-    <div class="pc-content">
-        @await Html.PartialAsync("~/Views/Shared/Statistic/_DashboardStats.cshtml")
-        @await Html.PartialAsync("~/Views/Shared/Statistic/_ChartStats.cshtml")
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">  
+                        <!-- Content Area -->
+                        <div class="col-lg-12">
+                            <div class="p-4">
+                                <h1 class="text-center"><i class="fa-solid fa-chart-line"></i> THỐNG KÊ</h1>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 text-start">
+                                        <a asp-controller="Lessor" asp-action="Index" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> Trở về</a>
+
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                    </div>
+                                </div>
+                                @await Html.PartialAsync("~/Views/Shared/Statistic/_DashboardStats.cshtml")
+                                @await Html.PartialAsync("~/Views/Shared/Statistic/_ChartStats.cshtml")
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Content Area -->
+        </div>
     </div>
 </div>
 @section Styles {
     <link rel="stylesheet" href="~/css/kaiadmin.min.css" asp-append-version="true" />
 }
 @section Scripts {
-    <script>
+	<script>
                 let statisticsChart;
 
         function loadStatisticsChart(year) {
-            fetch(`/Admin/GetMonthlyProfit?year=${year}`)
+            fetch(`/Lessor/GetMonthlyProfit?year=${year}`)
                 .then(response => response.json())
                 .then(data => {
                     const ctx = document.getElementById('statisticsChart').getContext('2d');
@@ -175,7 +200,7 @@
         });
 
         // Gọi API và cập nhật dữ liệu cho biểu đồ
-        fetch('/Admin/GetWeeklyRevenue')
+        fetch('/Lessor/GetWeeklyRevenue')
             .then(res => res.json())
             .then(data => {
                 myDailySalesChart.data.datasets[0].data = data;
@@ -209,5 +234,5 @@
         const weekRangeStr = getWeekRange(now);
 
         document.getElementById('weekRange').textContent = weekRangeStr;
-    </script>
+	</script>
 }

@@ -15,10 +15,13 @@
                                         <i class="fa fa-user me-2"></i> Thông tin cá nhân
                                     </a>
                                     <a class="nav-link text-black" asp-action="ChangePassword">
-                                        <i class="fa fa-lock me-2"></i>Bảo mật
+                                        <i class="fa fa-lock me-3"></i>Bảo mật
                                     </a>
                                     <a class="nav-link active text-white" asp-action="ManageOrder" style="background-color: #198754 !important;">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
                                     </a>
                                 </div>
                             </div>
@@ -102,7 +105,6 @@
             </div>
         </div>
     </div>
-</div>
 <style>
     .nav-tabs {
         border-bottom: 1px solid #dee2e6;

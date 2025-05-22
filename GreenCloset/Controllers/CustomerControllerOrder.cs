@@ -1,13 +1,12 @@
-﻿using DataAccess.Models;
+﻿using System.Security.Claims;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
     [Authorize]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Lessor")]
     public partial class CustomerController : BaseController
     {
         [HttpPost]
@@ -21,15 +20,17 @@ namespace GreenCloset.Controllers
                 {
                     TempData["error"] = "Không tìm thấy người dùng";
                 }
-                else {
+                else
+                {
                     ViewBag.UserId = user.Id;
                     ViewBag.userName = user.UserName;
-                }           
+                }
             }
-      
+
             var productsInCart = _facadeService.Order.GetGroupedCartItems(selectedItems);
             var cartItems = productsInCart.SelectMany(g => g).ToList();
-            if (!productsInCart.Any()) return RedirectToAction("Cart", "Customer");
+            if (!productsInCart.Any())
+                return RedirectToAction("Cart", "Customer");
 
             ViewBag.CartItems = cartItems;
             return View(productsInCart);
@@ -41,8 +42,9 @@ namespace GreenCloset.Controllers
             string phoneNumber,
             DeliveryOption deliveryOptions,
             string deliveryAddress,
-            PaymentMethod paymentMethod)
-        {            
+            PaymentMethod paymentMethod
+        )
+        {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
@@ -50,13 +52,18 @@ namespace GreenCloset.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            if(paymentMethod == PaymentMethod.PayByCash)
+            if (paymentMethod == PaymentMethod.PayByCash)
             {
                 var paymentByCOD = _facadeService.Order.ProcessOrderByCOD(
-                    selectedItems, phoneNumber, deliveryOptions, 
-                    deliveryAddress, paymentMethod, userId);
+                    selectedItems,
+                    phoneNumber,
+                    deliveryOptions,
+                    deliveryAddress,
+                    paymentMethod,
+                    userId
+                );
 
-                if (paymentByCOD != null) 
+                if (paymentByCOD != null)
                 {
                     TempData["success"] = "Thanh toán thành công";
                     return RedirectToAction("ManageOrder", "Customer");
@@ -64,16 +71,21 @@ namespace GreenCloset.Controllers
                 TempData["error"] = "Thanh toán thất bại";
                 return RedirectToAction("Cart", "Customer");
             }
-            else if(paymentMethod == PaymentMethod.VNPay)
+            else if (paymentMethod == PaymentMethod.VNPay)
             {
                 var vnpayUrl = _facadeService.Order.ProcessOrderByVnPay(
-                    selectedItems, phoneNumber, deliveryOptions, 
-                    deliveryAddress, paymentMethod, userId, HttpContext);
+                    selectedItems,
+                    phoneNumber,
+                    deliveryOptions,
+                    deliveryAddress,
+                    paymentMethod,
+                    userId,
+                    HttpContext
+                );
                 if (vnpayUrl != null)
                 {
                     return Redirect(vnpayUrl);
                 }
-
             }
             TempData["error"] = "Thanh toán thất bại";
             return RedirectToAction("Cart", "Customer");
@@ -82,7 +94,10 @@ namespace GreenCloset.Controllers
         public IActionResult VNPayReturn()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != null && _facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId))
+            if (
+                userId != null
+                && _facadeService.Order.VNPayReturn(Request.Query, userId, out int orderId)
+            )
             {
                 TempData["success"] = "Thanh toán thành công";
                 return RedirectToAction("ManageOrder", "Customer");
@@ -93,6 +108,5 @@ namespace GreenCloset.Controllers
                 return RedirectToAction("Cart", "Customer");
             }
         }
-
     }
 }

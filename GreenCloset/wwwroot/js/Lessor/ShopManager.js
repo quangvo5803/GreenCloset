@@ -1,10 +1,11 @@
-﻿var dataTable;
+﻿var dataProductTable;
+var dataOrderTable
 $(document).ready(function () {
     loadDataTable();
 });
 
 function loadDataTable() {
-    dataTable = $('#tblData').DataTable({
+    dataProductTable = $('#tblProductData').DataTable({
         "ajax": {
             url: '/lessor/getallproduct',
             type: 'GET',
@@ -12,19 +13,30 @@ function loadDataTable() {
         },
         "columns": [
             {
+                "data": null,
+                "width": "5%",
+                "className": "text-center align-middle",
+                "render": function (data, type, row, meta) {
+                    return meta.row + 1;
+                }
+            },
+            {
                 "data": 'name',
+                "className": "text-center align-middle",
                 "width": "10%"
             },
             {
                 "data": 'price',
                 "width": "10%",
+                "className": "text-center align-middle",
                 "render": function (data, type, row) {
-                    return new Intl.NumberFormat('vn-VN', { style: 'currency', currency: 'VND' }).format(data);
+                    return new Intl.NumberFormat('vi-VN').format(data) + ' VNĐ';
                 }
             },
             {
                 "data": 'categories',
-                "width": "10%",
+                "width": "15%",
+                "className": "text-center align-middle",
                 "render": function (data) {
                     if (Array.isArray(data) && data.length > 0) {
                         return data.map(category =>
@@ -38,7 +50,8 @@ function loadDataTable() {
             },
             {
                 "data": null,
-                "width": "10%",
+                "width": "15%",
+                "className": "text-center align-middle",
                 "render": function (data) {
                     return `${data.avgRating.toFixed(1)} ⭐ | ${data.feedbackCount} đánh giá`;
                 }
@@ -50,8 +63,76 @@ function loadDataTable() {
                     return `
                     <div class="btn-group d-flex justify-content-between" role="group">
                        <a href="/Lessor/UpdateProduct?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Chỉnh sửa</a>
-                       <a href="/Lessor/ViewProductFeedback?id=${row.id}" class="btn btn-primary flex-grow-1 mx-1">Xem đánh giá</a>
+                       <a href="/Lessor/ViewProductFeedback?id=${row.id}" class="btn btn-warning flex-grow-1 mx-1">Xem đánh giá</a>
                        <a onClick=Delete('/Lessor/DeleteProduct?id=${row.id}') class="btn btn-danger flex-grow-1 mx-1">Xóa</a>
+                    </div>`;
+                }
+            }
+        ],
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+        }
+    });
+    dataProductTable = $('#tblOrderData').DataTable({
+        "ajax": {
+            url: '/lessor/getallorder',
+            type: 'GET',
+            dataSrc: 'data'
+        },
+        "columns": [
+            {
+                "data": 'id',
+                "className": "text-center align-middle",
+                "width": "5%"
+            },
+            
+            {
+                "data": 'deliveryOption',
+                "width": "25%",
+                "className": "text-center align-middle",
+                "render": function (data) {
+                    switch (data) {
+                        case 0: return 'Giao tận nơi';
+                        case 1: return 'Nhận tại cửa hàng';
+                        default: return 'Không xác định';
+                    }
+                }
+            },
+            {
+                "data": 'status',
+                "width": "25%",
+                "className": "text-center align-middle",
+                "render": function (data) {
+                    switch (data) {
+                        case 0: return '<span class="badge bg-warning">Chờ xác nhận</span>';
+                        case 1: return '<span class="badge bg-info">Đang giao hàng</span>';
+                        case 2: return '<span class="badge bg-success">Đã giao</span>';
+                        case 3: return '<span class="badge bg-danger">Đã hủy</span>';
+                        default: return 'Không xác định';
+                    }
+                }
+            },
+            {
+                "data": "productCount",
+                "className": "text-center align-middle",
+                "width": "10%",
+            },
+            {
+                "data": 'totalPrice',
+                "width": "20%",
+                "className": "text-center align-middle",
+                "render": function (data, type, row) {
+                    return new Intl.NumberFormat('vi-VN').format(data) + ' VNĐ';
+                }
+            },
+            {
+                "data": 'id',
+                "width": "10%",
+                "render": function (data, type, row) {
+                    return `
+                    <div class="btn-group d-flex justify-content-between" role="group">
+                       <a href="/Lessor/ViewOrderDetail?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Xem chi tiết đơn hàng</a>
+                       <a href="/Lessor/ViewOrderFeedback?id=${row.id}" class="btn btn-warning flex-grow-1 mx-1">Xem đánh giá</a>
                     </div>`;
                 }
             }

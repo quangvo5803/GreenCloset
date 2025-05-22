@@ -7,9 +7,9 @@
     var selectedColors = filter?.Colors as List<ProductColor> ?? new List<ProductColor>();
     var selectedClotherSizes = filter?.ClotherSizes as List<SizeClother> ?? new List<SizeClother>();
     var selectedShoeSizes = filter?.ShoeSizes as List<int> ?? new List<int>();
-    var priceFrom = ViewBag.PriceFrom as double? ?? null;
-    var priceTo = ViewBag.PriceTo as double? ?? null;
-    var search = ViewBag.Search as string ?? string.Empty;
+    var priceFrom = filter?.PriceFrom as double? ?? null;
+    var priceTo = filter?.PriceTo as double? ?? null;
+    var search = filter?.Search as string ?? string.Empty;
     var queryParams = new Dictionary<string, object>();
     queryParams.Add("categoryIds", selectedCategoryIds);    
     queryParams.Add("colors", selectedColors);

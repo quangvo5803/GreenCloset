@@ -21,7 +21,7 @@
                                     <a class="nav-link text-black" asp-controller="User" asp-action="ManageOrder">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
                                     </a>
-                                    <a class="nav-link active text-white" asp-controller="Lessor" asp-action="Index" style="background-color: #198754 !important;">
+                                    <a class="nav-link active text-white" asp-controller="Lessor" asp-action="Index" style="background-color: #8DC63F !important;">
                                         <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
                                     </a>
                                 </div>
@@ -33,75 +33,127 @@
                             <div class="p-4">
                                 @if (roles == "Lessor")
                                 {
-                                    <h2 class="text-center">Danh sách sản phẩm</h2>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6 text-start">
+                                    <h2 class="text-center"><i class="fa-solid fa-gear"></i> QUẢN LÝ</h2>
+
+                                    <!-- Nav Pills -->
+                                    <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="pills-product-tab" data-bs-toggle="pill" data-bs-target="#pills-product" type="button" role="tab" aria-controls="pills-product" aria-selected="true">
+                                                <i class="fa-solid fa-shirt"></i> Danh sách sản phẩm
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button" role="tab" aria-controls="pills-order" aria-selected="false">
+                                                <i class="fa-solid fa-cart-flatbed"></i> Danh sách đơn hàng
+                                            </button>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Tab Content -->
+                                    <div class="tab-content" id="pills-tabContent">
+                                        <!-- Tab 1: Sản phẩm -->
+                                        <div class="tab-pane fade show active" id="pills-product" role="tabpanel" aria-labelledby="pills-product-tab">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6 text-start"></div>
+                                                <div class="col-md-6 text-end">
+                                                    <a asp-controller="Lessor" asp-action="CreateProduct" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Tạo sản phẩm mới</a>
+                                                </div>
+                                            </div>
+
+                                            <table id="tblProductData" class="table table-bordered" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th>STT</th>
+                                                        <th>Tên sản phẩm</th>
+                                                        <th>Giá thuê</th>
+                                                        <th>Danh mục</th>
+                                                        <th>Đánh giá</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
                                         </div>
-                                        <div class="col-md-6 text-end">
-                                            <a asp-controller="Lessor" asp-action="Statistic" class="btn btn-outline-primary"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
-                                            <a asp-controller="Lessor" asp-action="CreateProduct" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Tạo sản phẩm mới</a>
+
+                                        <!-- Tab 2: Đơn hàng -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 text-start"></div>
+                                            <div class="col-md-6 text-end">
+                                                <a asp-controller="Lessor" asp-action="Statistic" class="btn btn-outline-primary"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="pills-order" role="tabpanel" aria-labelledby="pills-order-tab">
+                                            <table id="tblOrderData" class="table table-bordered" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã đơn hàng</th>
+                                                        <th>Hình thức vận chuyển</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Số lượng sản phẩm</th>
+                                                        <th>Tổng tiền</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
                                         </div>
                                     </div>
 
-
-                                    <table id="tblData" class="table table-bordered" width="100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Tên sản phẩm</th>
-                                                <th>Giá thuê</th>
-                                                <th>Danh mục</th>
-                                                <th>Đánh giá</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                    </table>
                                 }
                                 else if(roles == "Customer")
                                 {
                                         <form asp-controller="Lessor" asp-action="RegisterLessor" method="post">
                                             <div class="terms-section border p-4 rounded shadow-sm bg-light">
-                                                <h3 class="mb-3 text-center">Điều khoản & Quyền lợi khi trở thành người cho thuê</h3>
+                                            <h3 class="text-center">Điều khoản & Quyền lợi khi trở thành người cho thuê</h3>
 
-                                                <p>Khi đăng ký trở thành người cho thuê, bạn sẽ đồng ý với các điều khoản và được hưởng các quyền lợi sau:</p>
+                                            <p>Khi đăng ký trở thành người cho thuê, bạn sẽ đồng ý với các điều kiện và được hưởng các quyền lợi sau:</p>
 
-                                                <h5>📌 Điều khoản</h5>
-                                                <ul>
-                                                    <li>Bạn phải cung cấp tên cửa hàng hợp lệ và chính xác.</li>
-                                                    <li>
-                                                        Doanh thu sẽ được tính theo mô hình sau:
-                                                        <ul>
-                                                            <li>Nếu doanh thu <strong>≤ 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ</strong>.</li>
-                                                            <li>Nếu doanh thu <strong>> 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ + 10% doanh thu</strong>.</li>
-                                                        </ul>
-                                                    </li>
-                                                    <li>Bạn cần tuân thủ các chính sách về chất lượng sản phẩm và dịch vụ do hệ thống quy định.</li>
-                                                </ul>
+                                            <h4>🔒 Điều kiện dành cho người cho thuê:</h4>
+                                            <ol>
+                                                <li>Có tài khoản hợp lệ tại Green Closet</li>
+                                                <li>Cung cấp đầy đủ thông tin cá nhân/doanh nghiệp.</li>
+                                                <li>Sản phẩm cho thuê phải đúng mô tả, không vi phạm pháp luật.</li>
+                                                <li>Sản phẩm phải được giặt là sạch sẽ, không rách, hư hỏng.</li>
+                                            </ol>
 
-                                                <h5 class="mt-4">🎁 Quyền lợi</h5>
-                                                <ul>
-                                                    <li>Miễn phí khởi tạo gian hàng trên nền tảng.</li>
-                                                    <li>Tiếp cận hàng ngàn khách hàng tiềm năng mỗi ngày.</li>
-                                                    <li>Thống kê doanh thu và đơn hàng trực tuyến, dễ dàng quản lý.</li>
-                                                    <li>Hỗ trợ marketing và quảng bá sản phẩm định kỳ.</li>
-                                                    <li>Được hỗ trợ kỹ thuật 24/7 từ đội ngũ chuyên nghiệp.</li>
-                                                </ul>
+                                            <h4>🎯 QUYỀN LỢI CỦA NGƯỜI CHO THUÊ</h4>
+                                            <ol>
+                                                <li>Tự quyết giá thuê: Chủ động định giá thuê, thời gian thuê, và các điều kiện liên quan.</li>
+                                                <li>Quản lý sản phẩm dễ dàng: Theo dõi lượt thuê, đánh giá và doanh thu qua bảng điều khiển cá nhân.</li>
+                                                <li>Bảo vệ quyền lợi: Green Closet hỗ trợ xử lý tranh chấp, thiệt hại (tùy mức độ) theo chính sách hỗ trợ người cho thuê.</li>
+                                                <li>Thanh toán minh bạch: Nhận tiền thuê sau khi đơn hàng hoàn tất và không phát sinh khiếu nại (theo kỳ thanh toán của hệ thống).</li>
+                                                <li>Hỗ trợ chăm sóc khách hàng: Có đội ngũ CSKH hỗ trợ 24/7 qua email, hotline và mạng xã hội.</li>
+                                            </ol>
 
-                                                <div class="form-group mt-4">
-                                                    <label for="storeName">📝 Nhập tên cửa hàng của bạn:</label>
-                                                    <input type="text" id="storeName" name="storeName" class="form-control" placeholder="Nhập tên cửa hàng..." required />
-                                                </div>
-                                                <div class="form-group mt-4">
-                                                    <label for="phoneNumber"><i class="fa-solid fa-phone"></i> Nhập số điện thoại cửa hàng của bạn:</label>
-                                                    <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
-                                                </div>
-                                                <div class="form-group mt-4">
-                                                <label for="address"><i class="fa-solid fa-location-dot"></i>Nhập địa chỉ cửa hàng của bạn:</label>
-                                                <input type="text" id="address" name="address" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
-                                                </div>
-                                                <div class="text-center mt-3">
-                                                    <button type="submit" class="btn btn-primary">Đăng ký trở thành người cho thuê</button>
-                                                </div>
+                                            <h4>✅ TRÁCH NHIỆM CỦA NGƯỜI CHO THUÊ</h4>
+                                            <ol>
+                                                <li>Đảm bảo hình ảnh, mô tả sản phẩm đúng thực tế.</li>
+                                                <li>Giao hàng đúng hẹn, đúng chất lượng, không làm gián đoạn trải nghiệm của người thuê.</li>
+                                                <li>Cập nhật tình trạng sản phẩm kịp thời (hết hàng, hư hỏng...).</li>
+                                                <li>Chịu trách nhiệm về nguồn gốc sản phẩm, đảm bảo không vi phạm bản quyền, thương hiệu.</li>
+                                                <li>Tôn trọng các quy định về huỷ đơn, hoàn tiền và giải quyết tranh chấp.</li>
+                                            </ol>
+                                            <h4>📄 ĐIỀU KHOẢN BỔ SUNG</h4>
+                                            <ol>
+                                                <li>Nếu doanh thu <strong>≤ 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ</strong>.</li>
+                                                <li>Nếu doanh thu <strong>> 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ + 10% doanh thu</strong>.</li>
+                                            </ol>
+
+                                            <div class="form-floating mt-4">
+                                                <input type="text" id="storeName" name="storeName" class="form-control" placeholder="Nhập tên cửa hàng..." required />
+                                                <label for="storeName"><i class="fa-solid fa-file-lines"></i> Nhập tên cửa hàng của bạn:</label>
+
                                             </div>
+                                            <div class="form-floating mt-4">
+                                                 <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
+                                                <label for="phoneNumber"><i class="fa-solid fa-phone"></i> Nhập số điện thoại cửa hàng của bạn:</label>
+                                            </div>
+                                            <div class="form-floating mt-4">
+                                                <input type="text" id="address" name="address" class="form-control" placeholder="Nhập địa chỉ cửa hàng..." required />
+                                                <label for="address"><i class="fa-solid fa-location-dot"></i> Nhập địa chỉ cửa hàng của bạn:</label>
+                                            </div>
+                                            <div class="text-center mt-3">
+                                               <button type="submit" class="btn btn-primary">Đăng ký trở thành người cho thuê</button>
+                                            </div>
+                                        </div>
                                         </form>                                 
                                 }
                             </div>
@@ -117,5 +169,24 @@
 {
     @section Scripts {
         <script src="~/js/Lessor/ShopManager.js"></script>
+    }
+    @section Styles{
+        <style>
+            .nav-pills .nav-link.active {
+                background-color: #8DC63F;
+            }
+
+            .nav-pills .nav-link {
+                color: #8DC63F;
+            }
+
+                .nav-pills .nav-link:hover {
+                    background-color: #e9f5d8;
+                }
+
+            h2 {
+                margin-bottom: 20px;
+            }
+        </style>
     }
 }

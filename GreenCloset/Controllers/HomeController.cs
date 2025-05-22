@@ -59,4 +59,22 @@ public partial class HomeController : BaseController
         ViewBag.TotalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
         return View(paginatedProducts);
     }
+
+    public IActionResult Policy()
+    {
+        return View();
+    }
+
+    public IActionResult Contact()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Contact(string name, string email, string message)
+    {
+        _facadeService.User.Contact(name, email, message);
+        TempData["success"] = "Gửi liên hệ thành công";
+        return View();
+    }
 }

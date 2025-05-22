@@ -13,6 +13,9 @@ namespace DataAccess.Models
 
         [Required]
         public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime? CompleteDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
+        public DateTime? CancelDate { get; set; }
 
         public double TotalPrice { get; set; }
 
@@ -24,16 +27,20 @@ namespace DataAccess.Models
         public DeliveryOption DeliveryOption { get; set; }
         public string? ShippingAddress { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? CancelReason {  get; set; }
 
         [ForeignKey("UserId")]
         public User? User { get; set; }
 
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
+        public virtual ICollection<Feedback>? Feedbacks { get; set; }
+
     }
 
     public enum OrderStatus
     {
         Pending,
+        Delivering,
         Completed,
         Cancelled,
     }

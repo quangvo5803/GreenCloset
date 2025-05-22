@@ -55,6 +55,11 @@ namespace DataAccess.Data
                 .WithOne(i => i.Product)
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Feedback>()
+                .HasOne(f => f.Order)
+                .WithMany(o => o.Feedbacks)
+                .HasForeignKey(f => f.OrderId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

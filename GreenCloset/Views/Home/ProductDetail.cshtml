@@ -6,7 +6,7 @@
 }
 @{
     ViewData["Title"] = "Thông tin sản phẩm";
-    var feedbacks = ViewBag.Feedbacks as IEnumerable<Feedback>;
+    var feedbacks = Model.Feedbacks as IEnumerable<Feedback>;
     double avgRating = feedbacks != null && feedbacks.Any() ? feedbacks.Average(f => f.FeedbackStars) : 0;
     int totalReviews = feedbacks != null && feedbacks.Any() ?  feedbacks.Count() : 0;
     int thumbnail = 0;
@@ -286,10 +286,10 @@
                             <!--Review -->
                             @if (feedbacks != null && feedbacks.Any())
                             {
-                                <div class="review-item border-bottom pb-3 mb-3">
 
                                     @foreach(var f in feedbacks)
                                     {
+                                    <div class="review-item border-bottom border-3">
                                         <div class="d-flex justify-content-between">
                                             <div class="review-header">
                                                 <strong>@(f.User?.UserName ?? f.User?.Email)</strong>
@@ -311,7 +311,7 @@
                                                     }
                                                 </div>
                                             </div>
-                                            <small class="text-muted">@f.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                            <small class="text-muted">@f.CreatedAt</small>
                                         </div>
                                         <p class="mt-2">@f.FeedbackContent</p>
 
@@ -321,14 +321,14 @@
                                             <div class="review-images">
                                                 @foreach (var image in f.Images)
                                                 {
-                                                    <a class="venobox" data-gall="gallery01" data-fitview="true" href="/img/products/@image.ImagePath">
-                                                        <img src="/img/products/@image.ImagePath" alt="Review Image" />
+                                                    <a class="venobox" data-gall="gallery02" data-fitview="true" href="/image/feedbacks/@image.ImagePath">
+                                                        <img src="/image/feedbacks/@image.ImagePath" alt="Review Image" />
                                                     </a>
                                                 }
                                             </div>
                                         }
+                                    </div>
                                     }
-                                </div>
                             }
                             else
                             {

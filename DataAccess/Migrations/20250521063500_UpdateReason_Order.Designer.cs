@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250521063500_UpdateReason_Order")]
+    partial class UpdateReason_Order
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,9 +98,6 @@ namespace DataAccess.Migrations
                     b.Property<int>("FeedbackStars")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -105,8 +105,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
@@ -150,18 +148,6 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CancelDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CancelReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CompleteDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeliveryDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("DeliveryOption")
                         .HasColumnType("int");
 
@@ -172,6 +158,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShippingAddress")
@@ -372,12 +361,6 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Models.Feedback", b =>
                 {
-                    b.HasOne("DataAccess.Models.Order", "Order")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("DataAccess.Models.Product", "Product")
                         .WithMany("Feedbacks")
                         .HasForeignKey("ProductId")
@@ -389,8 +372,6 @@ namespace DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Order");
 
                     b.Navigation("Product");
 
@@ -481,8 +462,6 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Models.Order", b =>
                 {
-                    b.Navigation("Feedbacks");
-
                     b.Navigation("OrderDetails");
                 });
 

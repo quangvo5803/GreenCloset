@@ -1,0 +1,50 @@
+﻿@model Order
+
+<div class="text-end" style="margin-bottom:0px !important; margin-top: 0px !important;">
+    <button type="button" class="btn btn-sm btn-outline-primary"
+            style="margin-bottom:0px !important;"
+            data-bs-toggle="modal" data-bs-target="#completeModal-@Model.Id">
+        Đã nhận được hàng
+    </button>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="completeModal-@Model.Id" tabindex="-1" aria-labelledby="completeModalLabel-@Model.Id" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="CompleteOrder" asp-controller="Customer" method="post" style="margin-bottom: 0px !important">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="completeModalLabel-@Model.Id">Xác nhận đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-2 fw-bold">
+                        Bạn vui lòng chỉ nhấn 'Xác nhận' khi đã nhận được sản phẩm và sản phẩm không có vấn đề nào.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('showCancelReasonBtn-@Model.Id');
+        var section = document.getElementById('cancelReasonSection-@Model.Id');
+
+        if (btn && section) {
+            btn.addEventListener('click', function () {
+                section.classList.remove('d-none');
+                btn.classList.add('d-none');
+            });
+        }
+    });
+</script>

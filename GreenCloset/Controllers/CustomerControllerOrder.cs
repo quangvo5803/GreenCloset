@@ -66,7 +66,7 @@ namespace GreenCloset.Controllers
                 if (paymentByCOD != null)
                 {
                     TempData["success"] = "Thanh toán thành công";
-                    return RedirectToAction("Cart", "Customer");
+                    return RedirectToAction("ManageOrder", "Customer");
                 }
                 TempData["error"] = "Thanh toán thất bại";
                 return RedirectToAction("Cart", "Customer");
@@ -100,7 +100,7 @@ namespace GreenCloset.Controllers
             )
             {
                 TempData["success"] = "Thanh toán thành công";
-                return RedirectToAction("Cart", "Customer");
+                return RedirectToAction("ManageOrder", "Customer");
             }
             else
             {

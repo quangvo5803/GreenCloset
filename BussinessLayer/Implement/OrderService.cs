@@ -3,6 +3,15 @@ using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Repository.Implement;
+using Repository.Interface;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 using Utility.Email;
 
 namespace BussinessLayer.Implement
@@ -265,7 +274,20 @@ namespace BussinessLayer.Implement
 
             if (deliveryOptions == DeliveryOption.HomeDelivery)
             {
-                totalPrice += 25000;
+                int storeCount = productsInCart
+                    .Select(p => p.Product?.UserId)
+                    .Where(id => id != null)
+                    .Distinct()
+                    .Count();
+                if (storeCount < 2)
+                {
+                    totalPrice += 25000;
+                }
+                else
+                {
+                    totalPrice += 50000;
+                }
+                
             }
             return new Order
             {
@@ -276,16 +298,17 @@ namespace BussinessLayer.Implement
                 DeliveryOption = deliveryOptions,
                 ShippingAddress = deliveryAddress,
                 PaymentMethod = paymentMethod,
-                OrderDetails = productsInCart
-                    .Select(p => new OrderDetail
-                    {
-                        ProductId = p.ProductId,
-                        Quantity = p.Count,
-                        UnitPrice = p.Product != null ? p.Product.Price : 0,
-                        StartDate = p.StartDate,
-                        EndDate = p.EndDate,
-                    })
-                    .ToList(),
+                OrderDetails = productsInCart.Select(p => new OrderDetail
+                {
+                    ProductId = p.ProductId,
+                    Quantity = p.Count,
+                    UnitPrice = p.Product != null ? p.Product.Price : 0,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    SizeClother = p.SizeClother,
+                    SizeShoe = p.SizeShoe
+                    
+                }).ToList()
             };
         }
 
@@ -379,6 +402,7 @@ namespace BussinessLayer.Implement
                 .Where(i => i.Product != null)
                 .GroupBy(i => i.Product!.User!.Id)
                 .ToList();
+            int storeCount = productGroupsByStore.Count;
             if (productGroupsByStore != null)
             {
                 string groupedProductDetail = string.Join(
@@ -430,13 +454,15 @@ namespace BussinessLayer.Implement
                 );
 
                 string buyerBody = BuyerEmailInformation(
-                    userId,
-                    phoneNumber,
-                    paymentMethod,
-                    deliveryOptions,
-                    deliveryAddress,
-                    groupedProductDetail,
-                    totalPrices
+                userId,
+                phoneNumber,
+                paymentMethod,
+                deliveryOptions,
+                deliveryAddress,
+                groupedProductDetail,
+                totalPrices,
+                storeCount
+
                 );
 
                 string buyerSubject = "Xác nhận đơn hàng của bạn";
@@ -495,17 +521,29 @@ namespace BussinessLayer.Implement
         }
 
         private string BuyerEmailInformation(
-            Guid userId,
-            string phoneNumber,
-            PaymentMethod paymentMethod,
-            DeliveryOption deliveryOptions,
-            string deliveryAddress,
-            string groupedProductDetail,
-            double totalPrices
+        Guid userId,
+        string phoneNumber,
+        PaymentMethod paymentMethod,
+        DeliveryOption deliveryOptions,
+        string deliveryAddress,
+        string groupedProductDetail,
+        double totalPrices,
+        int storeCount
+
         )
         {
             var user = _unitOfWork.User.Get(u => u.Id == userId);
             var customerName = user?.UserName ?? "Khách hàng";
+
+            string shippingFeeDis;
+            var shippingFee = storeCount >= 2 ? 50.000 : 25.000;
+            shippingFeeDis = $"{shippingFee.ToString("N0", new CultureInfo("vi-VN"))}đ";
+            
+            string shippingHtml = "";
+            if(deliveryOptions == DeliveryOption.HomeDelivery)
+            {
+                shippingHtml = $"<p style = 'margin-bottom: 16px;' ><strong> Phí vận chuyển: </strong> {shippingFeeDis}</ p>";
+            }
             return $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #2e7d32;'>Cảm ơn {customerName} đã đặt hàng tại Green Closet!</h2>
@@ -515,7 +553,9 @@ namespace BussinessLayer.Implement
                 <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(paymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
                 <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(deliveryOptions == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Vận chuyển tận nơi")}</p>
                 <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(deliveryOptions == DeliveryOption.HomeDelivery ? deliveryAddress : "Nhận tại cửa hàng")}</p>
-
+                
+                {shippingHtml}
+                
                 {groupedProductDetail}
                 <p style='margin-bottom: 8px; font-size: 25px;'>Tổng giá trị đơn hàng: <strong style='color: #c62828;'>{totalPrices:N0} đ</strong></p>
 
@@ -552,6 +592,92 @@ namespace BussinessLayer.Implement
                 .ToList();
 
             return orders;
+        }
+
+
+        //view order history
+        public IEnumerable<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)> GetOrdersGroupedByStore(Guid userId)
+        {
+            var orders = _unitOfWork.Order
+                .GetRange(
+                    o => o.UserId == userId,
+                    includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
+                ).OrderByDescending(o =>
+                        o.Status == OrderStatus.Completed ? o.CompleteDate :
+                        o.Status == OrderStatus.Cancelled ? o.CancelDate :
+                        o.OrderDate
+                ).ToList();
+
+
+            var result = orders.Select(order =>
+            {
+                var grouped = order.OrderDetails?
+                    .Where(od => od.Product?.User != null)
+                    .GroupBy(od => od.Product!.User!)
+                    .ToDictionary(g => g.Key, g => g.ToList())
+                    ?? new Dictionary<User, List<OrderDetail>>();
+
+                return (order, grouped);
+            }).ToList();
+
+            return result;
+        }
+
+        public bool CancelOrder(int orderId, Guid userId, string reason)
+        {
+            var order = _unitOfWork.Order.Get(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                return false;
+            }
+            order.Status = OrderStatus.Cancelled;
+            order.CancelReason = reason;
+            order.CancelDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public bool CompleteOrder(int orderId, Guid userId)
+        {
+            var completeOrder = _unitOfWork.Order.Get(o => o.Id == orderId && o.UserId == userId);
+            if (completeOrder == null)
+            {
+                return false;
+            }
+            completeOrder.Status = OrderStatus.Completed;
+            completeOrder.CompleteDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
+        //order details
+        public (Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore, List<int> checkReview)? GetOrderDetail(int orderId, Guid userId)
+        {
+            var order = _unitOfWork.Order.Get(
+                o => o.Id == orderId && o.UserId == userId,
+                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
+            );
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            var grouped = order.OrderDetails?
+                .Where(od => od.Product?.User != null)
+                .GroupBy(od => od.Product!.User!)
+                .ToDictionary(g => g.Key, g => g.ToList())
+                ?? new Dictionary<User, List<OrderDetail>>();
+
+            //feeback check
+            var checkProduct = order.OrderDetails?.Select(od => od.ProductId).ToList();
+
+            var checkReview = _unitOfWork.Feedback
+                .GetRange(f => f.UserId == userId && f.OrderId == orderId)
+                .Select(f => f.ProductId)
+                .ToList();
+
+            return (order, grouped, checkReview);
         }
     }
 }

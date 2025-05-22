@@ -15,5 +15,6 @@ namespace BussinessLayer.Interface
         ICartService Cart { get; }
         IOrderService Order { get; }
         IOrderHistoryService OrderHistory { get; }
+        IFeedBackService FeedBack { get; }
     }
 }

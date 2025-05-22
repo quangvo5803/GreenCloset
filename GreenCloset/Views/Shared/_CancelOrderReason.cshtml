@@ -1,0 +1,58 @@
+﻿@model Order
+
+<div class="text-end" style="margin-bottom:0px !important; margin-top: 0px !important;">
+    <button type="button" class="btn btn-sm btn-outline-danger"
+            style="margin-bottom:0px !important;"
+            data-bs-toggle="modal" data-bs-target="#cancelModal-@Model.Id">
+        Hủy đơn
+    </button>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="cancelModal-@Model.Id" tabindex="-1" aria-labelledby="cancelModalLabel-@Model.Id" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="CancelOrder" asp-controller="Customer" method="post" style="margin-bottom: 0px !important">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel-@Model.Id">Xác nhận hủy đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Lý do hủy đơn:</label>
+                        <select name="reason" class="form-select form-select-sm" required>
+                            <option value="" disabled selected>Chọn lý do hủy đơn</option>
+                            <option value="Tôi đổi ý">Tôi đổi ý</option>
+                            <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                            <option value="Thời gian giao hàng quá lâu">Thời gian giao hàng quá lâu</option>
+                            <option value="Tìm thấy giá tốt hơn ở nơi khác">Tìm thấy giá tốt hơn ở nơi khác</option>
+                            <option value="Lý do khác">Lý do khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('showCancelReasonBtn-@Model.Id');
+        var section = document.getElementById('cancelReasonSection-@Model.Id');
+
+        if (btn && section) {
+            btn.addEventListener('click', function () {
+                section.classList.remove('d-none');
+                btn.classList.add('d-none');
+            });
+        }
+    });
+</script>

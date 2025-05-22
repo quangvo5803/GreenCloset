@@ -11,6 +11,7 @@ namespace Repository.Implement
         IOrderDetailRepository OrderDetail { get; }
         ICartRepository Cart { get; }
         IItemImageRepository ItemImage { get; }
+        IFeedbackRepository Feedback { get; }
         void Save();
     }
 }

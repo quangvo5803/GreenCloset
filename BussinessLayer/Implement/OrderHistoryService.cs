@@ -25,8 +25,12 @@ namespace BussinessLayer.Implement
                 .GetRange(
                     o => o.UserId == userId,
                     includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
-                ).OrderByDescending(o => o.Status == OrderStatus.Cancelled && o.Status == OrderStatus.Completed)
-                .ThenByDescending(o => o.OrderDate).ToList();
+                ).OrderByDescending(o =>
+                        o.Status == OrderStatus.Completed ? o.CompleteDate :
+                        o.Status == OrderStatus.Cancelled ? o.CancelDate :
+                        o.OrderDate
+                ).ToList();
+
 
             var result = orders.Select(order =>
             {
@@ -42,7 +46,7 @@ namespace BussinessLayer.Implement
             return result;
         }
 
-        public bool CancelOrder(int orderId, Guid userId)
+        public bool CancelOrder(int orderId, Guid userId, string reason)
         {
             var order = _unitOfWork.Order.Get(o => o.Id == orderId && o.UserId == userId);
 
@@ -51,13 +55,26 @@ namespace BussinessLayer.Implement
                 return false;
             }
             order.Status = OrderStatus.Cancelled;
-            order.OrderDate = DateTime.Now;
+            order.CancelReason = reason;
+            order.CancelDate = DateTime.Now;
             _unitOfWork.Save();
             return true;
         }
 
+        public bool CompleteOrder(int orderId, Guid userId)
+        {
+            var completeOrder = _unitOfWork.Order.Get(o => o.Id==orderId && o.UserId == userId);
+            if (completeOrder == null)
+            {
+                return false;
+            }
+            completeOrder.Status = OrderStatus.Completed;
+            completeOrder.CompleteDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
         //order details
-        public (Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)? GetOrderDetail(int orderId, Guid userId)
+        public (Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore, List<int> checkReview)? GetOrderDetail(int orderId, Guid userId)
         {
             var order = _unitOfWork.Order.Get(
                 o => o.Id == orderId && o.UserId == userId,
@@ -75,7 +92,15 @@ namespace BussinessLayer.Implement
                 .ToDictionary(g => g.Key, g => g.ToList())
                 ?? new Dictionary<User, List<OrderDetail>>();
 
-            return (order, grouped);
+            //feeback check
+            var checkProduct = order.OrderDetails?.Select(od => od.ProductId).ToList();
+
+            var checkReview = _unitOfWork.Feedback
+                .GetRange(f =>  f.UserId == userId && f.OrderId == orderId)
+                .Select(f => f.ProductId)
+                .ToList();
+
+            return (order, grouped, checkReview);
         }
 
     }

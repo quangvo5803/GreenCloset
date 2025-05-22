@@ -29,7 +29,7 @@ public partial class HomeController : BaseController
     {
         var product = _facadeService.Product.GetProductById(
             id,
-            includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
+            includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks,Feedbacks.User"
         );
 
         if (product != null)

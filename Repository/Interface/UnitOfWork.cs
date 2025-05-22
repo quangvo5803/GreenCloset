@@ -12,6 +12,7 @@ namespace Repository.Interface
         public IOrderRepository Order { get; private set; }
         public IOrderDetailRepository OrderDetail { get; private set; }
         public ICartRepository Cart { get; private set; }
+        public IFeedbackRepository Feedback { get; private set; }
         private ApplicationDbContext _db;
 
         public UnitOfWork(ApplicationDbContext db)
@@ -24,6 +25,7 @@ namespace Repository.Interface
             Order = new OrderRepository(_db);
             OrderDetail = new OrderDetailRepository(_db);
             Cart = new CartRepository(_db);
+            Feedback = new FeedbackRepository(_db);
         }
 
         public void Save()

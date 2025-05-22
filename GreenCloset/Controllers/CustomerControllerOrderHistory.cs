@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Drawing;
 using System.Security.Claims;
 
 namespace GreenCloset.Controllers
@@ -37,17 +38,28 @@ namespace GreenCloset.Controllers
         }
 
         [HttpPost]
-        public IActionResult CancelOrder(int orderId)
+        public IActionResult CancelOrder(int orderId, string reason)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
             {
                 return RedirectToAction("Login", "Home");
             }
-            _facadeService.OrderHistory.CancelOrder(orderId, userId);
-            return RedirectToAction("ManageOrder", "Customer");
+            _facadeService.OrderHistory.CancelOrder(orderId, userId, reason);
+            return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
         }
 
+        [HttpPost]
+        public IActionResult CompleteOrder(int orderId)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return RedirectToAction("Login", "Home");
+            }
+            _facadeService.OrderHistory.CompleteOrder(orderId, userId);
+            return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
+        }
         public IActionResult OrderDetails(int orderId)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -76,6 +88,7 @@ namespace GreenCloset.Controllers
                 }
             }
 
+            ViewBag.CheckReview = result.Value.checkReview;
             ViewBag.Order = result.Value.Order;
             ViewBag.GroupedByStore = result.Value.GroupedByStore;
 

@@ -1,6 +1,7 @@
 ﻿@{
     var order = ViewBag.Order as Order;
     var groupedByStore = ViewBag.GroupedByStore as Dictionary<User, List<OrderDetail>>;
+    var checkReview = ViewBag.CheckReview as List<int> ?? new List<int>();
     var userName = ViewBag.UserName;
     var shippingFee = groupedByStore?.Count >= 2 ? 50000 : 25000;
     double totalProduct = 0;
@@ -24,8 +25,8 @@
     var steps = new[]
     {
         new { Icon = "fas fa-file-alt", Text = "Đơn Hàng Đã Đặt", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") },
-        new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") },
-        new { Icon = "fas fa-box-open", Text = "Đã Nhận Được Hàng", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") }
+        new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.DeliveryDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-box-open", Text = "Đã Nhận Được Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") }
     };
 
     int currentStep = order?.Status switch
@@ -68,10 +69,10 @@
                                 
                                 <!-- Header -->
                                 <div class="d-flex justify-content-between align-items-center border-bottom border-2 border-light pb-2 mb-4">
-                                    <button asp-action="ManageOrder" asp-controller="Customer" class="btn btn-link text-secondary p-0 d-flex align-items-center gap-1" type="button">
+                                    <a asp-action="ManageOrder" asp-controller="Customer" class="btn btn-link text-secondary p-0 d-flex align-items-center gap-1" type="button">
                                         <i class="fas fa-chevron-left fs-5"></i>
                                         <span class="fs-6">TRỞ LẠI</span>
-                                    </button>
+                                    </a>
                                     <div class="d-flex align-items-center gap-2 fs-6 text-secondary">
                                         <span>MÃ ĐƠN HÀNG:</span>
                                         <span class="fw-semibold text-dark">@order?.Id</span>
@@ -93,7 +94,16 @@
                                                     <i class="@steps[i].Icon"></i>
                                                 </div>
                                                 <div class="step-text mt-2">@steps[i].Text</div>
-                                                <div class="time">@steps[i].Time</div>
+                                                <div class="time">
+                                                    @if (!string.IsNullOrEmpty(steps[i].Time))
+                                                    {
+                                                        @steps[i].Time
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="visibility: hidden;">00/00/0000 00:00</span>
+                                                    }
+                                                </div>
                                                 @if (!isLast)
                                                 {
                                                     <div class="@(isLineActive ? "progress-line" : "progress-line-disable")"></div>
@@ -103,12 +113,16 @@
                                         if (i == steps.Length - 1 && order?.Status == OrderStatus.Cancelled){
 
                                             <div class="text-danger fw-bold">Bạn đã hủy đơn hàng
-                                                <p class="text-gray-500 small">vào @order?.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                                                <p class="text-gray-500 small">@order?.CancelDate?.ToString("dd/MM/yyyy HH:mm")</p>
+                                                <p class="text-gray-500 small">Lý do: @order?.CancelReason</p>
                                             </div>
                                         }
                                     }
  
-                                    @*
+                                    
+                                    
+                                </div>
+                                @*
                                     <!-- validate review -->
                                     <div class="step d-flex flex-column align-items-center position-relative">
                                         <div class="icon-circle-disable">
@@ -118,10 +132,8 @@
                                         <div class="time">11:06 13-05-2025</div>
                                     </div>
                                    *@
-                                    
-                                </div>
                                 <!-- Address and Status Section -->
-                                <div class="border-bottom border-gray-200 pb-4 mb-4">
+                                <div class="border-bottom border-4 pb-4 mb-4">
                                     <!-- <div class="text-black fw-normal fs-5 text-center">Chi tiết mã đơn hàng #@order?.Id</div> -->
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         
@@ -132,17 +144,17 @@
                                             <h3 class="mt-2 fw-semibold text-gray-900">
                                                 @userName
                                             </h3>
-                                            <p class="text-gray-500 small mt-1 mb-0">
+                                            <p class="text-black fs-6 small mt-1 mb-0">
                                                 (+84) @order?.PhoneNumber
                                             </p>
                                             @if (order?.DeliveryOption == DeliveryOption.HomeDelivery)
                                             {
-                                                <p class="text-gray-500 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
-                                                    @order?.ShippingAddress
+                                                <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
+                                                    Địa chỉ: @order?.ShippingAddress
                                                 </p>
                                             }else{
-                                                <p class="text-gray-500 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
-                                                    Nhận tại cửa hàng
+                                                <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
+                                                    Địa chỉ: Nhận tại cửa hàng
                                                     khu đô thị FPT
                                                 </p>
                                             }
@@ -165,7 +177,7 @@
                                     var store = storeGroup.Key;
                                     var details = storeGroup.Value;
 
-                                    <div class="border-bottom border-gray-200 pb-3 mb-4">
+                                    <div class="border-bottom border-4 pb-3 mb-4">
                                         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                             <h3 class="fw-semibold mb-0 fs-6 text-primary">
                                                 <i class="fa-solid fa-shop"></i> @store.UserName
@@ -174,50 +186,63 @@
                                         <!-- Products for Store 1 -->
                                         @foreach (var item in details)
                                         {
+                                            bool isReviewed = checkReview.Contains(item.ProductId);
                                             var days = (item.EndDate - item.StartDate)?.Days ?? 1;
                                             if (days < 1) { days = 1; }
                                             var total = item.UnitPrice * item.Quantity * days;
-                                            <div class="d-flex gap-3 mb-3">
-                                                @if(item.Product?.ProductAvatar != null){
-                                                    <img class="flex-shrink-0 object-contain" height="80" src="@item.Product?.ProductAvatar?.ImagePath"
-                                                         width="80" />
-                                                }else{
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
-                                                }
+                                            <div class="gap-3 p-2 border border-2 rounded bg-white" style="margin-bottom:5px">
+                                                <div class="d-flex gap-3 mb-3">
+                                                    @if(item.Product?.ProductAvatar != null){
+                                                        <img class="flex-shrink-0 object-contain" height="80" src="@item.Product?.ProductAvatar?.ImagePath"
+                                                             width="80" style="margin-top:27px;" />
+                                                    }else{
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px; margin-top:27px;" />
+                                                    }
 
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-1 fs-6 text-black fw-bold" style="line-height: 1.2;">
-                                                        @item.Product?.Name
-                                                    </p>
-                                                    <p class="text-gray-400 small mb-1">
-                                                        Phân loại hàng: @item.Product?.Color -
-                                                        @if (item.SizeShoe.HasValue)
-                                                        {
-                                                            @item.SizeShoe
-                                                        }
-                                                        else if (item.SizeClother.HasValue)
-                                                        {
-                                                            @item.SizeClother
-                                                        }
-                                                        else
-                                                        {
-                                                            <text>Chưa chọn</text>
-                                                        }
-                                                    </p>
-                                                    <p class="text-gray-400 small mb-1">
-                                                        @days ngày (@item.StartDate?.ToString("dd/MM/yyyy") - @item.EndDate?.ToString("dd/MM/yyyy"))
-                                                    </p>
-                                                    <p class="mb-0 fs-6 text-black">
-                                                        x @item.Quantity
-                                                    </p>
-                                                </div>
-                                                <div class="text-end flex-shrink-0" style="min-width: 80px;">
-                                                    <div>
-                                                        Đơn giá: @item.UnitPrice.ToString("N0") ₫
+                                                    <div class="flex-grow-1">
+                                                        <p class="mb-1 fs-6 text-black fw-bold" style="line-height: 1.2;">
+                                                            @item.Product?.Name
+                                                        </p>
+                                                        <p class="text-gray-400 small mb-1">
+                                                            Phân loại hàng: @item.Product?.Color -
+                                                            @if (item.SizeShoe.HasValue)
+                                                            {
+                                                                @item.SizeShoe
+                                                            }
+                                                            else if (item.SizeClother.HasValue)
+                                                            {
+                                                                @item.SizeClother
+                                                            }
+                                                            else
+                                                            {
+                                                                <text>Chưa chọn</text>
+                                                            }
+                                                        </p>
+                                                        <p class="text-gray-400 small mb-1">
+                                                            @days ngày (@item.StartDate?.ToString("dd/MM/yyyy") - @item.EndDate?.ToString("dd/MM/yyyy"))
+                                                        </p>
+                                                        <p class="mb-0 fs-6 text-black">
+                                                            x @item.Quantity
+                                                        </p>
                                                     </div>
-                                                    <div class="text-primary fw-bold">
-                                                        Tạm tính: @total.ToString("N0") ₫      
+                                                    <div class="text-end flex-shrink-0" style="min-width: 80px;">
+                                                        <div>
+                                                            Đơn giá: @item.UnitPrice.ToString("N0") ₫
+                                                        </div>
+                                                        <div class="text-primary fw-bold">
+                                                            Tạm tính: @total.ToString("N0") ₫      
+                                                        </div>
+
+                                                        
+                                                        @if (order?.Status == OrderStatus.Completed && !isReviewed)
+                                                        {
+                                                            <div>
+                                                                <partial name="_FeedBackOrder" model="item" />
+                                                            </div>
+                                                        }
+                                                        
                                                     </div>
+
                                                 </div>
                                             </div>
                                         }
@@ -225,10 +250,22 @@
 
                                     </div>
                                 }
+                                
 
                                 <!-- Price Details Section -->
-                                <div class="border border-gray-100 rounded-sm mb-4">
-                                    <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-gray-100">
+                                <div class="rounded-sm mb-4">
+                                    
+                                    <!-- Payment Method -->
+                                    <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-3">
+                                        <span>
+                                            Phương thức Thanh toán
+                                        </span>
+                                        <span class="fw-bold text-gray-900">
+                                            @(order?.PaymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")
+                                        </span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-3">
                                         <span>
                                             Tổng tiền hàng
                                         </span>
@@ -238,7 +275,7 @@
                                     </div>
                                     @if (order?.DeliveryOption == DeliveryOption.HomeDelivery)
                                     {
-                                        <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-gray-100">
+                                        <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-3">
                                             <span>
                                                 Phí vận chuyển
                                             </span>
@@ -258,7 +295,7 @@
                                     </div>
                                 </div>
                                 <!-- Payment Reminder -->
-                                @if (order?.PaymentMethod == PaymentMethod.PayByCash)
+                                @if (order?.PaymentMethod == PaymentMethod.PayByCash && order?.Status != OrderStatus.Cancelled && order?.Status != OrderStatus.Completed)
                                 {
                                     <div class="bg-light-yellow rounded-sm border border-warning px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
                                         <i class="fas fa-exclamation-circle"></i>
@@ -271,7 +308,7 @@
                                         </p>
                                     </div>
                                 }
-                                else
+                                else if (order?.PaymentMethod == PaymentMethod.PayByCash && order?.Status != OrderStatus.Cancelled && order?.Status != OrderStatus.Completed)
                                 {
                                     <div class="bg-light-success rounded-sm border border-success px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
                                         <i class="bi bi-emoji-kiss"></i>
@@ -285,15 +322,7 @@
                                     </div>
                                 }
 
-                                <!-- Payment Method -->
-                                <div class="d-flex justify-content-between text-muted small border-top border-gray-200 pt-2">
-                                    <span>
-                                        Phương thức Thanh toán
-                                    </span>
-                                    <span class="fw-bold text-gray-900">
-                                        @(order?.PaymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")
-                                    </span>
-                                </div>
+                                
                             </div>
                         </div> <!-- End Content Area -->
                     </div>

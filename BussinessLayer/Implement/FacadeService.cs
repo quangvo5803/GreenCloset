@@ -19,7 +19,6 @@ namespace BussinessLayer.Implement
         public IItemImageService ItemImage { get; private set; }
         public ICartService Cart { get; private set; }
         public IOrderService Order { get; private set; }
-        public IOrderHistoryService OrderHistory { get; private set; }
         public IFeedBackService FeedBack { get; private set; }
         public FacadeService(
             IUnitOfWork unitOfWork,
@@ -40,7 +39,6 @@ namespace BussinessLayer.Implement
             ItemImage = new ItemImageService(_unitOfWork, _webHostEnvironment);
             Cart = new CartService(_unitOfWork);
             Order = new OrderService(_unitOfWork, _vpnPayService, _configuration, _emailQueue); 
-            OrderHistory = new OrderHistoryService(_unitOfWork);
             FeedBack = new FeedBackService(_unitOfWork, _webHostEnvironment);
         }
     }

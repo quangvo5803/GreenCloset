@@ -20,7 +20,7 @@ namespace GreenCloset.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            var ordersGrouped = _facadeService.OrderHistory.GetOrdersGroupedByStore(userId);
+            var ordersGrouped = _facadeService.Order.GetOrdersGroupedByStore(userId);
 
             var pendingOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Pending).ToList();
             var deliveringOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Delivering).ToList();
@@ -45,7 +45,7 @@ namespace GreenCloset.Controllers
             {
                 return RedirectToAction("Login", "Home");
             }
-            _facadeService.OrderHistory.CancelOrder(orderId, userId, reason);
+            _facadeService.Order.CancelOrder(orderId, userId, reason);
             return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
         }
 
@@ -57,7 +57,7 @@ namespace GreenCloset.Controllers
             {
                 return RedirectToAction("Login", "Home");
             }
-            _facadeService.OrderHistory.CompleteOrder(orderId, userId);
+            _facadeService.Order.CompleteOrder(orderId, userId);
             return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
         }
         public IActionResult OrderDetails(int orderId)
@@ -68,7 +68,7 @@ namespace GreenCloset.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            var result = _facadeService.OrderHistory.GetOrderDetail(orderId, userId);
+            var result = _facadeService.Order.GetOrderDetail(orderId, userId);
             if (result == null)
             {
                 return NotFound("Không tìm thấy đơn hàng.");

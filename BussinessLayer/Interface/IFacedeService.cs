@@ -14,7 +14,6 @@ namespace BussinessLayer.Interface
         IItemImageService ItemImage { get; }
         ICartService Cart { get; }
         IOrderService Order { get; }
-        IOrderHistoryService OrderHistory { get; }
         IFeedBackService FeedBack { get; }
     }
 }

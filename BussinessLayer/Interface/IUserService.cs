@@ -21,6 +21,7 @@ namespace BussinessLayer.Interface
         void SendResetPasswordEmail(string email);
         string? IsValidToken(string token);
         void RegisterLessor(string email, string storeName, string phoneNumber, string address);
+        void Contact(string name, string email, string message);
         Task SignInUser(HttpContext httpContext, User user);
     }
 }

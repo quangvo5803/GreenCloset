@@ -18,6 +18,7 @@ namespace GreenCloset.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> RegisterLessor(
             string storeName,
@@ -70,6 +71,30 @@ namespace GreenCloset.Controllers
                 .ToList();
             ;
             return Json(new { data = products });
+        }
+
+        [Authorize(Roles = "Lessor")]
+        [HttpGet]
+        public IActionResult GetAllOrder()
+        {
+            var emailUser = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(emailUser))
+            {
+                return Json(new { data = new List<Product>() });
+            }
+            var orders = _facadeService
+                .Order.GetOrdersByProductOwner(emailUser)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.DeliveryOption,
+                    ProductCount = p.OrderDetails?.Count,
+                    p.TotalPrice,
+                    p.Status,
+                })
+                .ToList();
+            ;
+            return Json(new { data = orders });
         }
 
         [Authorize(Roles = "Lessor")]

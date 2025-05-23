@@ -88,5 +88,19 @@ namespace BussinessLayer.Implement
             );
             return feedbacks;
         }
+
+        public (Product? product, IEnumerable<Feedback> feedbacks) ViewFeedbackProduct(int productId)
+        {
+            var product = _unitOfWork.Product.Get(p => p.Id == productId);
+            if (product == null)
+                return (null, Enumerable.Empty<Feedback>());
+
+            var feedbacks = _unitOfWork.Feedback.GetRange(
+                f => f.ProductId == productId,
+                includeProperties: "User,Images"
+            );
+
+            return (product, feedbacks);
+        }
     }
 }

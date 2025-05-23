@@ -1,0 +1,219 @@
+﻿@model IEnumerable<Feedback>
+@{
+    var product = ViewBag.Product as Product;
+    double avgRating = Model.Any() ? Model.Average(f => f.FeedbackStars) : 0;
+    int totalReviews = Model.Count();
+    ViewData["Title"] = "Đánh giá của sản phẩm";
+}
+
+
+<div class="pc-container">
+    <div class="pc-content">
+        <div class="admin-margin container py-4">
+            <div class="">
+                <div class="col-lg-12 col-md-10">
+                    <div class="card shadow-lg border-0 rounded-lg">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="text-white">Đánh giá sản phẩm @product?.Name</h2>
+                            <a asp-action="ManageProduct" asp-controller="Admin" class="btn btn-light">
+                                <i class="fa fa-arrow-left"></i> Trở lại danh sách sản phẩm
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    @if (product?.ProductAvatar != null)
+                                    {
+                                        <img src="/im/feedbacks/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                             class="img-thumbnail" style="width:200px; height:200px" />
+                                    }
+                                    else
+                                    {
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                             alt="@product?.Name" class="img-thumbnail" style="width:200px; height:200px" />
+                                    }
+                                </div>
+                                <div class="col-md-9">
+                                    <h4>@product?.Name</h4>
+                                    <p class="text-muted">Mô tả: @(string.IsNullOrWhiteSpace(product?.Description) ? "Không có mô tả nào" : product.Description)</p>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="me-2">
+                                            <span class="text-warning">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= avgRating)
+                                                    {
+                                                        <i class="fa fa-star"></i>
+                                                    }
+                                                    else if (i - 0.5 <= avgRating)
+                                                    {
+                                                        <i class="fa fa-star-half-stroke"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fa-regular fa-star"></i>
+                                                    }
+                                                }
+                                            </span>
+                                        </div>
+                                        <span class="text-muted">@avgRating.ToString("0.0") (@totalReviews Đánh giá)</span>
+                                    </div>
+                                    <!--Feed back list-->
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        foreach (var feedback in Model)
+                                        {
+                                            <div class="review-item border-bottom border-1 border-black pb-3 mb-3">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="review-header">
+                                                        <strong>@(feedback.User?.UserName ?? feedback.User?.Email)</strong>
+                                                        <div class="rating">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                if (i <= feedback.FeedbackStars)
+                                                                {
+                                                                    <i class="fa fa-star"></i>
+                                                                }
+                                                                else if (i - 0.5 <= feedback.FeedbackStars)
+                                                                {
+                                                                    <i class="fa fa-star-half-stroke"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="fa-regular fa-star"></i>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-black fs-6">@feedback.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                                <p class="mt-2">@feedback.FeedbackContent</p>
+
+                                                <!-- Review Images -->
+                                                @if (feedback.Images != null)
+                                                {
+                                                    <div class="review-images">
+                                                        @foreach (var image in feedback.Images)
+                                                        {
+                                                            <a class="venobox" data-gall="gallery01" data-fitview="true"
+                                                               href="/image/feedbacks/@image.ImagePath">
+                                                                <img src="/image/feedbacks/@image.ImagePath" alt="Review Image" />
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    }else{
+                                        <div class="text-black fs-4 m-4">Chưa có đánh giá nào từ khách hàng</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .customer-reviews {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .review-item {
+        background-color: white;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+        .review-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .review-header strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+    .rating {
+        display: flex;
+        gap: 2px;
+    }
+
+        .rating .fa-star {
+            color: #ffc107;
+        }
+
+            .rating .fa-star.text-muted {
+                color: #e0e0e0;
+            }
+
+    .overall-rating {
+        background-color: #f1f3f5;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .rating-breakdown .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+
+    .pagination {
+        margin-top: 20px;
+    }
+
+    .page-item.active .page-link {
+        background-color: #FEA116;
+        border-color: #FEA116;
+    }
+
+    .page-link {
+        color: #FEA116;
+    }
+
+        .page-link:hover {
+            background-color: #FEA116;
+            color: white;
+        }
+
+    .review-item {
+        padding: 10px;
+    }
+
+    .review-images {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+        .review-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+            .review-images img:hover {
+                transform: scale(1.05);
+            }
+</style>

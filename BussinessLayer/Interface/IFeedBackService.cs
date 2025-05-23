@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +18,8 @@ namespace BussinessLayer.Interface
             List<IFormFile>? images,
             Guid userId
         );
+
+        (Product? product, IEnumerable<Feedback> feedbacks) ViewFeedbackProduct(int productId);
         IEnumerable<Feedback> GetAllShopFeedback(Guid shopId);
     }
 }

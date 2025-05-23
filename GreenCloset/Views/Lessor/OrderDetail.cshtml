@@ -10,7 +10,7 @@
         new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.DeliveryDate?.ToString("dd/MM/yyyy HH:mm") },
         new { Icon = "fas fa-shirt", Text = "Đang Thuê", Time = order?.RentingDate?.ToString("dd/MM/yyyy HH:mm") },
         new { Icon = "fas fa-truck", Text = "Đang Trả Hàng Cho Shop", Time = order?.ReturingDate?.ToString("dd/MM/yyyy HH:mm") },
-        new { Icon = "fas fa-check", Text = "Hoàn thành đơn hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-check", Text = "Hoàn Thành Đơn Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") },
     };
 
     int currentStep = order?.Status switch

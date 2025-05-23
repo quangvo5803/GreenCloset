@@ -36,7 +36,9 @@ namespace GreenCloset.Controllers
             for (int i = 0; i < 7; i++)
             {
                 var date = monday.AddDays(i);
-                var dailyOrders = allOrders.Where(o => o.OrderDate.Date == date).ToList();
+                var dailyOrders = allOrders
+                    .Where(o => o.OrderDate.Date == date && o.Status == OrderStatus.Completed)
+                    .ToList();
                 var dailyRevenue = dailyOrders.Sum(o => o.TotalPrice);
                 var inMillions = Math.Round((decimal)dailyRevenue / 1000000, 2);
                 weekRevenue += dailyRevenue;
@@ -53,7 +55,7 @@ namespace GreenCloset.Controllers
         {
             var orderList = _facadeService
                 .Order.GetOrdersByProductOwner()
-                .Where(o => o.OrderDate.Year == year);
+                .Where(o => o.OrderDate.Year == year && o.Status == OrderStatus.Completed);
             Console.WriteLine(orderList.Count());
             var monthlyRevenue = new decimal[12];
             var monthlyOrderCount = new int[12];

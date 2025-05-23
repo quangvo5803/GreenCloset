@@ -267,7 +267,10 @@
                 <span id="selectedCount">Chọn Tất Cả (0)</span>
             </div>
             <div class="text-end ms-auto">
-                <p class="text-dangers fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
+
+                <h5 class="text-dark fw-bold mb-1" id="prePrice">Thành tiền: ₫0</h5>
+                <h5 class="text-dark fw-bold mb-1" id="depositPrice">Tiền cọc: ₫0</h5>
+                <p class="text-primary fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
                 
                     
                     <button type="submit" id="buyNowBtn" class="btn btn-danger"
@@ -305,23 +308,23 @@
         const productCheckboxes = document.querySelectorAll('.productCheckbox');
         const shopCheckboxes = document.querySelectorAll('.shopCheckbox');
         const selectedCountSpan = document.getElementById('selectedCount');
-        const totalPriceSpan = document.getElementById('totalPrice');
+        const prePriceSpan = document.getElementById('prePrice');
 
         // Cập nhật tổng số lượng đã chọn và tổng tiền
         function updateCartDisplay() {
-            let selectedCount = 0, totalPrice = 0;
+            let selectedCount = 0, prePrice = 0;
             document.querySelectorAll('.productCheckbox').forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('.product-row');
                     const productTotalText = row.querySelector('.product-total').textContent;
                     const productTotal = parseFloat(productTotalText.replace(/[^\d]/g, ''));
                     selectedCount++;
-                    totalPrice += productTotal;
+                    prePrice += productTotal;
                 }
             });
 
             selectedCountSpan.textContent = `Chọn Tất Cả (${selectedCount})`;
-            totalPriceSpan.textContent = `Tổng cộng (${selectedCount} Sản phẩm): ${totalPrice.toLocaleString()} ₫`;
+            prePriceSpan.textContent = `Thành tiền: ${prePrice.toLocaleString()} ₫`;
         }
 
         // Cập nhật trạng thái "Chọn tất cả"

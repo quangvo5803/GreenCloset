@@ -30,7 +30,7 @@
                                         <i class="fa fa-lock me-2"></i>Bảo mật
                                     </a>
                                     <a class="nav-link active text-white" asp-action="ManageOrder" asp-controller="Customer"
-                                    style="background-color: #198754 !important;">
+                                       style="background-color: #8DC63F !important;">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
                                     </a>
                                     <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
@@ -118,7 +118,7 @@
 
                                                                         <div class="store-section p-1 rounded bg-light mt-2">
                                                                             <h4 class="text-primary mb-2 "><i class="fa-solid fa-shop me-2"></i> @(store?.ShopName ?? store?.UserName)</h4>
-                                                                            <div class="product-box d-flex align-items-center gap-3 p-2 border border-2 rounded bg-white">
+                                                                            <div class="product-box d-flex align-items-center gap-3 p-2 border-bottom border-2 rounded bg-white">
                                                                                 @if (firstProduct.Product?.ProductAvatar != null)
                                                                                 {
                                                                                     <img src="@firstProduct.Product?.ProductAvatar?.ImagePath" style="width: 80px; height: 80px; object-fit: cover;" />
@@ -160,8 +160,8 @@
 
                                                                 <div class="text-end mt-2">
                                                                     <h4 class="fw-bold text-dark">
-                                                                        Tổng tiền đơn hàng:
-                                                                        <span class="text-danger">@order.TotalPrice.ToString("N0") ₫</span>
+                                                                        Thành tiền (@order.OrderDetails?.Count) sản phẩm) :
+                                                                        <span class="text-primary">@order.TotalPrice.ToString("N0") ₫</span>
                                                                     </h4>
                                                                 </div>
                                                                 

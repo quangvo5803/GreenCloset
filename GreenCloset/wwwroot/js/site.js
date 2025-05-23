@@ -120,7 +120,7 @@
 
         var productSwiper = new Swiper("#featured-products .product-swiper", {
             speed: 500,
-            loop: true,
+            loop: false,
             slidesPerView: 4,
             spaceBetween: 30,
             navigation: {

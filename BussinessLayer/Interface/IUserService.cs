@@ -20,5 +20,10 @@ namespace BussinessLayer.Interface
         bool IsValidPassword(string password);
         void SendResetPasswordEmail(string email);
         string? IsValidToken(string token);
+        void RegisterLessor(string email, string storeName, string phoneNumber, string address);
+        void Contact(string name, string email, string message);
+        IEnumerable<User> GetAllCustomer();
+        IEnumerable<User> GetAllLessor();
+        Task SignInUser(HttpContext httpContext, User user);
     }
 }

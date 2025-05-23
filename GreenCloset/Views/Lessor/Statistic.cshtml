@@ -1,0 +1,238 @@
+﻿@model Product
+@{
+    ViewData["Title"] = "Thông kê";
+}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">  
+                        <!-- Content Area -->
+                        <div class="col-lg-12">
+                            <div class="p-4">
+                                <h1 class="text-center"><i class="fa-solid fa-chart-line"></i> THỐNG KÊ</h1>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 text-start">
+                                        <a asp-controller="Lessor" asp-action="Index" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> Trở về</a>
+
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                    </div>
+                                </div>
+                                @await Html.PartialAsync("~/Views/Shared/Statistic/_DashboardStats.cshtml")
+                                @await Html.PartialAsync("~/Views/Shared/Statistic/_ChartStats.cshtml")
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Content Area -->
+        </div>
+    </div>
+</div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/kaiadmin.min.css" asp-append-version="true" />
+}
+@section Scripts {
+	<script>
+                let statisticsChart;
+
+        function loadStatisticsChart(year) {
+            fetch(`/Lessor/GetMonthlyProfit?year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('statisticsChart').getContext('2d');
+
+                    const chartData = {
+                        labels: data.months,
+                        datasets: [
+                            {
+                                label: "Số sản phẩm được thuê",
+                                borderColor: '#FF6B6B',
+                                pointBackgroundColor: 'rgba(255, 107, 107, 0.8)',
+                                backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                                legendColor: '#FF6B6B',
+                                fill: true,
+                                borderWidth: 2,
+                                data: data.monthlyProductRentCounts
+                            },
+                            {
+                                label: "Doanh thu (triệu đồng)",
+                                borderColor: '#FFD93D',
+                                pointBackgroundColor: 'rgba(255, 217, 61, 0.8)',
+                                backgroundColor: 'rgba(255, 217, 61, 0.2)',
+                                legendColor: '#FFD93D',
+                                fill: true,
+                                borderWidth: 2,
+                                data: data.monthlyRevenues
+                            },
+                            {
+                                label: "Số khách hàng",
+                                borderColor: '#6BCB77',
+                                pointBackgroundColor: 'rgba(107, 203, 119, 0.8)',
+                                backgroundColor: 'rgba(107, 203, 119, 0.2)',
+                                legendColor: '#6BCB77',
+                                fill: true,
+                                borderWidth: 2,
+                                data: data.monthlyUniqueCustomerCounts
+                            },
+                            {
+                                label: "Số đơn hàng",
+                                borderColor: '#4D96FF', // xanh dương
+                                pointBackgroundColor: 'rgba(77, 150, 255, 0.8)',
+                                backgroundColor: 'rgba(77, 150, 255, 0.2)',
+                                legendColor: '#4D96FF',
+                                fill: true,
+                                borderWidth: 2,
+                                data: data.monthlyOrderCounts
+                            }
+                        ]
+
+                    };
+
+                    const chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        tooltips: {
+                            bodySpacing: 4,
+                            mode: "nearest",
+                            intersect: 0,
+                            position: "nearest",
+                            xPadding: 10,
+                            yPadding: 10,
+                            caretPadding: 10
+                        },
+                        layout: {
+                            padding: { left: 5, right: 5, top: 15, bottom: 15 }
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    fontStyle: "500",
+                                    beginAtZero: false,
+                                    maxTicksLimit: 5,
+                                    padding: 10
+                                },
+                                gridLines: {
+                                    drawTicks: false,
+                                    display: false
+                                }
+                            }],
+                            xAxes: [{
+                                gridLines: {
+                                    zeroLineColor: "transparent"
+                                },
+                                ticks: {
+                                    padding: 10,
+                                    fontStyle: "500"
+                                }
+                            }]
+                        },
+                        legendCallback: function(chart) {
+                            var text = [];
+                            text.push('<ul class="' + chart.id + '-legend html-legend">');
+                            for (var i = 0; i < chart.data.datasets.length; i++) {
+                                text.push('<li><span style="background-color:' + chart.data.datasets[i].legendColor + '"></span>');
+                                if (chart.data.datasets[i].label) {
+                                    text.push(chart.data.datasets[i].label);
+                                }
+                                text.push('</li>');
+                            }
+                            text.push('</ul>');
+                            return text.join('');
+                        }
+                    };
+
+                    if (statisticsChart) {
+                        statisticsChart.destroy();
+                    }
+
+                    statisticsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: chartOptions
+                    });
+
+                    document.getElementById('myChartLegend').innerHTML = statisticsChart.generateLegend();
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const yearInput = document.getElementById("yearSelect");
+
+            // Load ban đầu
+            loadStatisticsChart(yearInput.value);
+
+            // Load lại khi người dùng thay đổi năm
+            yearInput.addEventListener("change", function () {
+                loadStatisticsChart(this.value);
+            });
+        });
+            var dailySalesChart = document.getElementById('dailySalesChart').getContext('2d');
+
+        var myDailySalesChart = new Chart(dailySalesChart, {
+            type: 'line',
+            data: {
+                labels: ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"],
+                datasets: [{
+                    label: "Doanh thu",
+                    fill: true,
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                    borderColor: "#fff",
+                    pointBackgroundColor: "#fff",
+                    pointBorderColor: "#fff",
+                    pointRadius: 1,
+                    data: []
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { display: false },
+                animation: { easing: "easeInOutBack" },
+                scales: {
+                    yAxes: [{ display: false }],
+                    xAxes: [{ display: false }]
+                }
+            }
+        });
+
+        // Gọi API và cập nhật dữ liệu cho biểu đồ
+        fetch('/Lessor/GetWeeklyRevenue')
+            .then(res => res.json())
+            .then(data => {
+                myDailySalesChart.data.datasets[0].data = data;
+                myDailySalesChart.update();
+            })
+            .catch(err => console.error('Lỗi tải dữ liệu doanh thu:', err));
+
+            function getWeekRange(date) {
+          // Lấy ngày thứ 2 của tuần
+          const dayOfWeek = date.getDay(); // 0 (CN) - 6 (T7)
+          const mondayDiff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // nếu CN (0) thì lùi 6 ngày, còn lại tính theo thứ 2
+
+          const monday = new Date(date);
+          monday.setDate(date.getDate() + mondayDiff);
+
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+
+          // Format dd/mm/yyyy
+          function formatDate(d) {
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+          }
+
+          return `${formatDate(monday)} - ${formatDate(sunday)}`;
+        }
+
+        const now = new Date();
+        const weekRangeStr = getWeekRange(now);
+
+        document.getElementById('weekRange').textContent = weekRangeStr;
+	</script>
+}

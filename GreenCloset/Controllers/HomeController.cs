@@ -11,12 +11,12 @@ public partial class HomeController : BaseController
 
     public IActionResult Index()
     {
-        var products = _facadeService.Product.GetAllProducts(
-            includeProperties: "Categories,ProductAvatar"
-        );
-        ViewBag.FeatureProducts = _facadeService.Product.GetFeatureProduct(
-            includeProperties: "ProductAvatar"
-        );
+        var products = _facadeService
+            .Product.GetAllProducts(includeProperties: "Categories,ProductAvatar")
+            .Where(p => p.Available);
+        ViewBag.FeatureProducts = _facadeService
+            .Product.GetFeatureProduct(includeProperties: "ProductAvatar")
+            .Where(p => p.Available);
         return View(products);
     }
 
@@ -29,15 +29,14 @@ public partial class HomeController : BaseController
     {
         var product = _facadeService.Product.GetProductById(
             id,
-            includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
+            includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks,Feedbacks.User"
         );
 
         if (product != null)
         {
-            var similarProduct = _facadeService.Product.GetSimilarProduct(
-                product,
-                includeProperties: "ProductAvatar,Categories"
-            );
+            var similarProduct = _facadeService
+                .Product.GetSimilarProduct(product, includeProperties: "ProductAvatar,Categories")
+                .Where(p => p.Available);
             ViewBag.SimilarProducts = similarProduct;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
@@ -49,7 +48,9 @@ public partial class HomeController : BaseController
 
     public IActionResult Shop(int page = 1, int pageSize = 12, ProductFilter? filter = null)
     {
-        var productList = _facadeService.Product.GetProductsByFilter(filter);
+        var productList = _facadeService
+            .Product.GetProductsByFilter(filter)
+            .Where(p => p.Available);
 
         //Pagination
         var paginatedProducts = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
@@ -58,5 +59,23 @@ public partial class HomeController : BaseController
         ViewBag.CurrentPage = page;
         ViewBag.TotalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
         return View(paginatedProducts);
+    }
+
+    public IActionResult Policy()
+    {
+        return View();
+    }
+
+    public IActionResult Contact()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Contact(string name, string email, string message)
+    {
+        _facadeService.User.Contact(name, email, message);
+        TempData["success"] = "Gửi liên hệ thành công";
+        return View();
     }
 }

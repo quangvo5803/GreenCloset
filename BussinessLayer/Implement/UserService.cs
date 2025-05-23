@@ -204,7 +204,7 @@ namespace BussinessLayer.Implement
             return true;
         }
 
-        private async Task SignInUser(HttpContext httpContext, User user)
+        public async Task SignInUser(HttpContext httpContext, User user)
         {
             var claims = new List<Claim>
             {
@@ -261,6 +261,127 @@ namespace BussinessLayer.Implement
         public bool IsValidPassword(string password)
         {
             return Regex.IsMatch(password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$");
+        }
+
+        public void RegisterLessor(
+            string email,
+            string storeName,
+            string phoneNumber,
+            string adresss
+        )
+        {
+            var user = _unitOfWork.User.Get(u => u.Email == email);
+            if (user == null)
+            {
+                return;
+            }
+            user.Role = UserRole.Lessor;
+            user.ShopName = storeName;
+            user.PhoneNumber = phoneNumber;
+            user.Address = adresss;
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+        }
+
+        public void Contact(string name, string email, string message)
+        {
+            //Send email to admin
+            var admin = _unitOfWork.User.Get(u => u.Role == UserRole.Admin);
+            if (admin != null)
+            {
+                _emailQueue.QueueEmail(
+                    admin.Email,
+                    "Tin nhắn liên hệ từ khách hàng",
+                    CreateContactEmailTemplate(name, email, message)
+                );
+            }
+
+            //Send email to  customer
+            _emailQueue.QueueEmail(
+                email,
+                "Phản hồi từ Green Closet",
+                CreateAutoReplyEmailTemplate(name)
+            );
+        }
+
+        public IEnumerable<User> GetAllCustomer()
+        {
+            return _unitOfWork.User.GetRange(u => u.Role == UserRole.Customer);
+        }
+
+        public IEnumerable<User> GetAllLessor()
+        {
+            return _unitOfWork.User.GetRange(u => u.Role == UserRole.Lessor);
+        }
+
+        private string CreateContactEmailTemplate(string name, string email, string message)
+        {
+            return $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\">"
+                + $"<tr>"
+                + $"<td></td>"
+                + $"<td class=\"container\" style=\"margin: 0 auto !important; max-width: 600px; padding: 0; padding-top: 24px; width: 600px;\">"
+                + $"<div class=\"content\" style=\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;\">"
+                + $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"main\" style=\"background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 16px; width: 100%; text-align: left;\">"
+                + $"<tr>"
+                + $"<td class=\"wrapper\" style=\"box-sizing: border-box; padding: 24px;\">"
+                + $"<h2 style=\"color: #495057; margin: 0; margin-bottom: 20px; font-size: 24px; font-weight: bold; text-align: center;\">Tin nhắn liên hệ mới</h2>"
+                + $"<div style=\"background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 16px;\">"
+                + $"<h3 style=\"color: #343a40; margin: 0; margin-bottom: 12px; font-size: 18px; font-weight: 600;\">Thông tin người gửi:</h3>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 8px; color: #6c757d;\"><strong style=\"color: #495057;\">Họ tên:</strong> {name}</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 8px; color: #6c757d;\"><strong style=\"color: #495057;\">Email:</strong> {email}</p>"
+                + $"</div>"
+                + $"<div style=\"background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 20px;\">"
+                + $"<h3 style=\"color: #343a40; margin: 0; margin-bottom: 12px; font-size: 18px; font-weight: 600;\">Nội dung tin nhắn:</h3>"
+                + $"<p style=\"font-weight: normal; margin: 0; color: #495057; line-height: 1.6; white-space: pre-wrap;\">{message}</p>"
+                + $"</div>"
+                + $"<div style=\"background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 16px; margin-bottom: 20px;\">"
+                + $"<p style=\"font-weight: normal; margin: 0; color: #1565c0; font-size: 14px;\"><strong>Lưu ý:</strong> Đây là email tự động được gửi từ form liên hệ trên website. Vui lòng phản hồi trực tiếp đến email của khách hàng.</p>"
+                + $"</div>"
+                + $"<div style=\"text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6;\">"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 12px; color: #6c757d; font-size: 14px;\">Thời gian: {DateTime.Now:dd/MM/yyyy HH:mm:ss}</p>"
+                + $"<p style=\"font-weight: bold; margin: 0; margin-bottom: 16px; color: #495057;\">Green Closet</p>"
+                + $"<img src=\"https://i.imgur.com/0Iphozz.png\" alt=\"Green Closet Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
+                + $"</div>"
+                + $"</td>"
+                + $"</tr>"
+                + $"</table>"
+                + $"</div>"
+                + $"</td>"
+                + $"<td></td>"
+                + $"</tr>"
+                + $"</table>";
+        }
+
+        private string CreateAutoReplyEmailTemplate(string name)
+        {
+            return $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\">"
+                + $"<tr>"
+                + $"<td></td>"
+                + $"<td class=\"container\" style=\"margin: 0 auto !important; max-width: 600px; padding: 0; padding-top: 24px; width: 600px;\">"
+                + $"<div class=\"content\" style=\"box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;\">"
+                + $"<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"main\" style=\"background: #f0f8f0; border: 1px solid #2e7d32; border-radius: 16px; width: 100%; text-align: center;\">"
+                + $"<tr>"
+                + $"<td class=\"wrapper\" style=\"box-sizing: border-box; padding: 24px;\">"
+                + $"<h2 style=\"color: #1b5e20; margin: 0; margin-bottom: 20px; font-size: 24px; font-weight: bold;\">Cảm ơn bạn đã liên hệ!</h2>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Chào {name},</p>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Chúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi trong vòng 24 giờ.</p>"
+                + $"<div style=\"background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 16px; margin: 20px 0;\">"
+                + $"<p style=\"font-weight: normal; margin: 0; color: #2e7d32; font-size: 14px;\">✓ Tin nhắn của bạn đã được ghi nhận</p>"
+                + $"<p style=\"font-weight: normal; margin: 8px 0 0 0; color: #2e7d32; font-size: 14px;\">✓ Chúng tôi sẽ liên hệ lại sớm nhất có thể</p>"
+                + $"</div>"
+                + $"<p style=\"font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Cảm ơn bạn đã tin tưởng Green Closet!</p>"
+                + $"<p style=\"font-weight: bold; margin: 0; margin-bottom: 16px; color: #1b5e20;\">Đội ngũ Green Closet</p>"
+                + $"<div style=\"text-align: center; margin-top: 20px;\">"
+                + $"<img src=\"https://i.imgur.com/0Iphozz.png\" alt=\"Green Closet Logo\" style=\"max-width: 200px; height: auto; border-radius: 8px;\">"
+                + $"</div>"
+                + $"</td>"
+                + $"</tr>"
+                + $"</table>"
+                + $"</div>"
+                + $"</td>"
+                + $"<td></td>"
+                + $"</tr>"
+                + $"</table>";
         }
 
         private string GetComfirmationEmail(string confirmUrl)

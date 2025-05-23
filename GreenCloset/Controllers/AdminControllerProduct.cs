@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using System.Security.Claims;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace GreenCloset.Controllers
 
         public IActionResult GetAllProduct()
         {
-            var products = _facedeService
+            var products = _facadeService
                 .Product.GetAllProducts(includeProperties: "Categories")
                 .Select(p => new
                 {
@@ -33,12 +34,12 @@ namespace GreenCloset.Controllers
 
         public IActionResult CreateProduct()
         {
-            ViewBag.Categories = _facedeService.Category.GetAllCategories();
+            ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View();
         }
 
         [HttpPost]
-        public IActionResult CreateProduct(
+        public async Task<IActionResult> CreateProduct(
             Product product,
             IEnumerable<int>? selectedCategories,
             IFormFile? avatar,
@@ -47,22 +48,29 @@ namespace GreenCloset.Controllers
             List<int> SelectedShoeSizes
         )
         {
-            if (ModelState.IsValid)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ModelState.IsValid && userId != null)
             {
                 product.SizeClother = SelectedClotherSizes;
                 product.SizeShoe = SelectedShoeSizes;
-                _facedeService.Product.AddProduct(product, selectedCategories, avatar, gallery);
+                await _facadeService.Product.AddProduct(
+                    Guid.Parse(userId),
+                    product,
+                    selectedCategories,
+                    avatar,
+                    gallery
+                );
                 TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
-            ViewBag.Categories = _facedeService.Category.GetAllCategories();
+            ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View(product);
         }
 
         public IActionResult UpdateProduct(int id)
         {
-            var product = _facedeService.Product.GetProductById(
+            var product = _facadeService.Product.GetProductById(
                 id,
                 includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
             );
@@ -71,7 +79,7 @@ namespace GreenCloset.Controllers
                 TempData["error"] = "Không tìm thấy sản phẩm";
                 return RedirectToAction("ManageProduct");
             }
-            ViewBag.Categories = _facedeService.Category.GetAllCategories();
+            ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View(product);
         }
 
@@ -87,7 +95,7 @@ namespace GreenCloset.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingProduct = _facedeService.Product.GetProductById(
+                var existingProduct = _facadeService.Product.GetProductById(
                     product.Id,
                     includeProperties: "Categories,ProductAvatar,ProductImages"
                 );
@@ -97,15 +105,15 @@ namespace GreenCloset.Controllers
                     TempData["error"] = "Không tìm thấy sản phẩm";
                     return RedirectToAction("ManageProduct");
                 }
+                existingProduct.Available = product.Available;
                 existingProduct.SizeClother = SelectedClotherSizes;
                 existingProduct.SizeShoe = SelectedShoeSizes;
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
-                existingProduct.BuyPrice = product.BuyPrice;
                 existingProduct.DepositPrice = product.DepositPrice;
                 existingProduct.Color = product.Color;
-                await _facedeService.Product.UpdateProduct(
+                await _facadeService.Product.UpdateProduct(
                     existingProduct,
                     selectedCategories,
                     avatar,
@@ -114,7 +122,7 @@ namespace GreenCloset.Controllers
                 TempData["success"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
-            ViewBag.Categories = _facedeService.Category.GetAllCategories();
+            ViewBag.Categories = _facadeService.Category.GetAllCategories();
             TempData["error"] = "Cập nhật sản phẩm không thành công";
             return View(product);
         }
@@ -122,7 +130,7 @@ namespace GreenCloset.Controllers
         [HttpDelete]
         public IActionResult DeleteProduct(int id)
         {
-            var product = _facedeService.Product.GetProductById(
+            var product = _facadeService.Product.GetProductById(
                 id,
                 includeProperties: "Categories,ProductAvatar,ProductImages"
             );
@@ -130,7 +138,7 @@ namespace GreenCloset.Controllers
             {
                 return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
             }
-            bool result = _facedeService.Product.DeleteProduct(product);
+            bool result = _facadeService.Product.DeleteProduct(product);
             if (result)
             {
                 return Json(new { success = true, message = "Xóa sản phẩm thành công" });
@@ -141,13 +149,13 @@ namespace GreenCloset.Controllers
         [HttpDelete]
         public IActionResult DeleteImageProduct(int imageId)
         {
-            var image = _facedeService.ItemImage.GetItemImageById(imageId);
+            var image = _facadeService.ItemImage.GetItemImageById(imageId);
             if (image == null)
             {
                 return Ok(new { success = false, message = "Không tìm thấy ảnh" });
             }
 
-            _facedeService.ItemImage.RemoveItemImage(image);
+            _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { success = true });
         }
     }

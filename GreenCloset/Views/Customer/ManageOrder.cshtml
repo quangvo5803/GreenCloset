@@ -1,0 +1,442 @@
+﻿@{
+    var ordersGrouped = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.OrdersGrouped;
+    var pending = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Pending;
+    var complete = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Completed;
+    var cancel = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Cancelled;
+
+    var filterStatus = ordersGrouped
+        .Where(g => g.Order.Status == OrderStatus.Pending || g.Order.Status == OrderStatus.Delivering || g.Order.Status == OrderStatus.Returning || g.Order.Status == OrderStatus.Renting)
+        .ToList();
+    
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3" style="min-height:500px">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link text-black" asp-action="Profile" asp-controller="User">
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-action="ChangePassword" asp-controller="User">
+                                        <i class="fa fa-lock me-2"></i>Bảo mật
+                                    </a>
+                                    <a class="nav-link active text-white" asp-action="ManageOrder" asp-controller="Customer"
+                                       style="background-color: #8DC63F !important;">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pills navs -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+                                <ul class="nav nav-tabs nav-justified mb-3" id="ex1" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active w-100" id="tab-pending" data-bs-toggle="tab"
+                                                data-bs-target="#content-pending" type="button" role="tab" aria-controls="content-pending"
+                                                aria-selected="true">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-spinner fa-2x text-warning"></i>
+                                                <div class="ps-3">
+                                                    <h4 class="mt-n1 mb-0">Đang chờ</h4>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link w-100" id="tab-complete" data-bs-toggle="tab"
+                                                data-bs-target="#content-complete" type="button" role="tab" aria-controls="content-complete"
+                                                aria-selected="false">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-check fa-2x text-primary"></i>
+                                                <div class="ps-3">
+                                                    <h4 class="mt-n1 mb-0">Hoàn thành</h4>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link w-100" id="tab-cancel" data-bs-toggle="tab" data-bs-target="#content-cancel"
+                                                type="button" role="tab" aria-controls="content-cancel" aria-selected="false">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-xmark fa-2x text-danger"></i>
+                                                <div class="ps-3">
+                                                    <h4 class="mt-n1 mb-0">Hủy</h4>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <!--Pending Menu-->
+
+                                    <div class="tab-pane fade show active" id="content-pending" role="tabpanel" aria-labelledby="tab-pending">
+                                    
+                                        <div class="row g-4">
+                                            @if ((pending?.Any() == true) && ordersGrouped?.Any() == true)
+                                            {
+                                                    @foreach (var orderGroup in filterStatus)
+                                                    {
+                                                        var order = orderGroup.Order;
+                                                        var groupedByStore = orderGroup.GroupedByStore;
+
+                                                        <a href="@Url.Action("OrderDetails", "Customer", new { orderId = order.Id })" class="text-decoration-none text-dark">
+                                                            <div class="order-details border border-3 rounded p-3 bg-white shadow-sm" style="margin-top: 0px;">
+                                                                <h3 class="mb-0 text-center" style="margin-top:0px !important;">Mã đơn hàng #@order.Id</h3>
+                                                                <p class="text-center" style="margin-bottom:0px !important;">Ngày đặt: @order.OrderDate.ToString("dd/MM/yyyy")</p>
+
+                                                                @foreach (var storeGroup in groupedByStore.Take(1))
+                                                                {
+                                                                    var store = storeGroup.Key;
+                                                                    var orderDetails = storeGroup.Value;
+
+                                                                    @if (orderDetails.Count > 0)
+                                                                    {
+                                                                        var firstProduct = orderDetails[0];
+                                                                        int rentalDays = 1;
+                                                                        if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                        {
+                                                                            rentalDays = (firstProduct.EndDate.Value - firstProduct.StartDate.Value).Days;
+                                                                            if (rentalDays < 1) rentalDays = 1;
+                                                                        }
+                                                                        var total = firstProduct.UnitPrice * firstProduct.Quantity * rentalDays;
+
+                                                                        <div class="store-section p-1 rounded bg-light mt-2">
+                                                                            <h4 class="text-primary mb-2 "><i class="fa-solid fa-shop me-2"></i> @(store?.ShopName ?? store?.UserName)</h4>
+                                                                            <div class="product-box d-flex align-items-center gap-3 p-2 border-bottom border-2 rounded bg-white">
+                                                                                @if (firstProduct.Product?.ProductAvatar != null)
+                                                                                {
+                                                                                    <img src="@firstProduct.Product?.ProductAvatar?.ImagePath" style="width: 80px; height: 80px; object-fit: cover;" />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                                                }                                                                               
+                                                                                <div>
+                                                                                    <div class="fw-bold">@firstProduct.Product?.Name</div>
+                                                                                    <div>Đơn giá: @firstProduct.UnitPrice.ToString("N0") ₫</div>
+                                                                                    <div>Màu: @firstProduct.Product?.Color?.ToString()</div>
+                                                                                    <div>Số lượng: @firstProduct.Quantity</div>
+                                                                                    <div>
+                                                                                        Size:
+                                                                                        @if (firstProduct.SizeShoe.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeShoe
+                                                                                        }
+                                                                                        else if (firstProduct.SizeClother.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeClother
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <text>Chưa chọn</text>
+                                                                                        }
+                                                                                    </div>
+                                                                                    @if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                                    {
+                                                                                        <div>Số ngày thuê: @rentalDays ngày (@firstProduct.StartDate.Value.ToString("dd/MM/yyyy") - @firstProduct.EndDate.Value.ToString("dd/MM/yyyy"))</div>
+                                                                                    }
+                                                                                    <div>Thành tiền: <span class="text-danger">@total.ToString("N0") ₫</span></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                }
+
+                                                                <div class="text-end mt-2">
+                                                                    <h4 class="fw-bold text-dark">
+                                                                        Thành tiền (@order.OrderDetails?.Count) sản phẩm) :
+                                                                        <span class="text-primary">@order.TotalPrice.ToString("N0") ₫</span>
+                                                                    </h4>
+                                                                </div>
+                                                                
+                                                            </div>
+                                                        </a>
+                                                        @if (order?.Status == OrderStatus.Pending)
+                                                        {
+                                                            <partial name="_CancelOrderReason" model="order" />
+                                                        }
+                                                    
+
+                                                }
+                                            }else{
+                                                <div class="empty-order-container text-center py-5">
+                                                    <div class="empty-order-image mb-3">
+                                                        <img src="https://static.vecteezy.com/system/resources/previews/014/814/239/non_2x/no-order-a-flat-rounded-icon-is-up-for-premium-use-vector.jpg"
+                                                             alt="Không có đơn hàng" width="120">
+                                                    </div>
+                                                    <h5 class="text-secondary">Chưa có đơn hàng đang chờ</h5>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <!--Complete Menu-->
+                                    <div class="tab-pane fade " id="content-complete" role="tabpanel" aria-labelledby="tab-complete">
+                                        <div class="row g-4">
+                                            @if (complete != null && complete.Any())
+                                            {
+                                                @if (ordersGrouped != null && ordersGrouped.Any())
+                                                {
+                                                    @foreach (var orderGroup in complete)
+                                                    {
+                                                        var order = orderGroup.Order;
+                                                        var groupedByStore = orderGroup.GroupedByStore;
+
+                                                        <a href="@Url.Action("OrderDetails", "Customer", new { orderId = order.Id })" class="text-decoration-none text-dark">
+                                                            <div class="order-details border rounded p-3 bg-white shadow-sm" style="margin-top: 0px;">
+                                                                <h3 class="mb-0 text-center" style="margin-top: 0px;">Mã đơn hàng #@order.Id</h3>
+                                                                <p class="text-center" style="margin-bottom:0px !important;">Ngày đặt: @order.OrderDate.ToString("dd/MM/yyyy")</p>
+
+                                                                @foreach (var storeGroup in groupedByStore.Take(1))
+                                                                {
+                                                                    var store = storeGroup.Key;
+                                                                    var orderDetails = storeGroup.Value;
+
+                                                                    @if (orderDetails.Count > 0)
+                                                                    {
+                                                                        var firstProduct = orderDetails[0];
+                                                                        int rentalDays = 1;
+                                                                        if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                        {
+                                                                            rentalDays = (firstProduct.EndDate.Value - firstProduct.StartDate.Value).Days;
+                                                                            if (rentalDays < 1) rentalDays = 1;
+                                                                        }
+                                                                        var total = firstProduct.UnitPrice * firstProduct.Quantity * rentalDays;
+
+                                                                        <div class="store-section p-1 rounded bg-light mt-2">
+                                                                            <h4 class="text-primary mb-1"><i class="fa-solid fa-shop me-2"></i> @store?.UserName</h4>
+                                                                            <div class="product-box d-flex align-items-center gap-3 p-2 border rounded bg-white">
+                                                                                @if (firstProduct.Product?.ProductAvatar != null)
+                                                                                {
+                                                                                    <img src="@firstProduct.Product?.ProductAvatar?.ImagePath" style="width: 80px; height: 80px; object-fit: cover;" />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                                                }
+                                                                                
+                                                                                <div>
+                                                                                    <div class="fw-bold">@firstProduct.Product?.Name</div>
+                                                                                    <div>Đơn giá: @firstProduct.UnitPrice.ToString("N0") ₫</div>
+                                                                                    <div>Màu: @firstProduct.Product?.Color?.ToString()</div>
+                                                                                    <div>Số lượng: @firstProduct.Quantity</div>
+                                                                                    <div>
+                                                                                        Size:
+                                                                                        @if (firstProduct.SizeShoe.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeShoe
+                                                                                        }
+                                                                                        else if (firstProduct.SizeClother.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeClother
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <text>Chưa chọn</text>
+                                                                                        }
+                                                                                    </div>
+                                                                                    @if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                                    {
+                                                                                        <div>Số ngày thuê: @rentalDays ngày (@firstProduct.StartDate.Value.ToString("dd/MM/yyyy") - @firstProduct.EndDate.Value.ToString("dd/MM/yyyy"))</div>
+                                                                                    }
+                                                                                    <div>Thành tiền: <span class="text-danger">@total.ToString("N0") ₫</span></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                }
+
+                                                                <div class="text-end mt-2">
+                                                                    <h4 class="fw-bold text-dark">
+                                                                        Tổng tiền đơn hàng:
+                                                                        <span class="text-danger">@order.TotalPrice.ToString("N0") ₫</span>
+                                                                    </h4>
+                                                                </div>
+                                                            </div>
+                                                        </a>
+                                                        
+                                                    }
+
+                                                }
+                                            }else{
+                                                <div class="empty-order-container text-center py-5">
+                                                    <div class="empty-order-image mb-3">
+                                                        <img src="https://static.vecteezy.com/system/resources/previews/014/814/239/non_2x/no-order-a-flat-rounded-icon-is-up-for-premium-use-vector.jpg"
+                                                             alt="Không có đơn hàng" width="120">
+                                                    </div>
+                                                    <h5 class="text-secondary">Chưa có đơn hàng hoàn thành</h5>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <!--Cancel Menu-->
+                                    <div class="tab-pane fade " id="content-cancel" role="tabpanel" aria-labelledby="tab-cancel">
+                                        <div class="row g-4">
+                                            @if (cancel != null && cancel.Any())
+                                            {
+                                                @if (ordersGrouped != null && ordersGrouped.Any())
+                                                {
+                                                    @foreach (var orderGroup in cancel)
+                                                    {
+                                                        var order = orderGroup.Order;
+                                                        var groupedByStore = orderGroup.GroupedByStore;
+
+                                                        <a href="@Url.Action("OrderDetails", "Customer", new { orderId = order.Id })" class="text-decoration-none text-dark">
+                                                            <div class="order-details border rounded p-3 bg-white shadow-sm" style="margin-top: 0px;">
+                                                                <h3 class="mb-0 text-center" style="margin-top: 0px;">Mã đơn hàng #@order.Id</h3>
+                                                                <p class="text-center" style="margin-bottom:0px !important;">Ngày đặt: @order.OrderDate.ToString("dd/MM/yyyy")</p>
+
+                                                                @foreach (var storeGroup in groupedByStore.Take(1))
+                                                                {
+                                                                    var store = storeGroup.Key;
+                                                                    var orderDetails = storeGroup.Value;
+
+                                                                    @if (orderDetails.Count > 0)
+                                                                    {
+                                                                        var firstProduct = orderDetails[0];
+                                                                        int rentalDays = 1;
+                                                                        if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                        {
+                                                                            rentalDays = (firstProduct.EndDate.Value - firstProduct.StartDate.Value).Days;
+                                                                            if (rentalDays < 1) rentalDays = 1;
+                                                                        }
+                                                                        var total = firstProduct.UnitPrice * firstProduct.Quantity * rentalDays;
+
+                                                                        <div class="store-section p-1 rounded bg-light mt-2">
+                                                                            <h4 class="text-primary mb-1"><i class="fa-solid fa-shop me-2"></i> @store?.UserName</h4>
+                                                                            <div class="product-box d-flex align-items-center gap-3 p-2 border rounded bg-white">
+                                                                                @if (firstProduct.Product?.ProductAvatar != null)
+                                                                                {
+                                                                                    <img src="@firstProduct.Product?.ProductAvatar?.ImagePath" style="width: 80px; height: 80px; object-fit: cover;" />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                                                }
+                                                                                <div>
+                                                                                    <div class="fw-bold">@firstProduct.Product?.Name</div>
+                                                                                    <div>Đơn giá: @firstProduct.UnitPrice.ToString("N0") ₫</div>
+                                                                                    <div>Màu: @firstProduct.Product?.Color?.ToString()</div>
+                                                                                    <div>Số lượng: @firstProduct.Quantity</div>
+                                                                                    <div>
+                                                                                        Size:
+                                                                                        @if (firstProduct.SizeShoe.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeShoe
+                                                                                        }
+                                                                                        else if (firstProduct.SizeClother.HasValue)
+                                                                                        {
+                                                                                            @firstProduct.SizeClother
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <text>Chưa chọn</text>
+                                                                                        }
+                                                                                    </div>
+                                                                                    @if (firstProduct.StartDate.HasValue && firstProduct.EndDate.HasValue)
+                                                                                    {
+                                                                                        <div>Số ngày thuê: @rentalDays ngày (@firstProduct.StartDate.Value.ToString("dd/MM/yyyy") - @firstProduct.EndDate.Value.ToString("dd/MM/yyyy"))</div>
+                                                                                    }
+                                                                                    <div>Thành tiền: <span class="text-danger">@total.ToString("N0") ₫</span></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                }
+
+                                                                <div class="text-end mt-2">
+                                                                    <h4 class="fw-bold text-dark">
+                                                                        Tổng tiền đơn hàng:
+                                                                        <span class="text-danger">@order.TotalPrice.ToString("N0") ₫</span>
+                                                                    </h4>
+                                                                </div>
+                                                            </div>
+                                                        </a>
+                                                    }
+                                                }
+                                            }else{
+                                                <div class="empty-order-container text-center py-5">
+                                                    <div class="empty-order-image mb-3">
+                                                        <img src="https://static.vecteezy.com/system/resources/previews/014/814/239/non_2x/no-order-a-flat-rounded-icon-is-up-for-premium-use-vector.jpg"
+                                                             alt="Không có đơn hàng" width="120">
+                                                    </div>
+                                                    <h5 class="text-secondary">Chưa có đơn hàng đã hủy</h5>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleProducts(button) {
+            var moreProducts = button.closest('.store-section').querySelector('.more-products');
+            if (moreProducts.classList.contains('d-none')) {
+                moreProducts.classList.remove('d-none');
+                button.innerText = 'Ẩn bớt';
+            } else {
+                moreProducts.classList.add('d-none');
+                button.innerText = 'Xem thêm';
+            }
+        }
+    </script>
+}
+<style>
+    .nav-tabs {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+        .nav-tabs .nav-link {
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            position: relative;
+            color: #495057;
+            text-align: left;
+        }
+
+            .nav-tabs .nav-link::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background-color: transparent;
+                transition: all 0.3s ease;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: var(--primary-color);
+                background-color: transparent;
+            }
+
+                .nav-tabs .nav-link.active::after {
+                    background-color: var(--primary-color);
+                }
+
+            .nav-tabs .nav-link:hover:not(.active)::after {
+                background-color: #dee2e6;
+            }
+
+</style>

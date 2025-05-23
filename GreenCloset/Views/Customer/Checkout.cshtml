@@ -1,0 +1,446 @@
+﻿@model IEnumerable<IGrouping<User, Cart>>
+@{
+    ViewData["Title"] = "Checkout";
+    double subtotal = 0;
+    foreach (var group in Model)
+    {
+        foreach (var item in group)
+        {
+            if (item.Product != null)
+            {
+                if (item.StartDate.HasValue && item.EndDate.HasValue )
+                {
+                    var duration = (item.EndDate.Value - item.StartDate.Value).TotalDays;
+                    subtotal += item.Product.Price * item.Count * duration;
+                }
+                else
+                {
+                    subtotal += item.Product.Price * item.Count;
+                }
+            }
+        }
+    }
+
+    double storeCount = Model.Count();
+    var index = 0;
+    var cartItems = ViewBag.CartItems as IEnumerable<Cart>;
+}
+
+
+<style>
+    body {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f3f3f1;
+    color: #1a1a1a;
+    }
+
+    .font-heading {
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    }
+    .bg-white{
+    margin-bottom: 0px !important;
+    }
+    .font-subheading {
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 12px;
+    }
+
+    .font-subheading-2 {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 12px;
+    }
+
+    .btn-disabled {
+    background-color: #d8ede4 !important;
+    color: #ffffff !important;
+    cursor: not-allowed;
+    }
+
+    .btn-success {
+    background-color: rgb(141, 198, 63) !important;
+    color: #ffffff !important;
+    }
+
+    hr {
+    border-color: #d1d1d1;
+    }
+    /* Disabled delivery address styling */
+    .disabled-address {
+    background-color: #fefefe !important;
+    color: #a8a8a8 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    cursor: not-allowed !important;
+    }
+
+    .payment-option {
+    border: 1px solid #d1d1d1;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.3s ease;
+    }
+
+    .payment-option input[type="radio"] {
+    margin-right: 0.75rem;
+    cursor: pointer;
+    }
+
+    .payment-option:hover {
+    border-color: #1a1a1a;
+    }
+
+    .payment-option input[type="radio"]:checked + label {
+    font-weight: 700;
+    color: #1a1a1a;
+    }
+    /* New style for product box */
+    .product-box {
+    border-bottom: 1px solid #d1d1d1;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    background-color: #fff;
+    font-size: 14px; /* increased font size */
+    line-height: 1.4;
+    }
+
+    .product-box .fw-semibold.fs-6 {
+    font-size: 18px; /* price bigger */
+    }
+</style>
+
+<div class="container py-3 mt-3">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="font-heading flex-grow-1 text-center m-0">
+            Thanh toán
+        </h1>
+    </header>
+    <div class="row g-4">
+        <!-- Left column 9 -->
+        <div class="col-lg-8 order-lg-1 bg-white p-3">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <a href="~/Customer/Cart" class="btn btn-outline-dark font-subheading m-0"
+                   style="font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;">
+                        <i class="bi bi-arrow-left"></i> Trở lại giỏ hàng   
+                </a>
+            </div>
+
+            <hr />
+            @foreach (var storeGroup in Model)
+            {
+                <div class="store-section mb-4 p-3 border rounded">
+                    <h4 class="text-primary mb-3">
+                        <i class="fa-solid fa-shop me-2"></i> @storeGroup.Key?.UserName
+                    </h4>
+
+                    @foreach (var item in storeGroup)
+                    {
+                        <div class="product-box d-flex align-items-center gap-3 mb-3">
+                            @if (item.Product?.ProductAvatar != null)
+                            {
+                                <img class="flex-shrink-0" src="/image/products/@item.Product.ProductAvatar.ImagePath" style="width: 80px; height: 80px;" />
+                            }
+                            else
+                            {
+                                <img class="flex-shrink-0" src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" style="width: 80px; height: 80px;" />
+                            }
+
+                            <div>
+                                <div class="h3 text-dark fw-bold">
+                                    @item.Product?.Name
+                                </div>
+                                <div class="fw-semibold mt-1">
+                                    Đơn giá: @item.Product?.Price.ToString("C", new CultureInfo("vi-VN"))
+                                </div>
+                                <div class="fw-semibold mt-1">
+                                    Màu: @item.Product?.Color
+                                    <span class="fw-normal ms-2">
+                                        Size:
+                                        @if (item.SizeShoe.HasValue)
+                                        {
+                                            @item.SizeShoe
+                                        }
+                                        else if (item.SizeClother.HasValue)
+                                        {
+                                            @item.SizeClother
+                                        }
+                                    </span>
+                                </div>
+                                <div class="fw-semibold mt-1">
+                                    Số lượng: @item.Count
+                                </div>
+                                <div class="fw-semibold mt-1" id="rentalDays_@index">
+                                    Đang tính toán...
+                                </div>
+                                <div class="fw-semibold mt-1">
+                                    Thành tiền:
+                                    <span>
+                                        @if(item.EndDate !=null && item.StartDate !=null){
+                                            var duration = item.EndDate.Value - item.StartDate.Value;
+                                            var totalPrice = item.Product!.Price * item.Count * duration.TotalDays;
+                                            @totalPrice.ToString("C", new CultureInfo("vi-VN"))
+                                        }else{
+                                            @((item.Product!.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))
+                                        }
+                                        
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        index++;
+                    }
+                </div> 
+            }
+            <hr/>
+            <div class="d-flex justify-content-between" style="font-size: 20px;" id="subtotalSection">
+                <span>
+                    Tổng tạm tính
+                </span>
+                <span id="subtotalAmount">
+                    @subtotal.ToString("C", new CultureInfo("vi-VN"))
+                </span>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size: 20px;" id="shippingFeeSection">
+                <span>
+                    Tổng phí giao hàng
+                </span>
+                <span id="shippingFeeAmount">
+                    Lỗi
+                </span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold"
+                 style="font-size: 20px; letter-spacing: 0.15em;" id="totalSection">
+                <span>
+                    Tổng số tiền 
+                </span>
+                <span id="totalAmount"></span>
+            </div>
+        </div>
+        <!-- Right column 3 -->
+        <div class="col-lg-4 order-lg-2 d-flex justify-content-end">
+            <form asp-action="ProcessPayment" method="post" style="width:100%;">
+                @if (cartItems != null)
+                {
+                    @foreach (var cart in cartItems)
+                    {
+                        <input type="hidden" name="selectedItems" value="@cart.Id" />
+                    }
+                }
+                <input type="hidden" name="userId" value="@ViewBag.UserId" />
+                <div style="width: 100%;">
+                    <div class="bg-white p-3 mb-3">
+                        <label class="font-subheading d-block mb-2" for="customerName">Tên khách hàng</label>
+                        <div id="customerName" class="form-control">@ViewBag.userName</div>
+                    </div>
+
+                    <div class="bg-white p-3 mb-3">
+                        <label class="font-subheading d-block mb-2" for="phoneNumber">Số điện thoại</label>
+                        <input class="form-control" id="phoneNumber" name="phoneNumber" type="tel"
+                               placeholder="Nhập số điện thoại" />
+                    </div>
+
+                    <div class="bg-white p-3 mb-3">
+                        <label class="font-subheading d-block mb-2" for="deliveryOptions">Tùy chọn giao hàng</label>
+                        <select class="form-select" id="deliveryOptions" name="deliveryOptions">
+                            <option value="0">Giao hàng tận nơi</option>
+                            <option value="1">Nhận tại cửa hàng</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-white p-3 mb-3">
+                        <label class="font-subheading d-block mb-2" for="deliveryAddress">Địa chỉ nhận hàng</label>
+                        <input class="form-control" id="deliveryAddress" name="deliveryAddress" type="text"
+                               placeholder="Nhập địa chỉ giao hàng" />
+                    </div>
+
+                    <div class="bg-white p-3 mb-3" id="paymentSection">
+                        <label class="font-subheading d-block mb-2">Phương thức thanh toán</label>
+                        <div class="d-flex flex-column gap-3">
+
+                            <div class="payment-option d-flex align-items-center mb-2">
+                                <input id="paymentCOD" name="paymentMethod" type="radio" value="cod" checked class="me-2"
+                                       style="margin-bottom: 0px;" />
+                                <label class="mb-0 d-flex align-items-center" for="paymentCOD">
+                                    <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                                    Trả tiền khi nhận hàng
+                                </label>
+                            </div>
+
+                            <div class="payment-option d-flex align-items-center mb-2">
+                                <input id="paymentVNPay" name="paymentMethod" type="radio" value="vnpay" class="me-2"
+                                       style="margin-bottom: 0px;" />
+                                <label class="mb-0 d-flex align-items-center" for="paymentVNPay">
+                                    <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png"
+                                         alt="VNPay" style="width: 30px;" class="me-2" />
+                                    VNPay
+                                </label>
+                            </div>
+
+                            <div class="payment-option d-flex align-items-center">
+                                <input id="paymentMoMo" name="paymentMethod" type="radio" value="momo" class="me-2"
+                                       style="margin-bottom: 0px;" />
+                                <label class="mb-0 d-flex align-items-center" for="paymentMoMo">
+                                    <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo"
+                                         style="width: 30px;" class="me-2" />
+                                    MoMo
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <button class="btn btn-disabled w-100 py-2" disabled id="checkoutBtn" type="submit">
+                        Tiến hành đặt hàng
+                    </button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const deliveryOptions = document.getElementById('deliveryOptions');
+    const deliveryAddress = document.getElementById('deliveryAddress');
+    function updateDeliveryAddressState() {
+        if (deliveryOptions.value === '0') {
+            // Giao hàng tận nơi - enable input
+            deliveryAddress.disabled = false;
+            deliveryAddress.classList.remove('disabled-address');
+            deliveryAddress.placeholder = "Nhập địa chỉ giao hàng";
+        } else {
+            // Nhận hàng tại cửa hàng - disable input
+            deliveryAddress.disabled = true;
+            deliveryAddress.classList.add('disabled-address');
+            deliveryAddress.value = '';
+            deliveryAddress.placeholder = "";
+        }
+    }
+    deliveryOptions.addEventListener('change', updateDeliveryAddressState);
+
+    updateDeliveryAddressState();
+
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        const rentals = @Html.Raw(Json.Serialize(
+            Model.SelectMany(g => g).Select(m => new
+            {
+                start = m.StartDate?.ToString("yyyy-MM-dd"),
+                end = m.EndDate?.ToString("yyyy-MM-dd")
+            })
+        ))
+    
+        rentals.forEach((rental, index) => {
+            const rentalDate = new Date(rental.start);
+            const returnDate = new Date(rental.end);
+
+            if (!isNaN(rentalDate) && !isNaN(returnDate)) {
+                const timeDiff = returnDate.getTime() - rentalDate.getTime();
+                const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                const formattedStart = rentalDate.toLocaleDateString('vi-VN');
+                const formattedEnd = returnDate.toLocaleDateString('vi-VN');
+
+                const el = document.getElementById(`rentalDays_${index}`);
+                if (el) {
+                    el.textContent = `Số ngày thuê: ${days} ngày (${formattedStart} - ${formattedEnd})`;
+                }
+            }
+        });
+    });
+
+
+    const phoneInput = document.getElementById("phoneNumber");
+    const deliverySelect = document.getElementById("deliveryOptions");
+    const addressInput = document.getElementById("deliveryAddress");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+
+    //
+    function isPhoneValid() {
+        return phoneInput.value.trim().length > 9 && phoneInput.value.trim().length < 11;
+    }
+
+    function isAddressValid() {
+        if (deliverySelect.value === "0") {
+            // Giao hàng tận nơi
+            return addressInput.value.trim().length > 0;
+        }
+        return true; // Nhận tại cửa hàng thì không cần địa chỉ
+    }
+
+    function isPaymentSelected() {
+        return Array.from(paymentRadios).some(r => r.checked);
+    }
+
+    function updateButtonState() {
+        if (isPhoneValid() && isAddressValid() && isPaymentSelected()) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove("btn-disabled");
+            checkoutBtn.classList.add("btn-success");
+        } else {
+            checkoutBtn.disabled = true;
+            checkoutBtn.classList.add("btn-disabled");
+            checkoutBtn.classList.remove("btn-success");
+        }
+    }
+
+    // Lắng nghe sự kiện thay đổi
+    phoneInput.addEventListener("input", updateButtonState);
+    deliverySelect.addEventListener("change", () => {
+        updateDeliveryAddressState(); // từ code gốc của bạn
+        updateButtonState();
+    });
+    addressInput.addEventListener("input", updateButtonState);
+    paymentRadios.forEach(radio => radio.addEventListener("change", updateButtonState));
+
+    // Gọi khi trang vừa load
+    updateButtonState();
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const deliverySelect = document.getElementById("deliveryOptions");
+        const shippingFeeSection = document.getElementById("shippingFeeSection");
+        const shippingFeeAmount = document.getElementById("shippingFeeAmount");
+        const subtotalAmount = document.getElementById("subtotalAmount");
+        const totalAmount = document.getElementById("totalAmount");
+
+        const storeCount = @storeCount;
+        const subtotal = @subtotal;
+
+        function formatCurrency(value) {
+            return value.toLocaleString('vi-VN') + 'đ';
+        }
+
+        function updateTotals() {
+            let total = subtotal;
+            let shippingFee = (storeCount >= 2) ? 50000 : 25000;
+
+            subtotalAmount.textContent = formatCurrency(subtotal);
+
+            if (deliverySelect.value === "1") {
+                shippingFeeSection.style.setProperty("display", "none", "important");
+            } else {
+                shippingFeeSection.style.setProperty("display", "flex", "important");
+                shippingFeeAmount.textContent = formatCurrency(shippingFee);
+                total += shippingFee;
+            }
+
+            totalAmount.textContent = formatCurrency(total);
+        }
+
+        deliverySelect.addEventListener("change", updateTotals);
+        updateTotals(); // Gọi khi load trang
+    });
+
+</script>

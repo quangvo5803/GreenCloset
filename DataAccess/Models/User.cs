@@ -26,6 +26,7 @@ namespace DataAccess.Models
         public DateTime? DOB { get; set; }
         public Gender? Gender { get; set; }
         public string? Address { get; set; }
+        public string? ShopName { get; set; }
 
         [Required]
         public UserRole Role { get; set; }

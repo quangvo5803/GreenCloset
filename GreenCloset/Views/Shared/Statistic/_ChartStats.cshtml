@@ -1,0 +1,55 @@
+﻿@{
+    var weeklyRevenue = ViewBag.WeeklyRevenue as double? ?? 0;
+    var weeklyOrder = ViewBag.WeeklyOrder as int? ?? 0;
+
+}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-round">
+            <div class="card-header">
+                <div class="card-head-row justify-content-between align-items-center">
+                    <div class="card-title">Thống kê đơn hàng</div>
+                    <div>
+                        <label for="yearSelect">Chọn năm:</label>
+                        <input type="number" id="yearSelect" value="2025" min="2000" max="2100" style="width: 100px;" class="form-control d-inline-block ml-2">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="min-height: 375px">
+                    <canvas id="statisticsChart"></canvas>
+                </div>
+                <div id="myChartLegend"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-primary card-round">
+            <div class="card-header">
+                <div class="card-head-row">
+                    <div class="card-title">Doanh thu trong tuần</div>                  
+                </div>
+                <div class="card-category" id="weekRange"></div>
+            </div>
+            <div class="card-body pb-0">
+                <div class="mb-4 mt-2">
+                    <h1 class="text-white">@weeklyRevenue.ToString("C", new CultureInfo("vi-VN"))</h1>
+                </div>
+                <div class="pull-in">
+                    <canvas id="dailySalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="card card-round">
+            <div class="card-body pb-0">
+                <p class="text-muted">Số đơn hàng trong tuần</p>
+                <h2 class="mb-2">@weeklyOrder</h2>
+                <div class="pull-in sparkline-fix">
+                    <div id="lineChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

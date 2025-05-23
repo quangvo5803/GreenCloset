@@ -2,20 +2,8 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var featuredProducts = ViewBag.FeatureProducts as IEnumerable<Product>;
-    var displayedProducts = featuredProducts?.ToList() ?? new List<Product>();
-    if (displayedProducts.Count < 8)
-    {
-        var remaining = 8 - displayedProducts.Count;
-
-        var additionalProducts = Model
-            .Where(p => !displayedProducts.Any(fp => fp.Id == p.Id))
-            .Take(remaining);
-
-        displayedProducts.AddRange(additionalProducts);
-
-    }
     var categories = ViewBag.Categories as IEnumerable<Category>;
-    categories = categories?.Take(8);
+    categories = categories?.Where(c => c.Products?.Count > 0).Take(8);
 }
 <!--Slider-->
 <section id="billboard">
@@ -35,7 +23,7 @@
                                 <h2 class="banner-title">Tủ đồ <br /> xanh</h2>
                                 <p>Green Closet mang đến giải pháp thời trang thông minh và thân thiện môi trường – nơi bạn có thể thuê những bộ trang phục phong cách, phù hợp với mọi dịp, giúp tiết kiệm chi phí và giảm thiểu rác thải thời trang.</p>
                                 <div class="btn-wrap">
-                                    <a href="shop.html" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
+                                    <a asp-action="Shop" asp-controller="Home" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
                                         Khám phá ngay <i class="icon icon-arrow-io"></i>
                                     </a>
                                 </div>
@@ -52,7 +40,7 @@
                                 <h2 class="banner-title">Thuê nhiều giá rẻ</h2>
                                 <p>Chỉ từ <strong>99.000đ</strong>/bộ khi bạn thuê từ 2 sản phẩm trở lên. Thoải mái phối đồ mà vẫn tiết kiệm!</p>
                                 <div class="btn-wrap">
-                                    <a href="shop.html" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
+                                    <a asp-action="Shop" asp-controller="Home" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
                                         Khám phá ngay <i class="icon icon-arrow-io"></i>
                                     </a>
                                 </div>
@@ -66,10 +54,10 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-md-6">
-                                <h2 class="banner-title" style="font:24px !important;">Miễn phí vận chuyển</h2>
-                                <p>Đặt thuê lần đầu, nhận ngay ưu đãi giao hàng hoàn toàn miễn phí!</p>
+                                <h2 class="banner-title" style="font:24px !important;">Giao hàng tận nơi</h2>
+                                <p>Không cần đến cửa hàng – chúng tôi mang sản phẩm đến tận nơi bạn!</p>
                                 <div class="btn-wrap">
-                                    <a href="shop.html" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
+                                    <a asp-action="Shop" asp-controller="Home" class="btn btn-primary btn-medium d-flex align-items-center" tabindex="0">
                                         Khám phá ngay <i class="icon icon-arrow-io"></i>
                                     </a>
                                 </div>
@@ -88,54 +76,62 @@
 <section id="featured-products" class="product-store">
     <div class="container">
         <div class="section-header d-flex flex-wrap align-items-center justify-content-between">
-            <h2 class="section-title">Sản phẩm nổi bật</h2>
+            <h2 class="section-title">Danh mục nổi bật</h2>
             <div class="btn-wrap">
-                <a href="shop.html" class="d-flex align-items-center">Xem toàn bộ sản phẩm <i class="icon icon icon-arrow-io"></i></a>
+                <a asp-action="Shop" asp-controller="Home" class="d-flex align-items-center">Xem toàn bộ sản phẩm <i class="icon icon icon-arrow-io"></i></a>
             </div>
         </div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-button-next"></div>
         <div class="swiper product-swiper overflow-hidden">           
             <div class="swiper-wrapper">
-                @if (displayedProducts != null)
-                {
-
-                    @foreach (var product in displayedProducts)
-                    {
-                        <div class="swiper-slide">
-                            <div class="product-item">
-                                <partial name="_ProductItem" model="product" />
+                 <div class="swiper-slide">
+                      <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-search="Áo dài">
+                            <div class="image-holder border-0" >
+                                <img src="https://i.pinimg.com/736x/50/c7/87/50c787debad59a7115781e0a170d33ee.jpg" class="product-image" alt="Áo dài" />
                             </div>
-                        </div>
-                    }
-                }                  
+                            <p class="mt-2 fw-bold">Áo dài</p>
+                           </a>
+                      </div>
+                 </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-search="Trang phục truyền thống">
+                            <div class="image-holder border-0">
+                                <img src="https://i.pinimg.com/736x/58/65/26/58652671603b086bc60fcbec2b058ccf.jpg" class="product-image" alt="Trang phục truyền thống" />
+                            </div>
+                            <p class="mt-2 fw-bold">Trang phục truyền thống</p>
+                        </a>
+                    </div>
+                </div>
+                 <div class="swiper-slide">
+                      <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-search="Dạ tiệc">
+                            <div class="image-holder border-0">
+                                <img src="https://i.pinimg.com/736x/88/26/7b/88267b11b67c8282d3a5787ce0c8b42f.jpg" class="product-image" alt="Dạ tiệc" />
+                            </div>
+                              <p class="mt-2 fw-bold">Dạ tiệc</p>
+                           </a>
+                      </div>
+                 </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-search="Trang phục công sở">
+                            <div class="image-holder border-0">
+                                <img src="https://i.pinimg.com/736x/79/e1/bc/79e1bcb002fb2a4a6222dd1d0fb61a8a.jpg" class="product-image" alt="Trang phục công sở" />
+                            </div>
+                            <p class="mt-2 fw-bold">Trang phục công sở</p>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 <!--Feature product-->
 
-<!--Register-->
-<section id="subscribe">
-    <div class="container">
-        <div class="row">
-            <div class="block-text col-md-6">
-                <div class="section-header">
-                    <h2 class="section-title">Nhận ngay voucher giảm giá 25%</h2>
-                </div>
-                <p>Đăng ký để trở thành khách hàng thân thiết và nhận ưu đãi hấp dẫn mỗi ngày!</p>
-            </div>
-            <div class="subscribe-content col-md-6">
-                <form id="form" class="d-flex justify-content-between">
-                    <input id="emailInput" type="text" name="email" placeholder="Nhập email của bạn tại đây" />
-                    <button id="signUpBtn" class="btn btn-dark">Đăng kí ngay</button>
-                </form>
-            </div>
 
-        </div>
-    </div>
-</section>
-<!--Register-->
 <!--Best Rentail-->
 <section id="selling-products" class="product-store bg-light-grey">
     <div class="container pt-5">
@@ -217,10 +213,10 @@
 <section id="instagram">
     <div class="container mt-5">
         <div class="section-header">
-            <h2 class="section-title">Facebook của chúng tôi </h2>
+            <h2 class="section-title">Theo dõi chúng tôi tại </h2>
         </div>
         <p>
-            Trang Facebook chính thức <a href="https://www.facebook.com/greencloset8386" target="_blank">@@GreenCloset</a>
+            <i class="fa-brands fa-facebook"></i> Facebook <a href="https://www.facebook.com/greencloset8386" target="_blank">@@GreenCloset</a>
         </p>
         <div class="row d-flex flex-wrap justify-content-between">
             <div class="col-lg-2 col-md-4 col-sm-6">
@@ -317,3 +313,24 @@
     </div>
 </section>
 <!--Shipping information-->
+<!--Register-->
+<section id="subscribe">
+    <div class="container-fluid ms-5">
+        <div class="row">
+            <div class="block-text col-md-6">
+                <div class="section-header">
+                    <h2 class="section-title">Nhận ngay voucher giảm giá 25%</h2>
+                </div>
+                <p>Đăng ký để trở thành khách hàng thân thiết và nhận ưu đãi hấp dẫn mỗi ngày!</p>
+            </div>
+            <div class="subscribe-content col-md-6">
+                <form id="form" class="d-flex justify-content-between">
+                    <input id="emailInput" type="text" name="email" placeholder="Nhập email của bạn tại đây" />
+                    <button id="signUpBtn" class="btn btn-dark">Đăng kí ngay</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+<!--Register-->

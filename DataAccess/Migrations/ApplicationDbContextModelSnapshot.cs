@@ -95,6 +95,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("FeedbackStars")
                         .HasColumnType("int");
 
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -102,6 +105,8 @@ namespace DataAccess.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
@@ -145,21 +150,47 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("CancelDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CompleteDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DeliveryOption")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("PrePrice")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("RentingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReturingDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ShippingAddress")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<double>("TotalDeposit")
+                        .HasColumnType("float");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
@@ -182,6 +213,9 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -190,6 +224,15 @@ namespace DataAccess.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<int?>("SizeClother")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SizeShoe")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<double>("UnitPrice")
                         .HasColumnType("float");
@@ -213,9 +256,6 @@ namespace DataAccess.Migrations
 
                     b.Property<bool>("Available")
                         .HasColumnType("bit");
-
-                    b.Property<double>("BuyPrice")
-                        .HasColumnType("float");
 
                     b.Property<int?>("Color")
                         .HasColumnType("int");
@@ -294,6 +334,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<string>("ShopName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 
@@ -338,6 +381,12 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Models.Feedback", b =>
                 {
+                    b.HasOne("DataAccess.Models.Order", "Order")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("DataAccess.Models.Product", "Product")
                         .WithMany("Feedbacks")
                         .HasForeignKey("ProductId")
@@ -349,6 +398,8 @@ namespace DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Order");
 
                     b.Navigation("Product");
 
@@ -439,6 +490,8 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Models.Order", b =>
                 {
+                    b.Navigation("Feedbacks");
+
                     b.Navigation("OrderDetails");
                 });
 

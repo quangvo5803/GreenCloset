@@ -1,0 +1,215 @@
+﻿@model Product
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    int itemPerCol = 0;
+    if (categories != null)
+    {
+        int totalCategories = categories.Count();
+        itemPerCol = 5;
+    }
+}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link  text-black" asp-action="Profile">
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-action="ChangePassword"><i class="fa fa-lock me-2"></i>Bảo mật</a>
+                                    <a class="nav-link text-black" asp-action="ManageOrder">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link active text-white" asp-controller="Lessor" asp-action="Index" style="background-color: #8DC63F !important;">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+                                <div class="row justify-content-center">
+                                            <h2 class="text-center p-4 bg-primary text-white">
+                                                    <i class="fas fa-plus-circle me-2"></i>Thêm sản phẩm mới
+                                             </h2>
+
+                                                <form asp-action="CreateProduct" method="post" enctype="multipart/form-data">
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm:</label>
+                                                    <div class="input-group equal-height-inputs">
+                                                                <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                                                <input asp-for="Name" class="form-control" required placeholder="Nhập tên sản phẩm" />
+                                                            </div>
+                                                            <span asp-validation-for="Name" class="text-danger"></span>
+                                                        </div>
+
+                                                        <div class="col-md-6 mb-3">
+                                                            <label asp-for="Price" class="form-label fw-bold">Giá thuê :</label>
+                                                    <div class="input-group equal-height-inputs">
+                                                                <span class="input-group-text">$</span>
+                                                                <input asp-for="Price" class="form-control" type="number" step="1000" required placeholder="Nhập giá thuê sản phẩm" />
+                                                            </div>
+                                                            <span asp-validation-for="Price" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label asp-for="DepositPrice" class="form-label fw-bold">Giá cọc:</label>
+                                                            <div class="input-group equal-height-inputs">
+                                                                <span class="input-group-text">$</span>
+                                                                <input asp-for="DepositPrice" class="form-control" type="number" step="1000" placeholder="Nhập giá cọc sản phẩm" value="0" />
+                                                            </div>
+                                                            <span asp-validation-for="DepositPrice" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label asp-for="Description" class="form-label fw-bold">Mô tả:</label>
+                                                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        @if (categories != null)
+                                                        {
+                                                            <label class="control-label fw-bold">Chọn danh mục:</label>
+                                                            <div class="row category-container">
+                                                                @foreach (var categoryCol in categories.Select((item, index) => new { Item = item, Index = index }).GroupBy(x => x.Index / itemPerCol))
+                                                                {
+                                                                    <div class="col-md-4 col-sm-6 mb-2">
+                                                                        @foreach (var category in categoryCol.Select(x => x.Item))
+                                                                        {
+                                                                            <div class="form-check">
+                                                                                <input type="checkbox" name="selectedCategories" value="@category.Id" class="form-check-input" id="@category.Id" />
+                                                                                <label class="form-check-label" for="@category.Id">
+                                                                                    @category.CategoryName
+                                                                                </label>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">Chọn size quần áo có sẵn:</label>
+                                                        <div class="row ms-5">
+                                                            @foreach (SizeClother size in Enum.GetValues(typeof(SizeClother)))
+                                                            {
+                                                                <div class="form-check col-md-2">
+                                                                    <input type="checkbox" class="form-check-input" name="SelectedClotherSizes" value="@size" onclick="toggleSizes('clothing')" />
+                                                                    <label class="form-check-label" for="size_@size">@size</label>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">Chọn size giày có sẵn:</label>
+                                                        <div class="row ms-5">
+                                                            @for (int size = 30; size <= 45; size++)
+                                                            {
+                                                                <div class="form-check col-md-2">
+                                                                    <input type="checkbox" class="form-check-input" name="SelectedShoeSizes" value="@size" onclick="toggleSizes('shoes')" />
+                                                                    <label class="form-check-label" for="shoe_@size">@size</label>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">Chọn màu sản phẩm</label>
+                                                        <div class="row">
+                                                            @foreach (ProductColor color in Enum.GetValues(typeof(ProductColor)))
+                                                            {
+                                                                var colorHex = GetColorHex(color);
+
+                                                                <div class="form-check col-md-2 text-center mb-2">
+                                                                    <input type="radio" class="form-check-input d-none color-radio" id="color_@color" asp-for="Color" value="@color" />
+                                                                    <label for="color_@color" class="color-circle position-relative" style="background-color:@colorHex;" title="@color">
+                                                                        <span class="checkmark">✔</span>
+                                                                    </label>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div class="mb-3">
+                                                        <label asp-for="ProductAvatar" class="form-label fw-bold me-2">Ảnh đại diện:</label>
+                                                        <input type="file" name="Avatar" id="avatarInput" class="form-control d-none" accept="image/*" />
+                                                        <label for="avatarInput" class="btn btn-primary">
+                                                            <i class="bi bi-upload"></i> Tải ảnh lên
+                                                        </label>
+                                                        <div class="avatar-preview-container position-relative mt-2" style="display: none; width:200px;">
+                                                            <img id="avatarPreview" class="img-thumbnail" style="max-width: 200px;" />
+                                                            <button type="button" class="btn-close position-absolute end-0 bg-danger text-white"
+                                                                    onclick="removeAvatarPreview()" aria-label="Close"></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label asp-for="ProductImages" class="form-label fw-bold me-2">Ảnh của sản phẩm (Bạn có thê tải lên nhiều ảnh):</label>
+                                                        <input type="file" name="Gallery" id="galleryInput" class="form-control d-none" accept="image/*" multiple />
+                                                        <label for="galleryInput" class="btn btn-secondary">
+                                                            <i class="bi bi-images"></i> Tải lên nhiều ảnh
+                                                        </label>
+                                                        <div id="galleryPreviewContainer" class="d-flex flex-wrap mt-2"></div>
+                                                    </div>
+
+                                                    <div class="d-flex float-end mt-4">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="fas fa-save me-2"></i>Thêm sản phẩm
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Content Area -->
+                    </div>
+                </div>
+            </div>
+@section Scripts {
+    <script src="~/js/Plugins/CreateProduct.js"></script>
+}
+@functions {
+    public string GetColorHex(ProductColor color)
+    {
+        return color switch
+        {
+            ProductColor.Black => "#000000",
+            ProductColor.White => "#FFFFFF",
+            ProductColor.Red => "#FF0000",
+            ProductColor.Blue => "#0000FF",
+            ProductColor.Green => "#008000",
+            ProductColor.Yellow => "#FFFF00",
+            ProductColor.Pink => "#FF69B4",
+            ProductColor.Brown => "#8B4513",
+            ProductColor.Gray => "#808080",
+            ProductColor.Orange => "#FFA500",
+            ProductColor.Purple => "#800080",
+            ProductColor.Navy => "#000080",
+            ProductColor.Beige => "#F5F5DC",
+            ProductColor.Maroon => "#800000",
+            ProductColor.Olive => "#808000",
+            ProductColor.Teal => "#008080",
+            ProductColor.Khaki => "#F0E68C",
+            ProductColor.Coral => "#FF7F50",
+            ProductColor.Mint => "#98FF98",
+            ProductColor.Burgundy => "#800020",
+            ProductColor.Mustard => "#FFDB58",
+            ProductColor.SkyBlue => "#87CEEB",
+            ProductColor.Lavender => "#E6E6FA",
+            ProductColor.Cream => "#FFFDD0",
+            _ => "#CCCCCC"
+        };
+    }
+}

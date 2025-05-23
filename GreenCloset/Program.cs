@@ -22,9 +22,9 @@ namespace GreenCloset
                 .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/User/Login";
-                    options.LogoutPath = "/User/Logout";
-                    options.AccessDeniedPath = "/User/AccessDenied";
+                    options.LoginPath = "/Home/Login";
+                    options.LogoutPath = "/Home/Logout";
+                    options.AccessDeniedPath = "/Home/AccessDenied";
                 })
                 //Login with Google
                 .AddGoogle(
@@ -41,7 +41,6 @@ namespace GreenCloset
                         };
                     }
                 )
-                //Login with Facebook
                 .AddFacebook(
                     FacebookDefaults.AuthenticationScheme,
                     options =>
@@ -66,6 +65,7 @@ namespace GreenCloset
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IFacedeService, FacadeService>();
+            builder.Services.AddScoped<IVnPayService, VnPayService>();
             builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
             builder.Services.AddSingleton<EmailSender>();
             builder.Services.AddHostedService<BackgroundEmailSender>();
@@ -75,7 +75,6 @@ namespace GreenCloset
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"

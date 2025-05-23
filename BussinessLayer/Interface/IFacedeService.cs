@@ -13,5 +13,7 @@ namespace BussinessLayer.Interface
         IProductService Product { get; }
         IItemImageService ItemImage { get; }
         ICartService Cart { get; }
+        IOrderService Order { get; }
+        IFeedBackService FeedBack { get; }
     }
 }

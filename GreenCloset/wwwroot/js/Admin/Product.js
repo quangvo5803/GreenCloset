@@ -14,17 +14,20 @@ function loadDataTable() {
             {
                 "data": null,
                 "width": "5%",
+                "className": "text-center align-middle",
                 "render": function (data, type, row, meta) {
                     return meta.row + 1;
                 }
             },
             {
                 "data": 'name',
+                "className": "text-center align-middle",
                 "width": "10%"
             },
             {
                 "data": 'price',
                 "width": "10%",
+                "className": "text-center align-middle",
                 "render": function (data, type, row) {
                     return new Intl.NumberFormat('vn-VN', { style: 'currency', currency: 'VND' }).format(data);
                 }
@@ -32,6 +35,7 @@ function loadDataTable() {
             {
                 "data": 'categories',
                 "width": "10%",
+                "className": "text-center align-middle",
                 "render": function (data) {
                     if (Array.isArray(data) && data.length > 0) {
                         return data.map(category =>
@@ -40,12 +44,13 @@ function loadDataTable() {
                     } else if (data && data.categoryName) {
                         return `<span class="badge bg-info">${data.categoryName}</span>`;
                     }
-                    return '<span class="badge bg-info">No Category</span>';
+                    return '<span class="badge bg-info">Chưa được phân loại</span>';
                 }
             },
             {
                 "data": null,
                 "width": "10%",
+                "className": "text-center align-middle",
                 "render": function (data) {
                     return `${data.avgRating.toFixed(1)} ⭐ | ${data.feedbackCount} feedback(s)`;
                 }

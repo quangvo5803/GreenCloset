@@ -5,6 +5,7 @@
 
         e.preventDefault();
         const productId = btn.dataset.productId;
+        const userId = btn.dataset.userId;
         const pageType = document.getElementById('pageContainer')?.dataset.pageType;
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         const size = document.querySelector('input[name="size"]:checked')?.value || null;

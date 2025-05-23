@@ -1,8 +1,7 @@
-﻿﻿@using System.Security.Claims
-@{
-    var isLoggedIn = User.Identity.IsAuthenticated;
-    var accountEmail = isLoggedIn ? User.FindFirst(ClaimTypes.Email)?.Value : null;
-    var roles = isLoggedIn ? User.FindFirst(ClaimTypes.Role)?.Value : null;
+﻿@{
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var accountEmail = isLoggedIn ? User?.FindFirst(ClaimTypes.Email)?.Value : null;
+    var roles = isLoggedIn ? User?.FindFirst(ClaimTypes.Role)?.Value : null;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -65,16 +64,11 @@
         </main>
         
     </div>
-    @if (roles == "Customer" || roles == null)
+    @if (roles == "Customer" || roles == null || roles == "Lessor")
     {
         <partial name="_Footer" ; />
     }
 
-
-
-    <script>
-        const userId = '@(User.Identity.IsAuthenticated ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : null)';
-    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -83,7 +77,9 @@
     <script src="~/js/Plugins/plugins.js" asp-append-version="true"></script>
     <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="~/lib/venobox/venobox.min.js"></script>
+    <script src="~/lib/venobox/custom.js"></script>
     <script src="~/js/Customer/AddToCart.js"></script>
+    <script src="~/js/Plugins/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     @if (roles == "Admin")
     {

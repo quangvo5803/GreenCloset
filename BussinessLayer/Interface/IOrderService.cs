@@ -31,13 +31,17 @@ namespace BussinessLayer.Interface
             Order Order,
             Dictionary<User, List<OrderDetail>> GroupedByStore
         )> GetOrdersGroupedByStore(Guid userId);
-        public bool CancelOrder(int orderId, Guid userId, string reason);
-        public bool CompleteOrder(int orderId, Guid userId);
-        public (
+        bool MarkAsDelivered(int orderId);
+        bool MarkAsRenting(int orderId);
+        bool MarkAsReturning(int orderId);
+
+        bool CancelOrder(int orderId, string reason);
+        bool CompleteOrder(int orderId);
+        (
             Order Order,
             Dictionary<User, List<OrderDetail>> GroupedByStore,
             List<int> checkReview
         )? GetOrderDetail(int orderId, Guid userId);
-        public Order? GetOrder(int orderId);
+        Order? GetOrder(int orderId);
     }
 }

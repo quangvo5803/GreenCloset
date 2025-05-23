@@ -110,8 +110,10 @@ function loadDataTable() {
                     switch (data) {
                         case 0: return '<span class="badge bg-warning">Chờ xác nhận</span>';
                         case 1: return '<span class="badge bg-info">Đang giao hàng</span>';
-                        case 2: return '<span class="badge bg-success">Đã giao</span>';
+                        case 2: return '<span class="badge bg-success">Hoàn thành</span>';
                         case 3: return '<span class="badge bg-danger">Đã hủy</span>';
+                        case 4: return '<span class="badge bg-dark">Đang thuê</span>';
+                        case 5: return '<span class="badge bg-secondary">Đang trả hàng</span>';
                         default: return 'Không xác định';
                     }
                 }
@@ -135,7 +137,7 @@ function loadDataTable() {
                 "render": function (data, type, row) {
                     return `
                     <div class="btn-group d-flex justify-content-between" role="group">
-                       <a href="/Lessor/OrderDetail?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Xem chi tiết đơn hàng</a>
+                       <a href="/Lessor/OrderDetail?orderId=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Xem chi tiết đơn hàng</a>
                     </div>`;
                 }
             }

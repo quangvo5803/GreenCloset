@@ -1,12 +1,11 @@
 ﻿@{
     var ordersGrouped = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.OrdersGrouped;
     var pending = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Pending;
-    var delivering = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Delivering;
     var complete = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Completed;
     var cancel = (List<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)>)ViewBag.Cancelled;
 
     var filterStatus = ordersGrouped
-        .Where(g => g.Order.Status == OrderStatus.Pending || g.Order.Status == OrderStatus.Delivering)
+        .Where(g => g.Order.Status == OrderStatus.Pending || g.Order.Status == OrderStatus.Delivering || g.Order.Status == OrderStatus.Returning || g.Order.Status == OrderStatus.Renting)
         .ToList();
     
     ViewData["Title"] = "Lịch sử đơn hàng";
@@ -86,10 +85,8 @@
                                     <div class="tab-pane fade show active" id="content-pending" role="tabpanel" aria-labelledby="tab-pending">
                                     
                                         <div class="row g-4">
-                                            @if ((pending?.Any() == true || delivering?.Any() == true) && ordersGrouped?.Any() == true)
+                                            @if ((pending?.Any() == true) && ordersGrouped?.Any() == true)
                                             {
-                                                @if (filterStatus != null && filterStatus.Any())
-                                                {
                                                     @foreach (var orderGroup in filterStatus)
                                                     {
                                                         var order = orderGroup.Order;
@@ -171,11 +168,7 @@
                                                         {
                                                             <partial name="_CancelOrderReason" model="order" />
                                                         }
-                                                        @if (order?.Status == OrderStatus.Delivering)
-                                                        {
-                                                            <partial name="_CompleteOrder" model="order" />
-                                                        }
-                                                    }
+                                                    
 
                                                 }
                                             }else{

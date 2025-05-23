@@ -180,7 +180,6 @@ namespace GreenCloset.Controllers
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
-                existingProduct.BuyPrice = product.BuyPrice;
                 existingProduct.DepositPrice = product.DepositPrice;
                 existingProduct.Color = product.Color;
                 await _facadeService.Product.UpdateProduct(
@@ -229,6 +228,18 @@ namespace GreenCloset.Controllers
 
             _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { successuccess = true });
+        }
+
+        [Authorize(Roles = "Lessor")]
+        public IActionResult OrderDetail(int id)
+        {
+            var order = _facadeService.Order.GetOrder(id);
+            if (order == null)
+            {
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("ManageOrder", "Customer");
+            }
+            return View(order);
         }
     }
 }

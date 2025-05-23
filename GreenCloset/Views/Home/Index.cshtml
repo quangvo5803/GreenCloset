@@ -2,20 +2,8 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var featuredProducts = ViewBag.FeatureProducts as IEnumerable<Product>;
-    var displayedProducts = featuredProducts?.ToList() ?? new List<Product>();
-    if (displayedProducts.Count < 8)
-    {
-        var remaining = 8 - displayedProducts.Count;
-
-        var additionalProducts = Model
-            .Where(p => !displayedProducts.Any(fp => fp.Id == p.Id))
-            .Take(remaining);
-
-        displayedProducts.AddRange(additionalProducts);
-
-    }
     var categories = ViewBag.Categories as IEnumerable<Category>;
-    categories = categories?.Take(8);
+    categories = categories?.Where(c => c.Products?.Count > 0).Take(8);
 }
 <!--Slider-->
 <section id="billboard">
@@ -88,7 +76,7 @@
 <section id="featured-products" class="product-store">
     <div class="container">
         <div class="section-header d-flex flex-wrap align-items-center justify-content-between">
-            <h2 class="section-title">Sản phẩm nổi bật</h2>
+            <h2 class="section-title">Danh mục nổi bật</h2>
             <div class="btn-wrap">
                 <a asp-action="Shop" asp-controller="Home" class="d-flex align-items-center">Xem toàn bộ sản phẩm <i class="icon icon icon-arrow-io"></i></a>
             </div>
@@ -97,45 +85,53 @@
         <div class="swiper-button-next"></div>
         <div class="swiper product-swiper overflow-hidden">           
             <div class="swiper-wrapper">
-                @if (displayedProducts != null)
-                {
-
-                    @foreach (var product in displayedProducts)
-                    {
-                        <div class="swiper-slide">
-                            <div class="product-item">
-                                <partial name="_ProductItem" model="product" />
-                            </div>
-                        </div>
-                    }
-                }                  
+                 <div class="swiper-slide">
+                      <div class="product-item text-center">
+                           <a asp-action="Shop" asp-controller="Home" asp-route-category="thanh-lich">
+                              <img src="https://theme.hstatic.net/200000456167/1001137688/14/two_ha_category_ico_1.png?v=81 class="img-fluid" alt="Thanh Lịch" />
+                              <p class="mt-2 fw-bold">Thanh Lịch</p>
+                           </a>
+                      </div>
+                 </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-category="thanh-lich">
+                            <img src="https://theme.hstatic.net/200000456167/1001137688/14/two_ha_category_ico_1.png?v=81 class="img-fluid" alt="Thanh Lịch" />
+                            <p class="mt-2 fw-bold">Thanh Lịch</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-category="thanh-lich">
+                            <img src="https://theme.hstatic.net/200000456167/1001137688/14/two_ha_category_ico_1.png?v=81 class="img-fluid" alt="Thanh Lịch" />
+                            <p class="mt-2 fw-bold">Thanh Lịch</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-category="thanh-lich">
+                            <img src="https://theme.hstatic.net/200000456167/1001137688/14/two_ha_category_ico_1.png?v=81 class="img-fluid" alt="Thanh Lịch" />
+                            <p class="mt-2 fw-bold">Thanh Lịch</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="product-item text-center">
+                        <a asp-action="Shop" asp-controller="Home" asp-route-category="thanh-lich">
+                            <img src="https://theme.hstatic.net/200000456167/1001137688/14/two_ha_category_ico_1.png?v=81 class="img-fluid" alt="Thanh Lịch" />
+                            <p class="mt-2 fw-bold">Thanh Lịch</p>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 <!--Feature product-->
 
-<!--Register-->
-<section id="subscribe">
-    <div class="container">
-        <div class="row">
-            <div class="block-text col-md-6">
-                <div class="section-header">
-                    <h2 class="section-title">Nhận ngay voucher giảm giá 25%</h2>
-                </div>
-                <p>Đăng ký để trở thành khách hàng thân thiết và nhận ưu đãi hấp dẫn mỗi ngày!</p>
-            </div>
-            <div class="subscribe-content col-md-6">
-                <form id="form" class="d-flex justify-content-between">
-                    <input id="emailInput" type="text" name="email" placeholder="Nhập email của bạn tại đây" />
-                    <button id="signUpBtn" class="btn btn-dark">Đăng kí ngay</button>
-                </form>
-            </div>
 
-        </div>
-    </div>
-</section>
-<!--Register-->
 <!--Best Rentail-->
 <section id="selling-products" class="product-store bg-light-grey">
     <div class="container pt-5">
@@ -317,3 +313,24 @@
     </div>
 </section>
 <!--Shipping information-->
+<!--Register-->
+<section id="subscribe">
+    <div class="container-fluid ms-5">
+        <div class="row">
+            <div class="block-text col-md-6">
+                <div class="section-header">
+                    <h2 class="section-title">Nhận ngay voucher giảm giá 25%</h2>
+                </div>
+                <p>Đăng ký để trở thành khách hàng thân thiết và nhận ưu đãi hấp dẫn mỗi ngày!</p>
+            </div>
+            <div class="subscribe-content col-md-6">
+                <form id="form" class="d-flex justify-content-between">
+                    <input id="emailInput" type="text" name="email" placeholder="Nhập email của bạn tại đây" />
+                    <button id="signUpBtn" class="btn btn-dark">Đăng kí ngay</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+<!--Register-->

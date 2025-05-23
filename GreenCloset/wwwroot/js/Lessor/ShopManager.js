@@ -1,11 +1,13 @@
 ﻿var dataProductTable;
-var dataOrderTable
-$(document).ready(function () {
+var dataOrderTable;
+$(function () {
     loadDataTable();
 });
 
 function loadDataTable() {
     dataProductTable = $('#tblProductData').DataTable({
+        responsive: true,
+        autoWidth: false,
         "ajax": {
             url: '/lessor/getallproduct',
             type: 'GET',
@@ -73,7 +75,9 @@ function loadDataTable() {
             url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
         }
     });
-    dataProductTable = $('#tblOrderData').DataTable({
+    dataOrderTable = $('#tblOrderData').DataTable({
+        responsive: true,
+        autoWidth: false,
         "ajax": {
             url: '/lessor/getallorder',
             type: 'GET',
@@ -131,8 +135,7 @@ function loadDataTable() {
                 "render": function (data, type, row) {
                     return `
                     <div class="btn-group d-flex justify-content-between" role="group">
-                       <a href="/Lessor/ViewOrderDetail?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Xem chi tiết đơn hàng</a>
-                       <a href="/Lessor/ViewOrderFeedback?id=${row.id}" class="btn btn-warning flex-grow-1 mx-1">Xem đánh giá</a>
+                       <a href="/Lessor/OrderDetail?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Xem chi tiết đơn hàng</a>
                     </div>`;
                 }
             }

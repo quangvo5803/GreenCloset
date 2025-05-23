@@ -27,9 +27,17 @@ namespace BussinessLayer.Interface
         bool VNPayReturn(IQueryCollection query, string userId, out int orderId);
         IEnumerable<Order> GetOrdersByProductOwner(string? email = null);
 
-        public IEnumerable<(Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)> GetOrdersGroupedByStore(Guid userId);
+        public IEnumerable<(
+            Order Order,
+            Dictionary<User, List<OrderDetail>> GroupedByStore
+        )> GetOrdersGroupedByStore(Guid userId);
         public bool CancelOrder(int orderId, Guid userId, string reason);
         public bool CompleteOrder(int orderId, Guid userId);
-        public (Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore, List<int> checkReview)? GetOrderDetail(int orderId, Guid userId);
+        public (
+            Order Order,
+            Dictionary<User, List<OrderDetail>> GroupedByStore,
+            List<int> checkReview
+        )? GetOrderDetail(int orderId, Guid userId);
+        public Order? GetOrder(int orderId);
     }
 }

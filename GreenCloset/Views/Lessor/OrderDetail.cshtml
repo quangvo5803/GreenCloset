@@ -1,0 +1,587 @@
+﻿@model Order
+@{
+    var order = Model;
+    var checkReview = ViewBag.CheckReview as List<int> ?? new List<int>();
+    double totalProduct = 0;
+
+    //Status
+    var steps = new[]
+    {
+        new { Icon = "fas fa-file-alt", Text = "Đơn Hàng Đã Đặt", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.DeliveryDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-box-open", Text = "Đã Nhận Được Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") }
+    };
+
+    int currentStep = order?.Status switch
+    {
+        OrderStatus.Pending => 0,
+        OrderStatus.Delivering => 1,
+        OrderStatus.Completed => 2,
+        OrderStatus.Cancelled => 3,
+        _ => -1
+    };
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var userId = isLoggedIn ? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value : null;
+}
+
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link  text-black" asp-action="Profile" asp-controller="User">
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-action="ChangePassword" asp-controller="User"><i class="fa fa-lock me-2"></i>Bảo mật</a>
+                                    <a class="nav-link text-white active" asp-action="ManageOrder" asp-controller="Customer"
+                                    style="background-color: #198754 !important;">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+
+                                @if(order != null)
+                                {
+                                    <!-- Header -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom border-2 border-light pb-2 mb-4">
+                                        <a asp-action="ManageOrder" asp-controller="Customer" class="btn btn-link text-secondary p-0 d-flex align-items-center gap-1" type="button">
+                                            <i class="fas fa-chevron-left fs-5"></i>
+                                            <span class="fs-6">TRỞ LẠI</span>
+                                        </a>
+                                        <div class="d-flex align-items-center gap-2 fs-6 text-secondary">
+                                            <span>MÃ ĐƠN HÀNG:</span>
+                                            <span class="fw-semibold text-dark">@order?.Id</span>
+                                        </div>
+                                    </div>
+
+                                    <!--Status-->
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                                        @for (int i = 0; i < steps.Length; i++)
+                                        {
+                                            var isActive = i <= currentStep;
+                                            var isLast = i == steps.Length - 1;
+                                            var isLineActive = i < currentStep; // thanh kết nối xanh nếu bước tiếp theo đã hoàn thành
+
+                                            @if (order?.Status != OrderStatus.Cancelled)
+                                            {
+                                                <div class="step d-flex flex-column align-items-center position-relative">
+                                                    <div class="@(isActive ? "icon-circle" : "icon-circle-disable")">
+                                                        <i class="@steps[i].Icon"></i>
+                                                    </div>
+                                                    <div class="step-text mt-2">@steps[i].Text</div>
+                                                    <div class="time">
+                                                        @if (!string.IsNullOrEmpty(steps[i].Time))
+                                                        {
+                                                            @steps[i].Time
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="visibility: hidden;">00/00/0000 00:00</span>
+                                                        }
+                                                    </div>
+                                                    @if (!isLast)
+                                                    {
+                                                        <div class="@(isLineActive ? "progress-line" : "progress-line-disable")"></div>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                           if (i == steps.Length - 1 && order?.Status == OrderStatus.Cancelled)
+                                            {
+
+                                                <div class="text-danger fw-bold">
+                                                    Bạn đã hủy đơn hàng
+                                                    <p class="text-gray-500 small">@order?.CancelDate?.ToString("dd/MM/yyyy HH:mm")</p>
+                                                    <p class="text-gray-500 small">Lý do: @order?.CancelReason</p>
+                                                </div>
+                                            }
+                                        }
+
+
+
+                                    </div>
+                                    <!-- Address and Status Section -->
+                                    <div class="border-bottom border-4 pb-4 mb-4">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                                            <div>
+                                                <h2 class="text-gray-700 fw-normal fs-5">
+                                                    Thông tin nhận hàng
+                                                </h2>
+                                                <p class="text-black fs-6 small mt-1 mb-0">
+                                                    Tên khách hàng: @order?.User?.UserName
+                                                </p>
+                                                <p class="text-black fs-6 small mt-1 mb-0">
+                                                    Số điện thoại: @order?.PhoneNumber
+                                                </p>
+                                                @if (order?.DeliveryOption == DeliveryOption.HomeDelivery)
+                                                {
+                                                    <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
+                                                        Địa chỉ giao hàng: @order?.ShippingAddress
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
+                                                        Địa chỉ: Nhận tại cửa hàng
+                                                        @order?.OrderDetails?.ToList()[0].Product?.User?.ShopName - @order?.OrderDetails?.ToList()[0].Product?.User?.Address
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div class="text-end text-muted small" style="line-height: 1.1;">
+                                                <div>
+                                                    Giao Hàng Hỏa Tốc
+                                                </div>
+                                                <div class="fw-semibold mt-1">
+                                                    GreenCloset
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- Store 1 -->
+                                    <div class="border-bottom border-4 pb-3 mb-4">
+                                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                            <h3 class="fw-semibold mb-0 fs-6 text-primary">
+                                                <i class="fa-solid fa-shop"></i> @(order?.OrderDetails?.ToList()[0].Product?.User?.ShopName)
+                                            </h3>
+                                        </div>
+                                        @if (order != null && order.OrderDetails != null)
+                                        {
+                                            @foreach (var item in order.OrderDetails)
+                                            {
+                                                if (item.Product?.UserId.ToString() == userId)
+                                                {
+                                                    bool isReviewed = checkReview.Contains(item.ProductId);
+                                                    var days = (item.EndDate - item.StartDate)?.Days ?? 1;
+                                                    if (days < 1) { days = 1; }
+                                                    var total = item.UnitPrice * item.Quantity * days;
+                                                    <div class="gap-3 p-2 border-bottom border-2 rounded bg-white" style="margin-bottom:5px">
+                                                        <div class="d-flex gap-3 mb-3">
+                                                            @if (item.Product?.ProductAvatar != null)
+                                                            {
+                                                                <img class="flex-shrink-0 object-contain" height="80" src="@item.Product?.ProductAvatar?.ImagePath"
+                                                                     width="80" style="margin-top:27px;" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px; margin-top:27px;" />
+                                                            }
+
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-1 fs-6 text-black fw-bold" style="line-height: 1.2;">
+                                                                    @item.Product?.Name
+                                                                </p>
+                                                                <p class="text-gray-400 small mb-1">
+                                                                    Phân loại hàng: @item.Product?.Color -
+                                                                    @if (item.SizeShoe.HasValue)
+                                                                    {
+                                                                        @item.SizeShoe
+                                                                    }
+                                                                    else if (item.SizeClother.HasValue)
+                                                                    {
+                                                                        @item.SizeClother
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <text>Chưa chọn</text>
+                                                                    }
+                                                                </p>
+                                                                <p class="text-gray-400 small mb-1">
+                                                                    @days ngày (@item.StartDate?.ToString("dd/MM/yyyy") - @item.EndDate?.ToString("dd/MM/yyyy"))
+                                                                </p>
+                                                                <p class="mb-0 fs-6 text-black">
+                                                                    x @item.Quantity
+                                                                </p>
+                                                            </div>
+                                                            <div class="text-end flex-shrink-0" style="min-width: 80px;">
+                                                                <div>
+                                                                    Đơn giá: @item.UnitPrice.ToString("N0") ₫
+                                                                </div>
+                                                                <div class="text-primary fw-bold">
+                                                                    Tạm tính: @total.ToString("N0") ₫
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+
+
+
+                                    <!-- Price Details Section -->
+                                    <div class="rounded-sm mb-4">
+
+                                        <!-- Payment Method -->
+                                        <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-3">
+                                            <span>
+                                                Phương thức Thanh toán
+                                            </span>
+                                            <span class="fw-bold text-gray-900">
+                                                @(order?.PaymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")
+                                            </span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between px-3 py-2 text-gray-600 small border-bottom border-3">
+                                            <span>
+                                                Tổng tiền hàng
+                                            </span>
+                                            <span>
+                                                @totalProduct.ToString("N0") ₫
+                                            </span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between px-3 py-2 text-primary price-large fw-bold">
+                                            <span>
+                                                Thành tiền
+                                            </span>
+                                            <span class="text-primary">
+                                                @order?.TotalPrice.ToString("N0") ₫
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <!-- Payment Reminder -->
+                                    @if (order?.PaymentMethod == PaymentMethod.PayByCash && order?.Status != OrderStatus.Cancelled && order?.Status != OrderStatus.Completed)
+                                    {
+                                        <div class="bg-light-yellow rounded-sm border border-warning px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            <p class="mb-0">
+                                                Vui lòng thanh toán
+                                                <span class="price-red fw-semibold select-text text-primary">
+                                                    @order?.TotalPrice.ToString("N0") ₫
+                                                </span>
+                                                khi nhận hàng.
+                                            </p>
+                                        </div>
+                                    }
+                                    else if (order?.PaymentMethod == PaymentMethod.PayByCash && order?.Status != OrderStatus.Cancelled && order?.Status != OrderStatus.Completed)
+                                    {
+                                        <div class="bg-light-success rounded-sm border border-success px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
+                                            <i class="bi bi-emoji-kiss"></i>
+                                            <p class="mb-0">
+                                                Bạn đã thành toán
+                                                <span class="price-red fw-semibold select-text text-primary">
+                                                    @order?.TotalPrice.ToString("N0") ₫
+                                                </span>
+                                                bằng VNPay.
+                                            </p>
+                                        </div>
+                                    }
+
+
+                                }
+                            </div>
+                        </div> <!-- End Content Area -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .timeline-line {
+        width: 1px;
+        background-color: #e5e7eb;
+        position: absolute;
+        top: 34px;
+        bottom: 0;
+        left: 14px;
+        z-index: 0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 1.5rem;
+    }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+
+    .text-teal-700 {
+        color: #2c7a7b !important;
+    }
+
+    .text-teal-500 {
+        color: #319795 !important;
+    }
+
+    .bg-teal-600 {
+        background-color: #319795 !important;
+    }
+
+    .btn-chat {
+        background-color: #f44336;
+        border-color: #f44336;
+        color: white;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+    }
+
+        .btn-chat:hover {
+            background-color: #d32f2f;
+            border-color: #d32f2f;
+            color: white;
+        }
+
+    .badge-yt {
+        background-color: #f44336;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        color: white;
+    }
+
+    .btn-shop {
+        font-size: 0.75rem;
+        color: #4b5563;
+        border: 1px solid #d1d5db;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        background-color: white;
+    }
+
+        .btn-shop:hover {
+            background-color: #f9fafb;
+            color: #374151;
+        }
+
+    .info-icon {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        cursor: default;
+        user-select: none;
+    }
+
+    .strike {
+        text-decoration: line-through;
+        color: #9ca3af;
+    }
+
+    .price-red {
+        color: #f44336;
+        font-weight: 600;
+    }
+
+    .price-large {
+        font-size: 1.25rem;
+    }
+
+        .price-large.price-red {
+            font-weight: 700;
+        }
+
+    .bg-light-yellow {
+        background-color: #fffbeb;
+        border: 1px solid #fcd34d;
+        color: #b45309;
+    }
+
+        .bg-light-yellow i {
+            margin-right: 0.5rem;
+        }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+
+    .text-sm {
+        font-size: 0.875rem;
+    }
+
+    .font-semibold {
+        font-weight: 600;
+    }
+
+    .font-normal {
+        font-weight: 400;
+    }
+
+    .text-gray-400 {
+        color: #9ca3af;
+    }
+
+    .text-gray-500 {
+        color: #6b7280;
+    }
+
+    .text-gray-600 {
+        color: #4b5563;
+    }
+
+    .text-gray-700 {
+        color: #374151;
+    }
+
+    .text-gray-900 {
+        color: #111827;
+    }
+
+    .border-gray-200 {
+        border-color: #e5e7eb !important;
+    }
+
+    .border-gray-100 {
+        border-color: #f3f4f6 !important;
+    }
+
+    .rounded-sm {
+        border-radius: 0.125rem !important;
+    }
+
+    .whitespace-nowrap {
+        white-space: nowrap !important;
+    }
+
+    .select-text {
+        user-select: text !important;
+    }
+
+    .select-none {
+        user-select: none !important;
+    }
+
+    .icon-circle-disable {
+        width: 48px;
+        height: 48px;
+        border: 2px solid rgba(0,0,0,0.5);
+        border-radius: 50%;
+        color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        background: white;
+        z-index: 10;
+        position: relative;
+    }
+
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border: 2px solid #22a544;
+        border-radius: 50%;
+        color: #22a544;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        background: white;
+        z-index: 10;
+        position: relative;
+    }
+
+    .progress-line {
+        height: 2px;
+        background-color: #22a544;
+        position: absolute;
+        top: 24px;
+        left: 50%;
+        right: -50%;
+        z-index: 0;
+    }
+
+    .progress-line-disable {
+        height: 2px;
+        background-color: rgba(0,0,0,0.5);
+        position: absolute;
+        top: 24px;
+        left: 50%;
+        right: -50%;
+        z-index: 0;
+    }
+
+    .step {
+        position: relative;
+        flex: 1 1 0;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #333333;
+        font-weight: 400;
+        line-height: 1.2;
+    }
+
+        .step .time {
+            font-size: 0.75rem;
+            color: #999999;
+            margin-top: 0.125rem;
+            line-height: 1;
+        }
+
+        .step:not(:last-child) .progress-line {
+            display: block;
+        }
+
+        .step:last-child .progress-line {
+            display: none;
+        }
+
+    .step-text {
+        white-space: pre-line;
+    }
+
+    .underline-link {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .btn-red {
+        background-color: #f44336;
+        border-color: #f44336;
+        color: white;
+    }
+
+        .btn-red:hover {
+            background-color: #d7372f;
+            border-color: #d7372f;
+            color: white;
+        }
+
+    .info-box {
+        background-color: #fff8f0;
+        font-size: 0.75rem;
+        color: #666666;
+        line-height: 1.2;
+    }
+</style>

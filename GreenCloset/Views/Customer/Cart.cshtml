@@ -104,7 +104,7 @@
                             <span>Tiền Cọc</span>
                             <span>Đơn Giá</span>
                             <span>Số Lượng</span>
-                            <span>Thành Tiền</span>
+                            <span>Tạm tính</span>
                             <span>Thao Tác</span>
                         </div>
                     </div>
@@ -237,11 +237,11 @@
                                                         days = 1;
                                                     }
 
-                                                    var totalPrice = item.Product.Price * item.Count * days;
+                                                    var totalPrice = item.Product.Price * item.Count * days + item.Product.DepositPrice * item.Count;
 
                                                     <span class="text-dangers product-total">@totalPrice.ToString("C", new CultureInfo("vi-VN"))</span>
                                                 } else {
-                                                    <span class="text-dangers product-total">@((item.Product.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))</span>
+                                                    <span class="text-dangers product-total">@((item.Product.Price * item.Count + item.Product.DepositPrice * item.Count).ToString("C", new CultureInfo("vi-VN")))</span>
                                                 }
 
                                             <a href="#" class="text-dangers delete-item"
@@ -270,7 +270,7 @@
             </div>
             <div class="text-end ms-auto">
 
-                <h5 class="text-dark fw-bold mb-1" id="prePrice">Thành tiền: ₫0</h5>
+                <h5 class="text-dark fw-bold mb-1" id="prePrice">Tiền thuê: ₫0</h5>
                 <h5 class="text-dark fw-bold mb-1" id="depositPrice">Tiền cọc: ₫</h5>
                 <p class="text-primary fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
                 
@@ -318,22 +318,32 @@
             document.querySelectorAll('.productCheckbox').forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('.product-row');
-                    const productTotalText = row.querySelector('.product-total').textContent;
-                    const productTotal = parseFloat(productTotalText.replace(/[^\d]/g, ''));
-
+                    const quantity = parseInt(row.querySelector('.quantity').value);
+                    const price = parseFloat(row.querySelector('.productCheckbox').dataset.price);
+                    const startDate = new Date(row.querySelector('.startDate').value);
+                    const endDate = new Date(row.querySelector('.endDate').value);
                     // Lấy tiền cọc từ data attribute (ví dụ: data-deposit="10000")
-                    const depositText = row.querySelector('.product-deposit')?.textContent || '₫0';
+                    const depositText = row.querySelector('.product-deposit')?.textContent || '0₫';
                     const deposit = parseFloat(depositText.replace(/[^\d]/g, ''));
 
+                    let days;
+
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        days = 1;
+                    } else {
+                        const diffInTime = endDate.getTime() - startDate.getTime();
+                        days = Math.max(1, Math.floor(diffInTime / (1000 * 60 * 60 * 24)));
+                    }
+
                     selectedCount++;
-                    prePrice += productTotal;
-                    depositPrice += deposit;
+                    prePrice += price * quantity * days;
+                    depositPrice += deposit * quantity;
                 }
             });
 
 
              // Cập nhật nội dung các phần tử
-                document.getElementById('prePrice').textContent = `Thành tiền: ${prePrice.toLocaleString()} ₫`;
+                document.getElementById('prePrice').textContent = `Tiền thuê: ${prePrice.toLocaleString()} ₫`;
                 document.getElementById('depositPrice').textContent = `Tiền cọc: ${depositPrice.toLocaleString()} ₫`;
                 document.getElementById('totalPrice').textContent = `Tổng cộng (${selectedCount} Sản phẩm): ${(prePrice + depositPrice).toLocaleString()} ₫`;
 
@@ -395,12 +405,19 @@
             const price = parseFloat(row.querySelector('.productCheckbox').dataset.price);
             const startDate = new Date(row.querySelector('.startDate').value);
             const endDate = new Date(row.querySelector('.endDate').value);
+            const depositText = row.querySelector('.product-deposit')?.textContent || '0₫';
+            const deposit = parseFloat(depositText.replace(/[^\d]/g, ''));
+            let days;
 
-            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
-            const diffInTime = endDate.getTime() - startDate.getTime();
-            const days = Math.max(1, Math.floor(diffInTime / (1000 * 60 * 60 * 24)));
-            console.log(days);  // 2
-            const total = price * quantity * days;
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                days = 1;
+            } else {
+                const diffInTime = endDate.getTime() - startDate.getTime();
+                days = Math.max(1, Math.floor(diffInTime / (1000 * 60 * 60 * 24)));
+            }
+
+
+            const total = price * quantity * days + deposit * quantity;
 
             row.querySelector('.product-total').textContent = `${total.toLocaleString()} ₫`;
         }

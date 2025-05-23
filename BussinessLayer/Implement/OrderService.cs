@@ -93,12 +93,7 @@ namespace BussinessLayer.Implement
 
                 //Người bán
                 SendEmailsToSellers(
-                    productsInCart,
-                    userId,
-                    paymentMethod,
-                    deliveryOptions,
-                    deliveryAddress,
-                    phoneNumber
+                    order
                 );
 
                 //người mua
@@ -106,13 +101,7 @@ namespace BussinessLayer.Implement
                 if (user != null && !string.IsNullOrWhiteSpace(user.Email))
                 {
                     SendEmailToBuyer(
-                        productsInCart,
-                        userId,
-                        phoneNumber,
-                        paymentMethod,
-                        deliveryOptions,
-                        deliveryAddress,
-                        totalPrices
+                        order
                     );
                 }
                 return order;
@@ -204,34 +193,11 @@ namespace BussinessLayer.Implement
                 );
                 //người bán
                 SendEmailsToSellers(
-                    orderDetail.Select(od => new Cart
-                    {
-                        Product = od.Product,
-                        Count = od.Quantity,
-                        StartDate = od.StartDate,
-                        EndDate = od.EndDate,
-                    }),
-                    order!.UserId,
-                    order.PaymentMethod,
-                    order.DeliveryOption,
-                    order.ShippingAddress!,
-                    order.PhoneNumber!
+                    order!
                 );
                 //người mua
                 SendEmailToBuyer(
-                    orderDetail.Select(od => new Cart
-                    {
-                        Product = od.Product,
-                        Count = od.Quantity,
-                        StartDate = od.StartDate,
-                        EndDate = od.EndDate,
-                    }),
-                    order.UserId,
-                    order.PhoneNumber!,
-                    order.PaymentMethod,
-                    order.DeliveryOption,
-                    order.ShippingAddress!,
-                    order.TotalPrice
+                    order!
                 );
                 var purchasedProductIds = _unitOfWork
                     .OrderDetail.GetRange(
@@ -265,39 +231,26 @@ namespace BussinessLayer.Implement
             IEnumerable<Cart> productsInCart
         )
         {
-            //double totalPrice = productsInCart.Sum(p =>
-            //{
-            //    var price = p.Product?.Price ?? 0;
-            //    var depositTotal = p.Product?.DepositPrice ?? 1;
-            //    int days = 1;
-            //    if (p.EndDate.HasValue && p.StartDate.HasValue)
-            //    {
-            //        days = (p.EndDate.Value - p.StartDate.Value).Days;
-            //        if (days == 0)
-            //        {
-            //            days = 1;
-            //        }    
-            //    }
-            //    return price * p.Count * days + depositTotal;
+            double prePrice = 0;
+            double depositTotal = 0;
 
-            //});
-            double totalPrice =0;
-            double prePrice = productsInCart.Sum(p =>
+            foreach (var p in productsInCart)
             {
                 var price = p.Product?.Price ?? 0;
+                var deposit = p.Product?.DepositPrice ?? 0;
+
                 int days = 1;
-                if (p.EndDate.HasValue && p.StartDate.HasValue)
+                if (p.StartDate.HasValue && p.EndDate.HasValue)
                 {
                     days = (p.EndDate.Value - p.StartDate.Value).Days;
-                    if (days == 0)
-                    {
-                        days = 1;
-                    }
+                    if (days == 0) days = 1;
                 }
-                return price * p.Count * days;
-            });
 
-            totalPrice = prePrice + totalPrice;
+                prePrice += price * p.Count * days;
+                depositTotal += deposit * p.Count;
+            }
+            double totalPrice = prePrice + depositTotal;
+
             if (deliveryOptions == DeliveryOption.HomeDelivery)
             {
                 int storeCount = productsInCart
@@ -323,6 +276,8 @@ namespace BussinessLayer.Implement
                 DeliveryOption = deliveryOptions,
                 ShippingAddress = deliveryAddress,
                 PaymentMethod = paymentMethod,
+                TotalDeposit = depositTotal,
+                PrePrice = prePrice,
                 OrderDetails = productsInCart
                     .Select(p => new OrderDetail
                     {
@@ -338,192 +293,97 @@ namespace BussinessLayer.Implement
             };
         }
 
-        private void SendEmailsToSellers(
-            IEnumerable<Cart> productsInCart,
-            Guid userId,
-            PaymentMethod paymentMethod,
-            DeliveryOption deliveryOptions,
-            string deliveryAddress,
-            string phoneNumber
-        )
+        private void SendEmailsToSellers(Order order)
         {
-            var storeProductMap = productsInCart
-                .Where(item => item.Product != null)
-                .GroupBy(item => item.Product?.User?.Email ?? "abc@gmail.com")
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            var user = _unitOfWork.User.Get(u => u.Id == userId);
+            var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
 
-            if (storeProductMap != null)
+            var storeProductMap = order?.OrderDetails?
+                .Where(od => od.Product != null && od.Product.User != null)
+                .GroupBy(od => od.Product?.User?.Email ?? "abc@gmail.com")
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var entry in storeProductMap!)
             {
-                foreach (var entry in storeProductMap)
+                string storeEmail = entry.Key;
+                var items = entry.Value;
+
+                double storeTotal = items.Sum(i =>
                 {
-                    string storeEmail = entry.Key;
-                    var items = entry.Value;
-                    Console.WriteLine($"Email gửi đến: {storeEmail}");
-                    Console.WriteLine("Sản phẩm:");
-                    foreach (var item in items)
+                    var days = (i.EndDate - i.StartDate)?.Days ?? 1;
+                    days = days > 0 ? days : 1;
+                    return i.UnitPrice * i.Quantity * days + (i.Product?.DepositPrice * i.Quantity ?? 0);
+                });
+
+                string productDetails = string.Join(
+                    "",
+                    items.Select(i =>
                     {
-                        Console.WriteLine($"- {item.Product?.Name}");
-                    }
-                    double storeTotal = items.Sum(i =>
-                    {
-                        var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
-                        return i.Product!.Price * i.Count * rentalDays;
-                    });
-
-                    string productDetails = string.Join(
-                        "",
-                        items.Select(i =>
-                        {
-                            var product = i.Product!;
-                            var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                            var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                            var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
-                            double itemTotal = product.Price * i.Count * rentalDays;
-
-                            return $@"
-                    <tr>
-                        <td style='padding: 8px; border: 1px solid #ddd;'>{product.Name}</td>
-                        <td style='padding: 8px; border: 1px solid #ddd;'>{product.Price:N0} đ</td>
-                        <td style='padding: 8px; border: 1px solid #ddd;'>{i.Count}</td>
-                        <td style='padding: 8px; border: 1px solid #ddd;'>{rentalDays} ngày ({startDate} - {endDate})</td>
-                        <td style='padding: 8px; border: 1px solid #ddd;'>{itemTotal:N0} đ</td>
-                    </tr>";
-                        })
-                    );
-
-                    string body = SellerEmailInformation(
-                        userId,
-                        storeTotal,
-                        productDetails,
-                        paymentMethod,
-                        deliveryOptions,
-                        deliveryAddress,
-                        phoneNumber
-                    );
-                    string subject = $"Đơn hàng mới từ khách hàng {customerName}";
-
-                    _emailQueue.QueueEmail(storeEmail, subject, body);
-                }
-            }
-        }
-
-        private void SendEmailToBuyer(
-            IEnumerable<Cart> productsInCart,
-            Guid userId,
-            string phoneNumber,
-            PaymentMethod paymentMethod,
-            DeliveryOption deliveryOptions,
-            string deliveryAddress,
-            double totalPrices
-        )
-        {
-            var user = _unitOfWork.User.Get(u => u.Id == userId);
-            if (user == null || string.IsNullOrWhiteSpace(user.Email))
-                return;
-
-            var productGroupsByStore = productsInCart
-                .Where(i => i.Product != null)
-                .GroupBy(i => i.Product!.User!.Id)
-                .ToList();
-            int storeCount = productGroupsByStore.Count;
-            if (productGroupsByStore != null)
-            {
-                string groupedProductDetail = string.Join(
-                    "<br/>",
-                    productGroupsByStore.Select(group =>
-                    {
-                        Guid? storeId = group.Key;
-                        var storeName =
-                            _unitOfWork.User.Get(u => u.Id == storeId)?.UserName ?? "Không rõ";
-
-                        string productRows = string.Join(
-                            "",
-                            group.Select(i =>
-                            {
-                                var product = i.Product!;
-                                var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                                var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
-                                var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
-                                double itemTotal = product.Price * i.Count * rentalDays;
-
-                                return $@"
-                        <tr>
-                            <td style='padding: 8px; border: 1px solid #ddd;'>{product.Name}</td>
-                            <td style='padding: 8px; border: 1px solid #ddd;'>{product.Price:N0} đ</td>
-                            <td style='padding: 8px; border: 1px solid #ddd;'>{i.Count}</td>
-                            <td style='padding: 8px; border: 1px solid #ddd;'>{rentalDays} ngày ({startDate} - {endDate})</td>
-                            <td style='padding: 8px; border: 1px solid #ddd;'>{itemTotal:N0} đ</td>
-                        </tr>";
-                            })
-                        );
+                        var product = i.Product!;
+                        var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                        var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                        var days = (i.EndDate - i.StartDate)?.Days ?? 1;
+                        days = days > 0 ? days : 1;
+                        double itemTotal = i.UnitPrice * i.Quantity * days;
+                        double deposit = product.DepositPrice * i.Quantity;
+                        double prePrice = itemTotal + deposit;
+                        var sizeInfo = i.SizeClother != null
+                            ? $"{i.SizeClother.Value}"
+                            : i.SizeShoe != null
+                                ? $"{i.SizeShoe.Value}"
+                                : "Không có";
 
                         return $@"
-                    <h3 style='color: #2e7d32;'>Cửa hàng: {storeName}</h3>
-                    <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
-                        <thead>
-                            <tr style='background-color: #e8f5e9;'>
-                                <th style='padding: 8px; border: 1px solid #ddd;'>Tên sản phẩm</th>
-                                <th style='padding: 8px; border: 1px solid #ddd;'>Giá</th>
-                                <th style='padding: 8px; border: 1px solid #ddd;'>Số lượng</th>
-                                <th style='padding: 8px; border: 1px solid #ddd;'>Thời gian thuê</th>
-                                <th style='padding: 8px; border: 1px solid #ddd;'>Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productRows}
-                        </tbody>
-                    </table>";
+                        <tr>
+                            <td text-center style='padding: 8px; border: 1px solid #ddd;'>{product.Name}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{i.UnitPrice:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{product.Color} - {sizeInfo}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{i.Quantity}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{days} ngày ({startDate} - {endDate})</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{itemTotal:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{deposit:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{prePrice:N0} đ</td>
+                        </tr>";
                     })
                 );
 
-                string buyerBody = BuyerEmailInformation(
-                    userId,
-                    phoneNumber,
-                    paymentMethod,
-                    deliveryOptions,
-                    deliveryAddress,
-                    groupedProductDetail,
-                    totalPrices,
-                    storeCount
-                );
+                string body = SellerEmailInformation(order!, productDetails, storeTotal);
+                string subject = $"Đơn hàng mới từ khách hàng {customerName}";
 
-                string buyerSubject = "Xác nhận đơn hàng của bạn";
-                _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
+                _emailQueue.QueueEmail(storeEmail, subject, body);
             }
         }
 
+
         private string SellerEmailInformation(
-            Guid userId,
-            double storeTotal,
+            Order order,
             string productDetails,
-            PaymentMethod paymentMethod,
-            DeliveryOption deliveryOptions,
-            string deliveryAddress,
-            string phoneNumber
+            double storeTotal
+
         )
         {
-            var user = _unitOfWork.User.Get(u => u.Id == userId);
+            var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
             return $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #2e7d32;'>Đơn hàng mới từ khách hàng {customerName}</h2>
                 
                 <p style='margin-bottom: 8px;'><strong>Tên khách hàng: </strong> {customerName}</p>
-                <p style='margin-bottom: 8px;'><strong>Số điện thoại: </strong> {phoneNumber}</p>
-                <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(paymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
-                <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(deliveryOptions == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Ship tận nơi")}</p>
-                <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(deliveryOptions == DeliveryOption.HomeDelivery ? deliveryAddress : "Nhận tại cửa hàng")}</p>
+                <p style='margin-bottom: 8px;'><strong>Số điện thoại: </strong> {order.PhoneNumber}</p>
+                <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(order.PaymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
+                <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(order.DeliveryOption == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Ship tận nơi")}</p>
+                <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(order.DeliveryOption == DeliveryOption.HomeDelivery ? order.ShippingAddress : "Nhận tại cửa hàng")}</p>
 
                 <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
                 <thead>
                     <tr style='background-color: #e8f5e9;'>
                         <th style='padding: 8px; border: 1px solid #ddd;'>Tên sản phẩm</th>
                         <th style='padding: 8px; border: 1px solid #ddd;'>Giá</th>
+                        <th style='padding: 8px; border: 1px solid #ddd;'>Phân loại</th>
                         <th style='padding: 8px; border: 1px solid #ddd;'>Số lượng</th>
                         <th style='padding: 8px; border: 1px solid #ddd;'>Thời gian thuê</th>
+                        <th style='padding: 8px; border: 1px solid #ddd;'>Tổng tiền hàng</th>
+                        <th style='padding: 8px; border: 1px solid #ddd;'>Tổng tiền cọc</th>
                         <th style='padding: 8px; border: 1px solid #ddd;'>Thành tiền</th>
                     </tr>
                 </thead>
@@ -545,44 +405,126 @@ namespace BussinessLayer.Implement
             </div>";
         }
 
+
+
+        private void SendEmailToBuyer(Order order)
+        {
+            var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
+            if (user == null || string.IsNullOrWhiteSpace(user.Email))
+                return;
+
+            var productGroupsByStore = order?.OrderDetails?
+                .GroupBy(od => od.Product?.UserId)
+                .ToList();
+
+            int storeCount = productGroupsByStore!.Count;
+
+            string groupedProductDetail = string.Join(
+                "<br/>",
+                productGroupsByStore.Select(group =>
+                {
+                    var storeId = group.Key;
+                    var storeName =
+                        _unitOfWork.User.Get(u => u.Id == storeId)?.ShopName ??
+                        _unitOfWork.User.Get(u => u.Id == storeId)?.UserName;
+
+                    string productRows = string.Join(
+                        "",
+                        group.Select(i =>
+                        {
+                            var product = i.Product;
+                            
+                            var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                            var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
+                            var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
+                            int days = rentalDays > 0 ? rentalDays : 1;
+                            double itemTotal = i.UnitPrice * i.Quantity * days;
+                            var sizeInfo = i.SizeClother != null
+                            ? $"{i.SizeClother.Value}"
+                            : i.SizeShoe != null
+                                ? $"{i.SizeShoe.Value}"
+                                : "Không có";
+
+                            return $@"
+                        <tr>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{product?.Name}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{i.UnitPrice:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{i.Quantity}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{product!.Color} - {sizeInfo}</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{days} ngày ({startDate} - {endDate})</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{itemTotal:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{product?.DepositPrice * i.Quantity:N0} đ</td>
+                            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{itemTotal + product?.DepositPrice * i.Quantity:N0} đ</td>
+                        </tr>";
+                        })
+                    );
+
+                    return $@"
+                <h3 style='color: #2e7d32;'>Cửa hàng: {storeName}</h3>
+                <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
+                    <thead>
+                        <tr style='background-color: #e8f5e9;'>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Tên sản phẩm</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Giá</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Số lượng</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Phân loại</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Thời gian thuê</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Tổng tiền hàng</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Tổng tiền cọc</th>
+                            <th style='padding: 8px; border: 1px solid #ddd;'>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {productRows}
+                    </tbody>
+                </table>";
+                })
+            );
+
+            string buyerBody = BuyerEmailInformation(
+                order!,
+                groupedProductDetail,
+                storeCount
+            );
+
+            string buyerSubject = "Xác nhận đơn hàng của bạn";
+            _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
+        }
+
         private string BuyerEmailInformation(
-            Guid userId,
-            string phoneNumber,
-            PaymentMethod paymentMethod,
-            DeliveryOption deliveryOptions,
-            string deliveryAddress,
+            Order order,
             string groupedProductDetail,
-            double totalPrices,
             int storeCount
         )
         {
-            var user = _unitOfWork.User.Get(u => u.Id == userId);
+            
+            var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
 
             string shippingFeeDis;
-            var shippingFee = storeCount >= 2 ? 50.000 : 25.000;
+            var shippingFee = storeCount >= 2 ? 50000 : 25000;
             shippingFeeDis = $"{shippingFee.ToString("N0", new CultureInfo("vi-VN"))}đ";
 
             string shippingHtml = "";
-            if (deliveryOptions == DeliveryOption.HomeDelivery)
+            if (order.DeliveryOption == DeliveryOption.HomeDelivery)
             {
                 shippingHtml =
-                    $"<p style = 'margin-bottom: 16px;' ><strong> Phí vận chuyển: </strong> {shippingFeeDis}</ p>";
+                    $"<p style = 'margin-bottom: 16px;' ><strong> Phí vận chuyển: </strong> {shippingFeeDis:NO}</ p>";
             }
             return $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2 style='color: #2e7d32;'>Cảm ơn {customerName} đã đặt hàng tại Green Closet!</h2>
 
                 <p style='margin-bottom: 8px;'><strong>Tên khách hàng: </strong> {customerName}</p>
-                <p style='margin-bottom: 8px;'><strong>Số điện thoại: </strong> {phoneNumber}</p>
-                <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(paymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
-                <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(deliveryOptions == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Vận chuyển tận nơi")}</p>
-                <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(deliveryOptions == DeliveryOption.HomeDelivery ? deliveryAddress : "Nhận tại cửa hàng")}</p>
+                <p style='margin-bottom: 8px;'><strong>Số điện thoại: </strong> {order.PhoneNumber}</p>
+                <p style='margin-bottom: 8px;'><strong>Phương thức thanh toán: </strong> {(order.PaymentMethod == PaymentMethod.PayByCash ? "Thanh toán tiền mặt" : "VNPay")}</p>
+                <p style='margin-bottom: 8px;'><strong>Hình thức giao hàng: </strong> {(order.DeliveryOption == DeliveryOption.StorePickup ? "Nhận tại cửa hàng" : "Vận chuyển tận nơi")}</p>
+                <p style='margin-bottom: 16px;'><strong>Địa chỉ giao hàng: </strong> {(order.DeliveryOption == DeliveryOption.HomeDelivery ? order.ShippingAddress : "Nhận tại cửa hàng")}</p>
                 
                 {shippingHtml}
                 
                 {groupedProductDetail}
-                <p style='margin-bottom: 8px; font-size: 25px;'>Tổng giá trị đơn hàng: <strong style='color: #c62828;'>{totalPrices:N0} đ</strong></p>
+                <p style='margin-bottom: 8px; font-size: 25px;'>Tổng giá trị đơn hàng: <strong style='color: #c62828;'>{order.TotalPrice:N0} đ</strong></p>
 
                 <p style='font-weight: normal; margin: 0; margin-bottom: 16px; color: #1b5e20;'>
                     Cảm ơn bạn đã tin tưởng Green Closet.
@@ -595,6 +537,10 @@ namespace BussinessLayer.Implement
                 </div>
             </div>";
         }
+
+        
+
+        
 
         public IEnumerable<Order> GetOrdersByProductOwner(string? email = null)
         {

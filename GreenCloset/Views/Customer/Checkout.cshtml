@@ -13,11 +13,11 @@
                 if (item.StartDate.HasValue && item.EndDate.HasValue)
                 {
                     var duration = (item.EndDate.Value - item.StartDate.Value).TotalDays;
-                    days = duration > 0 ? duration : 1; // Nếu duration = 0 thì dùng 1
+                    days = duration > 0 ? duration : 1;
                 }
 
                 subtotal += item.Product.Price * item.Count * days;
-                deposittotal += item.Product.DepositPrice;
+                deposittotal += item.Product.DepositPrice * item.Count;
             }
         }
     }

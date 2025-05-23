@@ -14,17 +14,20 @@ function loadDataTable() {
             {
                 "data": null,
                 "width": "10%",
+                "className": "text-center align-middle",
                 "render": function (data, type, row, meta) {
                     return meta.row + 1;
                 }
             },
             {
                 "data": 'categoryName',
-                "with": "20%"
+                "with": "20%",
+                "className": "text-center align-middle",
             },
             {
                 "data": 'productCount',
-                "with": "20%"
+                "with": "20%",
+                "className": "text-center align-middle",
             },
             {
                 "data": 'productCount',

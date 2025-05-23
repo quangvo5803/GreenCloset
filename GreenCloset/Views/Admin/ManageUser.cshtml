@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Quản lí người dùng";
+}
+<div class="pc-container">
+    <div class="pc-content">
+        <h2 class="text-center"><i class="fa-solid fa-users"></i> Danh sách người dùng</h2>
+
+        <!-- Nav Pills -->
+        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-product-tab" data-bs-toggle="pill" data-bs-target="#pills-product" type="button" role="tab" aria-controls="pills-product" aria-selected="true">
+                    <i class="fa-solid fa-user"></i> Danh sách khách hàng
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button" role="tab" aria-controls="pills-order" aria-selected="false">
+                    <i class="fa-solid fa-shop"></i> Danh sách người cho thuê
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+            <!-- Tab 1: Sản phẩm -->
+            <div class="tab-pane fade show active" id="pills-product" role="tabpanel" aria-labelledby="pills-product-tab">
+                <table id="tblCustomerData" class="table table-bordered" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Số đơn đã thuê</th>
+                            <th>Tổng tiền đã chi</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <!-- Tab 2: Đơn hàng -->
+            <div class="tab-pane fade" id="pills-order" role="tabpanel" aria-labelledby="pills-order-tab">
+                <table id="tblLessorData" class="table table-bordered" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Tên shop</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Số sản phẩm đang cho thuê</th>
+                            <th>Số đơn đã cho thuê</th>
+                            <th>Đánh giá trung bình</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+</div>
+@section Scripts {
+    <script src="~/js/Admin/User.js"></script>
+}
+    @section Styles {
+        <style>
+            .nav-pills .nav-link.active {
+                background-color: #8DC63F;
+            }
+
+            .nav-pills .nav-link {
+                color: #8DC63F;
+            }
+
+                .nav-pills .nav-link:hover {
+                    background-color: #e9f5d8;
+                }
+
+            h2 {
+                margin-bottom: 20px;
+            }
+        </style>
+    }
+

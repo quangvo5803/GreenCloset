@@ -265,10 +265,26 @@ namespace BussinessLayer.Implement
             IEnumerable<Cart> productsInCart
         )
         {
-            double totalPrice = productsInCart.Sum(p =>
+            //double totalPrice = productsInCart.Sum(p =>
+            //{
+            //    var price = p.Product?.Price ?? 0;
+            //    var depositTotal = p.Product?.DepositPrice ?? 1;
+            //    int days = 1;
+            //    if (p.EndDate.HasValue && p.StartDate.HasValue)
+            //    {
+            //        days = (p.EndDate.Value - p.StartDate.Value).Days;
+            //        if (days == 0)
+            //        {
+            //            days = 1;
+            //        }    
+            //    }
+            //    return price * p.Count * days + depositTotal;
+
+            //});
+            double totalPrice =0;
+            double prePrice = productsInCart.Sum(p =>
             {
                 var price = p.Product?.Price ?? 0;
-
                 int days = 1;
                 if (p.EndDate.HasValue && p.StartDate.HasValue)
                 {
@@ -276,12 +292,12 @@ namespace BussinessLayer.Implement
                     if (days == 0)
                     {
                         days = 1;
-                    }    
+                    }
                 }
                 return price * p.Count * days;
-
             });
 
+            totalPrice = prePrice + totalPrice;
             if (deliveryOptions == DeliveryOption.HomeDelivery)
             {
                 int storeCount = productsInCart

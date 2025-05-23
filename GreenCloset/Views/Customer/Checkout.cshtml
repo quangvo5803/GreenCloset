@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Checkout";
     double subtotal = 0;
+    double deposittotal = 0;
     foreach (var group in Model)
     {
         foreach (var item in group)
@@ -16,6 +17,7 @@
                 }
 
                 subtotal += item.Product.Price * item.Count * days;
+                deposittotal += item.Product.DepositPrice;
             }
         }
     }
@@ -207,6 +209,14 @@
                 </span>
                 <span id="subtotalAmount">
                     @subtotal.ToString("C", new CultureInfo("vi-VN"))
+                </span>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size: 20px;">
+                <span>
+                    Tổng tiền cọc
+                </span>
+                <span id="deposittotalAmount">
+                    @deposittotal.ToString("C", new CultureInfo("vi-VN"))
                 </span>
             </div>
             <div class="d-flex justify-content-between" style="font-size: 20px;" id="shippingFeeSection">
@@ -414,16 +424,18 @@
         const shippingFeeAmount = document.getElementById("shippingFeeAmount");
         const subtotalAmount = document.getElementById("subtotalAmount");
         const totalAmount = document.getElementById("totalAmount");
+        const deposittotalAmount = document.getElementById("deposittotalAmount");
 
         const storeCount = @storeCount;
         const subtotal = @subtotal;
+        const deposittotal = @deposittotal;
 
         function formatCurrency(value) {
             return value.toLocaleString('vi-VN') + 'đ';
         }
 
         function updateTotals() {
-            let total = subtotal;
+            let total = subtotal + deposittotal;
             let shippingFee = (storeCount >= 2) ? 50000 : 25000;
 
             subtotalAmount.textContent = formatCurrency(subtotal);

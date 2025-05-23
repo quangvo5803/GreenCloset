@@ -1,30 +1,39 @@
-﻿using BussinessLayer.Interface;
-using DataAccess.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Repository.Implement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BussinessLayer.Interface;
+using DataAccess.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Repository.Implement;
 
 namespace BussinessLayer.Implement
 {
-    public class FeedBackService :IFeedBackService
+    public class FeedBackService : IFeedBackService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
+
         public FeedBackService(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task SubmitFeedback (int orderId, int productId, int stars, string? feedbackContent, List<IFormFile>? images, Guid userId)
+        public async Task SubmitFeedback(
+            int orderId,
+            int productId,
+            int stars,
+            string? feedbackContent,
+            List<IFormFile>? images,
+            Guid userId
+        )
         {
             var product = _unitOfWork.Product.Get(p => p.Id == productId);
-            if (product == null) {
+            if (product == null)
+            {
                 throw new Exception("Sản phẩm không tồn tại.");
             }
 
@@ -34,7 +43,7 @@ namespace BussinessLayer.Implement
                 ProductId = productId,
                 FeedbackStars = stars,
                 FeedbackContent = feedbackContent,
-                UserId = userId
+                UserId = userId,
             };
             _unitOfWork.Feedback.Add(submit);
             _unitOfWork.Save();
@@ -69,7 +78,15 @@ namespace BussinessLayer.Implement
                 }
                 _unitOfWork.Save();
             }
-            
+        }
+
+        public IEnumerable<Feedback> GetAllShopFeedback(Guid shopId)
+        {
+            var feedbacks = _unitOfWork.Feedback.GetRange(
+                f => f.Product != null && f.Product.UserId == shopId,
+                includeProperties: "Product"
+            );
+            return feedbacks;
         }
     }
 }

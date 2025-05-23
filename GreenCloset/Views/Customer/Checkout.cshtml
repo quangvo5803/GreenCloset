@@ -8,15 +8,14 @@
         {
             if (item.Product != null)
             {
-                if (item.StartDate.HasValue && item.EndDate.HasValue )
+                double days = 1;
+                if (item.StartDate.HasValue && item.EndDate.HasValue)
                 {
                     var duration = (item.EndDate.Value - item.StartDate.Value).TotalDays;
-                    subtotal += item.Product.Price * item.Count * duration;
+                    days = duration > 0 ? duration : 1; // Nếu duration = 0 thì dùng 1
                 }
-                else
-                {
-                    subtotal += item.Product.Price * item.Count;
-                }
+
+                subtotal += item.Product.Price * item.Count * days;
             }
         }
     }
@@ -186,7 +185,8 @@
                                     <span>
                                         @if(item.EndDate !=null && item.StartDate !=null){
                                             var duration = item.EndDate.Value - item.StartDate.Value;
-                                            var totalPrice = item.Product!.Price * item.Count * duration.TotalDays;
+                                            var days = duration.TotalDays <= 0 ? 1 : duration.TotalDays;
+                                            var totalPrice = item.Product!.Price * item.Count * days;
                                             @totalPrice.ToString("C", new CultureInfo("vi-VN"))
                                         }else{
                                             @((item.Product!.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))
@@ -346,7 +346,7 @@
 
             if (!isNaN(rentalDate) && !isNaN(returnDate)) {
                 const timeDiff = returnDate.getTime() - rentalDate.getTime();
-                const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const days = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
 
                 const formattedStart = rentalDate.toLocaleDateString('vi-VN');
                 const formattedEnd = returnDate.toLocaleDateString('vi-VN');

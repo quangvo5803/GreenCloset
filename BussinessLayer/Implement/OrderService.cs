@@ -268,8 +268,18 @@ namespace BussinessLayer.Implement
             double totalPrice = productsInCart.Sum(p =>
             {
                 var price = p.Product?.Price ?? 0;
-                var days = (p.EndDate - p.StartDate)?.Days ?? 1;
+
+                int days = 1;
+                if (p.EndDate.HasValue && p.StartDate.HasValue)
+                {
+                    days = (p.EndDate.Value - p.StartDate.Value).Days;
+                    if (days == 0)
+                    {
+                        days = 1;
+                    }    
+                }
                 return price * p.Count * days;
+
             });
 
             if (deliveryOptions == DeliveryOption.HomeDelivery)

@@ -17,15 +17,15 @@ namespace GreenCloset.Controllers
         public IActionResult GetAllProduct()
         {
             var products = _facadeService
-                .Product.GetAllProducts(includeProperties: "Categories")
+                .Product.GetAllProducts(includeProperties: "Categories,Feedbacks")
                 .Select(p => new
                 {
                     p.Id,
                     p.Name,
                     p.Price,
                     p.Categories,
-                    AvgRating = p.Feedbacks != null ? p.Feedbacks.Average(f => f.FeedbackStars) : 0,
-                    FeedbackCount = p.Feedbacks != null ? p.Feedbacks.Count() : 0,
+                    AvgRating = p.Feedbacks != null && p.Feedbacks.Any() ? p.Feedbacks.Average(f => f.FeedbackStars) : 0,
+                    FeedbackCount = p.Feedbacks  != null && p.Feedbacks.Any()  ? p.Feedbacks.Count() : 0,
                 })
                 .ToList();
             ;
@@ -158,6 +158,19 @@ namespace GreenCloset.Controllers
 
             _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { success = true });
+        }
+
+        public IActionResult ViewFeedbackProduct(int id)
+        {
+            var (product, feedbacks) = _facadeService.FeedBack.ViewFeedbackProduct(id);
+            if (product == null)
+            {
+                TempData["error"] = "Không có Product";
+                return RedirectToAction("ManageProduct");
+            }
+
+            ViewBag.Product = product;
+            return View(feedbacks);
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using System.Security.Claims;
+﻿using System.Drawing;
+using System.Security.Claims;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GreenCloset.Controllers
 {
-    [Authorize]
     [Authorize(Roles = "Customer,Lessor")]
     public partial class CustomerController : BaseController
     {
@@ -21,10 +21,12 @@ namespace GreenCloset.Controllers
             var ordersGrouped = _facadeService.Order.GetOrdersGroupedByStore(userId);
 
             var pendingOr = ordersGrouped
-                .Where(o => o.Order.Status == OrderStatus.Pending)
-                .ToList();
-            var deliveringOr = ordersGrouped
-                .Where(o => o.Order.Status == OrderStatus.Delivering)
+                .Where(o =>
+                    o.Order.Status == OrderStatus.Pending
+                    || o.Order.Status == OrderStatus.Renting
+                    || o.Order.Status == OrderStatus.Delivering
+                    || o.Order.Status == OrderStatus.Returning
+                )
                 .ToList();
             var completedOr = ordersGrouped
                 .Where(o => o.Order.Status == OrderStatus.Completed)
@@ -34,7 +36,6 @@ namespace GreenCloset.Controllers
                 .ToList();
 
             ViewBag.Pending = pendingOr;
-            ViewBag.Delivering = deliveringOr;
             ViewBag.Completed = completedOr;
             ViewBag.Cancelled = cancelOr;
             ViewBag.OrdersGrouped = ordersGrouped;
@@ -45,45 +46,64 @@ namespace GreenCloset.Controllers
         [HttpPost]
         public IActionResult CancelOrder(int orderId, string reason)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            var result = _facadeService.Order.CancelOrder(orderId, reason);
+            if (!result)
             {
-                return RedirectToAction("Login", "Home");
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("ManageOrder", "Customer");
             }
-            _facadeService.Order.CancelOrder(orderId, userId, reason);
-            return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
+            TempData["success"] = "Hủy đơn hàng thành công";
+            return RedirectToAction("OrderDetails", "Customer", new { orderId });
         }
 
         [HttpPost]
-        public IActionResult CompleteOrder(int orderId)
+        public IActionResult MarkAsRenting(int orderId)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            var result = _facadeService.Order.MarkAsRenting(orderId);
+            if (!result)
             {
-                return RedirectToAction("Login", "Home");
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("ManageOrder", "Customer");
             }
-            _facadeService.Order.CompleteOrder(orderId, userId);
-            return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
+            TempData["success"] = "Cập nhật trạng thái đơn hàng thành công";
+            return RedirectToAction("OrderDetails", "Customer", new { orderId });
+        }
+
+        [HttpPost]
+        public IActionResult MarkAsReturning(int orderId)
+        {
+            var result = _facadeService.Order.MarkAsReturning(orderId);
+            if (!result)
+            {
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("ManageOrder", "Customer");
+            }
+            TempData["success"] =
+                "Cập nhật trạng thái đơn hàng thành công, chúng tôi sẽ đến lấy đơn hàng trong 2-3 tiếng tới!";
+            return RedirectToAction("OrderDetails", "Customer", new { orderId });
         }
 
         public IActionResult OrderDetails(int orderId)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Login", "Home");
             }
+            var user = _facadeService.User.GetUserByEmail(email);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Home");
+            }
+            var result = _facadeService.Order.GetOrderDetail(orderId, user.Id);
 
-            var result = _facadeService.Order.GetOrderDetail(orderId, userId);
             if (result == null)
             {
-                return NotFound("Không tìm thấy đơn hàng.");
+                return View("Không tìm thấy đơn hàng.");
             }
 
-            var email = User.FindFirstValue(ClaimTypes.Email);
             if (email != null)
             {
-                var user = _facadeService.User.GetUserByEmail(email);
                 if (user == null)
                 {
                     TempData["error"] = "Không tìm thấy người dùng";

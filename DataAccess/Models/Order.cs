@@ -18,6 +18,7 @@ namespace DataAccess.Models
         public DateTime? CancelDate { get; set; }
 
         public double TotalPrice { get; set; }
+        public double TotalDeposit { get; set; } = 0;
 
         [Required]
         public PaymentMethod PaymentMethod { get; set; } // "PayByCash" hoặc "VNPay"

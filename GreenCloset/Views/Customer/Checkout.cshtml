@@ -104,7 +104,7 @@
     }
     /* New style for product box */
     .product-box {
-    border: 1px solid #d1d1d1;
+    border-bottom: 1px solid #d1d1d1;
     border-radius: 0.25rem;
     padding: 0.75rem;
     background-color: #fff;
@@ -338,7 +338,7 @@
                 start = m.StartDate?.ToString("yyyy-MM-dd"),
                 end = m.EndDate?.ToString("yyyy-MM-dd")
             })
-        ));
+        ))
     
         rentals.forEach((rental, index) => {
             const rentalDate = new Date(rental.start);

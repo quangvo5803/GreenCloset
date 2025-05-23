@@ -1,14 +1,12 @@
-﻿using DataAccess.Models;
+﻿using System.Security.Claims;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using System.Drawing;
-using System.Security.Claims;
 
 namespace GreenCloset.Controllers
 {
     [Authorize]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Lessor")]
     public partial class CustomerController : BaseController
     {
         public IActionResult ManageOrder()
@@ -22,11 +20,18 @@ namespace GreenCloset.Controllers
 
             var ordersGrouped = _facadeService.Order.GetOrdersGroupedByStore(userId);
 
-            var pendingOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Pending).ToList();
-            var deliveringOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Delivering).ToList();
-            var completedOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Completed).ToList();
-            var cancelOr = ordersGrouped.Where(o => o.Order.Status == OrderStatus.Cancelled).ToList();
-
+            var pendingOr = ordersGrouped
+                .Where(o => o.Order.Status == OrderStatus.Pending)
+                .ToList();
+            var deliveringOr = ordersGrouped
+                .Where(o => o.Order.Status == OrderStatus.Delivering)
+                .ToList();
+            var completedOr = ordersGrouped
+                .Where(o => o.Order.Status == OrderStatus.Completed)
+                .ToList();
+            var cancelOr = ordersGrouped
+                .Where(o => o.Order.Status == OrderStatus.Cancelled)
+                .ToList();
 
             ViewBag.Pending = pendingOr;
             ViewBag.Delivering = deliveringOr;
@@ -60,6 +65,7 @@ namespace GreenCloset.Controllers
             _facadeService.Order.CompleteOrder(orderId, userId);
             return RedirectToAction("OrderDetails", "Customer", new { orderId = orderId });
         }
+
         public IActionResult OrderDetails(int orderId)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -89,10 +95,9 @@ namespace GreenCloset.Controllers
             }
 
             ViewBag.CheckReview = result.Value.checkReview;
-            ViewBag.Order = result.Value.Order;
             ViewBag.GroupedByStore = result.Value.GroupedByStore;
 
-            return View();
+            return View(result.Value.Order);
         }
     }
 }

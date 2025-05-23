@@ -1,5 +1,6 @@
-﻿@{
-    var order = ViewBag.Order as Order;
+﻿@model Order
+@{
+    var order = Model;
     var groupedByStore = ViewBag.GroupedByStore as Dictionary<User, List<OrderDetail>>;
     var checkReview = ViewBag.CheckReview as List<int> ?? new List<int>();
     var userName = ViewBag.UserName;
@@ -58,6 +59,9 @@
                                     <a class="nav-link text-white active" asp-action="ManageOrder" asp-controller="Customer"
                                        style="background-color: #198754 !important;">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
                                     </a>
                                 </div>
                             </div>
@@ -122,40 +126,27 @@
                                     
                                     
                                 </div>
-                                @*
-                                    <!-- validate review -->
-                                    <div class="step d-flex flex-column align-items-center position-relative">
-                                        <div class="icon-circle-disable">
-                                            <i class="fas fa-star"></i>
-                                        </div>
-                                        <div class="step-text mt-2">Đánh Giá</div>
-                                        <div class="time">11:06 13-05-2025</div>
-                                    </div>
-                                   *@
-                                <!-- Address and Status Section -->
                                 <div class="border-bottom border-4 pb-4 mb-4">
-                                    <!-- <div class="text-black fw-normal fs-5 text-center">Chi tiết mã đơn hàng #@order?.Id</div> -->
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         
                                         <div>
                                             <h2 class="text-gray-700 fw-normal fs-5">
-                                                Địa Chỉ Nhận Hàng
+                                                Thông tin nhận hàng
                                             </h2>
-                                            <h3 class="mt-2 fw-semibold text-gray-900">
-                                                @userName
-                                            </h3>
                                             <p class="text-black fs-6 small mt-1 mb-0">
-                                                (+84) @order?.PhoneNumber
+                                                Tên khách hàng: @userName
+                                            </p>
+                                            <p class="text-black fs-6 small mt-1 mb-0">
+                                                Số điện thoại @order?.PhoneNumber
                                             </p>
                                             @if (order?.DeliveryOption == DeliveryOption.HomeDelivery)
                                             {
                                                 <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
-                                                    Địa chỉ: @order?.ShippingAddress
+                                                    Địa chỉ giao hàng: @order?.ShippingAddress
                                                 </p>
                                             }else{
                                                 <p class="text-black fs-6 small mt-1 mb-0" style="max-width: 320px; line-height: 1.2;">
                                                     Địa chỉ: Nhận tại cửa hàng
-                                                    khu đô thị FPT
                                                 </p>
                                             }
                                         </div>
@@ -180,7 +171,7 @@
                                     <div class="border-bottom border-4 pb-3 mb-4">
                                         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                             <h3 class="fw-semibold mb-0 fs-6 text-primary">
-                                                <i class="fa-solid fa-shop"></i> @store.UserName
+                                                <i class="fa-solid fa-shop"></i> @(store?.ShopName ?? store?.UserName) - @store?.Address
                                             </h3>
                                         </div>
                                         <!-- Products for Store 1 -->
@@ -190,7 +181,7 @@
                                             var days = (item.EndDate - item.StartDate)?.Days ?? 1;
                                             if (days < 1) { days = 1; }
                                             var total = item.UnitPrice * item.Quantity * days;
-                                            <div class="gap-3 p-2 border border-2 rounded bg-white" style="margin-bottom:5px">
+                                            <div class="gap-3 p-2 border-bottom border-2 rounded bg-white" style="margin-bottom:5px">
                                                 <div class="d-flex gap-3 mb-3">
                                                     @if(item.Product?.ProductAvatar != null){
                                                         <img class="flex-shrink-0 object-contain" height="80" src="@item.Product?.ProductAvatar?.ImagePath"

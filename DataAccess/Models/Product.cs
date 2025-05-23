@@ -20,13 +20,6 @@ namespace DataAccess.Models
         [Range(
             0,
             double.MaxValue,
-            ErrorMessage = "Giá  mua phải lớn hơn 0 hoặc bằng 0 nếu không bán"
-        )]
-        public double BuyPrice { get; set; } = 0;
-
-        [Range(
-            0,
-            double.MaxValue,
             ErrorMessage = "Giá  cọc phải lớn hơn 0 hoặc bằng 0 nếu không cần cọc"
         )]
         public double DepositPrice { get; set; } = 0;

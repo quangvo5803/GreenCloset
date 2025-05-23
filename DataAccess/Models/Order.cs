@@ -16,6 +16,9 @@ namespace DataAccess.Models
         public DateTime? CompleteDate { get; set; }
         public DateTime? DeliveryDate { get; set; }
         public DateTime? CancelDate { get; set; }
+        public DateTime? RentingDate { get; set; }
+        public DateTime? ReturingDate { get; set; }
+
         public double PrePrice { get; set; }
         public double TotalDeposit { get; set; } = 0;
         public double TotalPrice { get; set; }
@@ -44,6 +47,7 @@ namespace DataAccess.Models
         Completed,
         Cancelled,
         Renting,
+        Returning,
     }
 
     public enum PaymentMethod

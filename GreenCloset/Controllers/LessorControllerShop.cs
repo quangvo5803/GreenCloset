@@ -231,15 +231,41 @@ namespace GreenCloset.Controllers
         }
 
         [Authorize(Roles = "Lessor")]
-        public IActionResult OrderDetail(int id)
+        public IActionResult OrderDetail(int orderId)
         {
-            var order = _facadeService.Order.GetOrder(id);
+            var order = _facadeService.Order.GetOrder(orderId);
             if (order == null)
             {
                 TempData["error"] = "Không tìm thấy đơn hàng";
                 return RedirectToAction("ManageOrder", "Customer");
             }
             return View(order);
+        }
+
+        [Authorize(Roles = "Lessor")]
+        public IActionResult MarkAsDelivered(int orderId)
+        {
+            var order = _facadeService.Order.MarkAsDelivered(orderId);
+            if (!order)
+            {
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("Index", "Lessor");
+            }
+            TempData["success"] = "Cập nhật trạng thái đơn hàng thành công";
+            return RedirectToAction("OrderDetail", "Lessor", new { orderId });
+        }
+
+        [Authorize(Roles = "Lessor")]
+        public IActionResult MarkAsComplete(int orderId)
+        {
+            var order = _facadeService.Order.CompleteOrder(orderId);
+            if (!order)
+            {
+                TempData["error"] = "Không tìm thấy đơn hàng";
+                return RedirectToAction("Index", "Lessor");
+            }
+            TempData["success"] = "Cập nhật trạng thái đơn hàng thành công";
+            return RedirectToAction("OrderDetail", "Lessor", new { orderId });
         }
     }
 }

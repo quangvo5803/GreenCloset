@@ -5,37 +5,26 @@
     var checkReview = ViewBag.CheckReview as List<int> ?? new List<int>();
     var userName = ViewBag.UserName;
     var shippingFee = groupedByStore?.Count >= 2 ? 50000 : 25000;
-    // double totalProduct = 0;
 
-    // if (groupedByStore != null)
-    // {
-    //     foreach (var storeGroup in groupedByStore)
-    //     {
-    //         foreach (var item in storeGroup.Value)
-    //         {
-    //             var days = (item.EndDate - item.StartDate)?.Days ?? 1;
-    //             if (days < 1) days = 1;
-
-    //             var total = item.UnitPrice * item.Quantity * days;
-    //             totalProduct += total;
-    //         }
-    //     }
-    // }
 
     //Status
     var steps = new[]
     {
         new { Icon = "fas fa-file-alt", Text = "Đơn Hàng Đã Đặt", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") },
         new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.DeliveryDate?.ToString("dd/MM/yyyy HH:mm") },
-        new { Icon = "fas fa-box-open", Text = "Đã Nhận Được Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") }
+        new { Icon = "fas fa-shirt", Text = "Đang Thuê", Time = order?.RentingDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-truck", Text = "Đang Trả Hàng Cho Shop", Time = order?.ReturingDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-check", Text = "Hoàn Thành Đơn Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") },
     };
 
     int currentStep = order?.Status switch
     {
         OrderStatus.Pending => 0,
         OrderStatus.Delivering => 1,
-        OrderStatus.Completed => 2,
-        OrderStatus.Cancelled => 3,
+        OrderStatus.Renting => 2,
+        OrderStatus.Returning => 3,
+        OrderStatus.Completed => 4,
+        OrderStatus.Cancelled => 5,
         _ => -1
     };
     ViewData["Title"] = "Chi tiết đơn hàng";
@@ -57,7 +46,7 @@
                                     </a>
                                     <a class="nav-link text-black" asp-action="ChangePassword" asp-controller="User"><i class="fa fa-lock me-2"></i>Bảo mật</a>
                                     <a class="nav-link text-white active" asp-action="ManageOrder" asp-controller="Customer"
-                                    style="background-color: #198754 !important;">
+                                       style="background-color: #8DC63F !important;">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
                                     </a>
                                     <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
@@ -324,7 +313,26 @@
                                         </p>
                                     </div>
                                 }
-
+                                @if (order?.Status == OrderStatus.Delivering)
+                                {
+                                    <form asp-action="MarkAsRenting" asp-route-orderId ="@order.Id" method="post" style="display:inline;">
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle"></i> Đã nhận được hàng
+                                            </button>
+                                        </div>
+                                    </form>
+                                }
+                                @if (order?.Status == OrderStatus.Renting)
+                                {
+                                    <form asp-action="MarkAsReturning" asp-route-orderId="@order.Id" method="post" style="display:inline;">
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-circle"></i> Trả hàng cho shop
+                                            </button>
+                                        </div>
+                                    </form>
+                                }
                                 
                             </div>
                         </div> <!-- End Content Area -->

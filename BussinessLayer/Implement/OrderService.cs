@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Repository.Implement;
-using Repository.Interface;
 using Utility.Email;
 
 namespace BussinessLayer.Implement
@@ -600,9 +592,48 @@ namespace BussinessLayer.Implement
             return result;
         }
 
-        public bool CancelOrder(int orderId, Guid userId, string reason)
+        public bool MarkAsDelivered(int orderId)
         {
-            var order = _unitOfWork.Order.Get(o => o.Id == orderId && o.UserId == userId);
+            var order = _unitOfWork.Order.Get(o => o.Id == orderId);
+            if (order == null)
+            {
+                return false;
+            }
+            order.Status = OrderStatus.Delivering;
+            order.DeliveryDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public bool MarkAsRenting(int orderId)
+        {
+            var order = _unitOfWork.Order.Get(o => o.Id == orderId);
+            if (order == null)
+            {
+                return false;
+            }
+            order.Status = OrderStatus.Renting;
+            order.RentingDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public bool MarkAsReturning(int orderId)
+        {
+            var order = _unitOfWork.Order.Get(o => o.Id == orderId);
+            if (order == null)
+            {
+                return false;
+            }
+            order.Status = OrderStatus.Returning;
+            order.ReturingDate = DateTime.Now;
+            _unitOfWork.Save();
+            return true;
+        }
+
+        public bool CancelOrder(int orderId, string reason)
+        {
+            var order = _unitOfWork.Order.Get(o => o.Id == orderId);
 
             if (order == null)
             {
@@ -615,9 +646,9 @@ namespace BussinessLayer.Implement
             return true;
         }
 
-        public bool CompleteOrder(int orderId, Guid userId)
+        public bool CompleteOrder(int orderId)
         {
-            var completeOrder = _unitOfWork.Order.Get(o => o.Id == orderId && o.UserId == userId);
+            var completeOrder = _unitOfWork.Order.Get(o => o.Id == orderId);
             if (completeOrder == null)
             {
                 return false;
@@ -636,7 +667,7 @@ namespace BussinessLayer.Implement
         )? GetOrderDetail(int orderId, Guid userId)
         {
             var order = _unitOfWork.Order.Get(
-                o => o.Id == orderId && o.UserId == userId,
+                o => o.Id == orderId,
                 includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
             );
 

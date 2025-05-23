@@ -3,21 +3,24 @@
     var order = Model;
     var checkReview = ViewBag.CheckReview as List<int> ?? new List<int>();
     double totalProduct = 0;
-
     //Status
     var steps = new[]
     {
         new { Icon = "fas fa-file-alt", Text = "Đơn Hàng Đã Đặt", Time = order?.OrderDate.ToString("dd/MM/yyyy HH:mm") },
         new { Icon = "fas fa-truck", Text = "Đã Giao Cho Shipper", Time = order?.DeliveryDate?.ToString("dd/MM/yyyy HH:mm") },
-        new { Icon = "fas fa-box-open", Text = "Đã Nhận Được Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") }
+        new { Icon = "fas fa-shirt", Text = "Đang Thuê", Time = order?.RentingDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-truck", Text = "Đang Trả Hàng Cho Shop", Time = order?.ReturingDate?.ToString("dd/MM/yyyy HH:mm") },
+        new { Icon = "fas fa-check", Text = "Hoàn Thành Đơn Hàng", Time = order?.CompleteDate?.ToString("dd/MM/yyyy HH:mm") },
     };
 
     int currentStep = order?.Status switch
     {
         OrderStatus.Pending => 0,
         OrderStatus.Delivering => 1,
-        OrderStatus.Completed => 2,
-        OrderStatus.Cancelled => 3,
+        OrderStatus.Renting => 2,
+        OrderStatus.Returning => 3,
+        OrderStatus.Completed => 4,
+        OrderStatus.Cancelled => 5,
         _ => -1
     };
     ViewData["Title"] = "Chi tiết đơn hàng";
@@ -40,11 +43,10 @@
                                         <i class="fa fa-user me-2"></i> Thông tin cá nhân
                                     </a>
                                     <a class="nav-link text-black" asp-action="ChangePassword" asp-controller="User"><i class="fa fa-lock me-2"></i>Bảo mật</a>
-                                    <a class="nav-link text-white active" asp-action="ManageOrder" asp-controller="Customer"
-                                    style="background-color: #198754 !important;">
+                                    <a class="nav-link text-black " asp-action="ManageOrder" asp-controller="Customer">
                                         <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
                                     </a>
-                                    <a class="nav-link text-black" asp-controller="Lessor" asp-action="Index">
+                                    <a class="nav-link text-white active" asp-controller="Lessor" asp-action="Index" style="background-color: #8DC63F !important;">
                                         <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
                                     </a>
                                 </div>
@@ -102,11 +104,11 @@
                                                 </div>
                                             }
                                             else
-                                           if (i == steps.Length - 1 && order?.Status == OrderStatus.Cancelled)
+                                          if (i == steps.Length - 1 && order?.Status == OrderStatus.Cancelled)
                                             {
 
                                                 <div class="text-danger fw-bold">
-                                                    Bạn đã hủy đơn hàng
+                                                    Khách hàng đã hủy đơn hàng
                                                     <p class="text-gray-500 small">@order?.CancelDate?.ToString("dd/MM/yyyy HH:mm")</p>
                                                     <p class="text-gray-500 small">Lý do: @order?.CancelReason</p>
                                                 </div>
@@ -172,12 +174,13 @@
                                                     var days = (item.EndDate - item.StartDate)?.Days ?? 1;
                                                     if (days < 1) { days = 1; }
                                                     var total = item.UnitPrice * item.Quantity * days;
+                                                    totalProduct += total;
                                                     <div class="gap-3 p-2 border-bottom border-2 rounded bg-white" style="margin-bottom:5px">
                                                         <div class="d-flex gap-3 mb-3">
                                                             @if (item.Product?.ProductAvatar != null)
                                                             {
                                                                 <img class="flex-shrink-0 object-contain" height="80" src="@item.Product?.ProductAvatar?.ImagePath"
-                                                                     width="80" style="margin-top:27px;" />
+                                                                width="80" style="margin-top:27px;" />
                                                             }
                                                             else
                                                             {
@@ -265,7 +268,7 @@
                                         <div class="bg-light-yellow rounded-sm border border-warning px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
                                             <i class="fas fa-exclamation-circle"></i>
                                             <p class="mb-0">
-                                                Vui lòng thanh toán
+                                                Khách hàng sẽ thanh toán
                                                 <span class="price-red fw-semibold select-text text-primary">
                                                     @order?.TotalPrice.ToString("N0") ₫
                                                 </span>
@@ -278,7 +281,7 @@
                                         <div class="bg-light-success rounded-sm border border-success px-3 py-2 mb-4 d-flex align-items-center gap-2 small">
                                             <i class="bi bi-emoji-kiss"></i>
                                             <p class="mb-0">
-                                                Bạn đã thành toán
+                                                Khách hàng đã thành toán
                                                 <span class="price-red fw-semibold select-text text-primary">
                                                     @order?.TotalPrice.ToString("N0") ₫
                                                 </span>
@@ -286,8 +289,26 @@
                                             </p>
                                         </div>
                                     }
-
-
+                                    @if(order?.Status == OrderStatus.Pending)
+                                    {
+                                        <form asp-action="MarkAsDelivered" asp-route-orderId="@order.Id" method="post" style="display:inline;">
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle"></i> Đã giao hàng cho shipper
+                                                </button>
+                                            </div>
+                                        </form>
+                                    }
+                                    @if (order?.Status == OrderStatus.Returning)
+                                    {
+                                        <form asp-action="MarkAsComplete" asp-route-orderId="@order.Id" method="post" style="display:inline;">
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle"></i> Đã nhận được hàng
+                                                </button>
+                                            </div>
+                                        </form>
+                                    }
                                 }
                             </div>
                         </div> <!-- End Content Area -->

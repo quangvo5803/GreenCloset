@@ -11,6 +11,8 @@ namespace DataAccess.Models
         [Required]
         public required string ImagePath { get; set; }
 
+        [Required]
+        public required string PublicId { get; set; }
         public int? ProductId { get; set; }
         public int? FeedbackId { get; set; }
 

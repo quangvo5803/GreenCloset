@@ -114,7 +114,9 @@
             }
         }
     //Xóa ảnh cũ
-    function removeOldGalleryImage(imageId, btn) {
+function removeOldGalleryImage(imageId, btn) {
+    const role = document.getElementById('user-role').value.toLowerCase();
+    const url = `/${role}/DeleteImageProduct?imageId=${imageId}`;
         Swal.fire({
             title: 'Bạn có chắc?',
             text: "Ảnh này sẽ bị xóa vĩnh viễn!",
@@ -126,7 +128,7 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/Admin/DeleteImageProduct?imageId=${imageId}`, {
+                fetch(url, {
                     method: 'DELETE'
                 })
                     .then(response => {
@@ -193,4 +195,35 @@
             }
         });
         });
+$("#update-product-form").on("submit", function (e) {
+    e.preventDefault();
 
+    $('body').addClass('preloader-site');
+    $('.preloader-wrapper').show();
+    const role = document.getElementById('user-role').value.toLowerCase();
+    const url = `/${role}/UpdateProduct`;
+    let redirectUrl;
+    if (role == 'admin') {
+        redirectUrl = '/Admin/ManageProduct';
+    } else {
+        redirectUrl = '/Lessor/Index';
+    }
+    var formData = new FormData(this);
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function () {
+            // Upload thành công
+            window.location.href = redirectUrl;
+            localStorage.setItem('updateSuccess', 'true');
+        },
+        complete: function () {
+            // Ẩn preloader dù thành công hay thất bại
+            $('.preloader-wrapper').fadeOut();
+            $('body').removeClass('preloader-site');
+        }
+    });
+});

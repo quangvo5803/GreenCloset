@@ -129,3 +129,36 @@ document.querySelectorAll('input[name="SelectedShoeSizes"]').forEach(checkbox =>
         }
     });
 });
+
+$("#create-product-form").on("submit", function (e) {
+    e.preventDefault();
+
+    $('body').addClass('preloader-site');
+    $('.preloader-wrapper').show();
+    const role = document.getElementById('user-role').value.toLowerCase();
+    const url = `/${role}/CreateProduct`;
+    let redirectUrl;
+    if (role == 'admin') {
+        redirectUrl = '/Admin/ManageProduct';
+    } else {
+        redirectUrl = '/Lessor/Index';
+    }
+    var formData = new FormData(this);
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function () {
+            // Upload thành công
+            window.location.href = redirectUrl;
+            localStorage.setItem('addSuccess', 'true');
+        },
+        complete: function () {
+            // Ẩn preloader dù thành công hay thất bại
+            $('.preloader-wrapper').fadeOut();
+            $('body').removeClass('preloader-site');
+        }
+    });
+});

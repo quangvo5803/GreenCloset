@@ -27,7 +27,7 @@ namespace BussinessLayer.Interface
             IFormFile? avatar,
             List<IFormFile>? gallery
         );
-        bool DeleteProduct(Product product);
+        Task<bool> DeleteProduct(Product product);
         IEnumerable<Product> GetProductsByFilter(ProductFilter? filter);
     }
 }

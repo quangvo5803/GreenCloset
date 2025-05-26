@@ -42,8 +42,8 @@
                                 {
                                     <div class="carousel-item @(imageIndex == 0 ? "active" : "")">
                                         <div class="image-container d-flex justify-content-center align-items-center" style="height: 500px; background-color: darkgrey;">
-                                            <a class="venobox" data-gall="gallery01" data-fitview="true" href="/image/products/@image.ImagePath">
-                                                <img class="rounded-4" src="/image/products/@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
+                                            <a class="venobox" data-gall="gallery01" data-fitview="true" href="@image.ImagePath">
+                                                <img class="rounded-4" src="@image.ImagePath" style="max-height: 500px; max-width: 100%; object-fit: contain;" />
                                             </a>
                                         </div>
                                     </div>
@@ -74,7 +74,7 @@
                             {
                                 <div class="thumbnail-box mx-2 mb-2" style="width: 80px; height: 80px; border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                                     <img class="item-thumb" style="max-width: 95%; max-height: 95%; object-fit: contain; cursor: pointer;"
-                                    src="/image/products/@image.ImagePath"
+                                    src="@image.ImagePath"
                                     data-bs-target="#imageCarousel"
                                     data-bs-slide-to="@thumbnail" />
                                 </div>
@@ -315,8 +315,8 @@
                                             <div class="review-images">
                                                 @foreach (var image in f.Images)
                                                 {
-                                                    <a class="venobox" data-gall="gallery02" data-fitview="true" href="/image/feedbacks/@image.ImagePath">
-                                                        <img src="/image/feedbacks/@image.ImagePath" alt="Review Image" />
+                                                    <a class="venobox" data-gall="gallery02" data-fitview="true" href="@image.ImagePath">
+                                                        <img src="@image.ImagePath" alt="Review Image" />
                                                     </a>
                                                 }
                                             </div>
@@ -374,7 +374,7 @@
                                         <div class="flex-shrink-0">
                                             @if (product.ProductAvatar != null)
                                             {
-                                                <img src="/image/products/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                                <img src="@product.ProductAvatar.ImagePath" alt="@product.Name"
                                                      class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" />
                                             }
                                             else

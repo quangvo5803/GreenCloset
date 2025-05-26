@@ -1,20 +1,20 @@
 ﻿using BussinessLayer.Interface;
 using DataAccess.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Repository.Implement;
+using Utility.Media;
 
 namespace BussinessLayer.Implement
 {
     public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public ProductService(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public ProductService(IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
-            _webHostEnvironment = webHostEnvironment;
+            _cloudinaryService = cloudinaryService;
         }
 
         public Product? GetProductById(int id, string? includeProperties = null)
@@ -92,7 +92,7 @@ namespace BussinessLayer.Implement
             }
             _unitOfWork.Save();
             // Create folder for images
-            string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "image/products");
+            string uploadFolder = "products";
             if (!Directory.Exists(uploadFolder))
             {
                 Directory.CreateDirectory(uploadFolder);
@@ -100,25 +100,18 @@ namespace BussinessLayer.Implement
             // Add avatar
             if (avatar != null)
             {
-                //Add to folder
-                string avatarFileName = await SaveImageAsync(avatar, uploadFolder);
-                //Save to database
                 var productAvatar = new ItemImage
                 {
-                    ImagePath = avatarFileName,
+                    ImagePath = "",
                     ProductId = product.Id,
+                    PublicId = "",
                 };
-                try
-                {
-                    _unitOfWork.ItemImage.Add(productAvatar);
-                    _unitOfWork.Save();
-                }
-                catch (Exception ex)
-                {
-                    // Log hoặc xem ex.Message, ex.StackTrace để biết lỗi gì
-                    Console.WriteLine(ex.Message);
-                    throw; // hoặc xử lý khác
-                }
+
+                //Upload to cloudinary
+                await _cloudinaryService.UploadImageAsync(avatar, uploadFolder, productAvatar);
+
+                _unitOfWork.ItemImage.Add(productAvatar);
+                _unitOfWork.Save();
                 product.ProductAvatarId = productAvatar.Id;
             }
             //Add gallery
@@ -126,14 +119,14 @@ namespace BussinessLayer.Implement
             {
                 foreach (var file in gallery)
                 {
-                    //Add to folder
-                    string fileName = await SaveImageAsync(file, uploadFolder);
-                    //Save to database
                     var productImage = new ItemImage
                     {
-                        ImagePath = fileName,
+                        ImagePath = "",
                         ProductId = product.Id,
+                        PublicId = "",
                     };
+                    //Upload to cloudinary
+                    await _cloudinaryService.UploadImageAsync(file, uploadFolder, productImage);
                     _unitOfWork.ItemImage.Add(productImage);
                 }
             }
@@ -164,26 +157,22 @@ namespace BussinessLayer.Implement
                 product.Categories = categories;
             }
             _unitOfWork.Save();
-            string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "image/products");
+            string uploadFolder = "products";
             if (avatar != null)
             {
                 if (product.ProductAvatar != null)
                 {
-                    var oldAvatarPath = Path.Combine(uploadFolder, product.ProductAvatar.ImagePath);
-                    if (File.Exists(oldAvatarPath))
-                    {
-                        File.Delete(oldAvatarPath);
-                    }
-                    _unitOfWork.ItemImage.Remove(product.ProductAvatar);
+                    await _cloudinaryService.DeleteImageAsync(product.ProductAvatar.PublicId);
                 }
-
-                var newAvatarFileName = await SaveImageAsync(avatar, uploadFolder);
-
                 var newAvatar = new ItemImage
                 {
-                    ImagePath = newAvatarFileName,
+                    ImagePath = "",
                     ProductId = product.Id,
+                    PublicId = "",
                 };
+                //Upload to cloudinary
+                await _cloudinaryService.UploadImageAsync(avatar, uploadFolder, newAvatar);
+
                 _unitOfWork.ItemImage.Add(newAvatar);
                 _unitOfWork.Save();
                 product.ProductAvatarId = newAvatar.Id;
@@ -191,15 +180,31 @@ namespace BussinessLayer.Implement
 
             if (gallery != null && gallery.Count > 0)
             {
+                if (product.ProductImages != null)
+                {
+                    foreach (var oldImage in product.ProductImages)
+                    {
+                        // Xóa trên Cloudinary
+                        if (!string.IsNullOrEmpty(oldImage.PublicId))
+                        {
+                            await _cloudinaryService.DeleteImageAsync(oldImage.PublicId);
+                        }
+
+                        // Xóa trong DB
+                        _unitOfWork.ItemImage.Remove(oldImage);
+                    }
+                }
                 List<ItemImage> newGallery = new List<ItemImage>();
                 foreach (var item in gallery)
                 {
-                    var newImageFileName = await SaveImageAsync(item, uploadFolder);
                     var newImage = new ItemImage
                     {
-                        ImagePath = newImageFileName,
+                        ImagePath = "",
                         ProductId = product.Id,
+                        PublicId = "",
                     };
+                    //Upload to cloudinary
+                    await _cloudinaryService.UploadImageAsync(item, uploadFolder, newImage);
                     newGallery.Add(newImage);
                 }
 
@@ -216,22 +221,14 @@ namespace BussinessLayer.Implement
             _unitOfWork.Save();
         }
 
-        public bool DeleteProduct(Product product)
+        public async Task<bool> DeleteProduct(Product product)
         {
             if (product.ProductAvatar != null || product.ProductImages != null)
             {
-                string uploadFolder = Path.Combine(
-                    _webHostEnvironment.WebRootPath,
-                    "image/products"
-                );
                 //Remove avatar
                 if (product.ProductAvatar != null)
                 {
-                    var oldAvatarPath = Path.Combine(uploadFolder, product.ProductAvatar.ImagePath);
-                    if (File.Exists(oldAvatarPath))
-                    {
-                        File.Delete(oldAvatarPath);
-                    }
+                    await _cloudinaryService.DeleteImageAsync(product.ProductAvatar.PublicId);
                     _unitOfWork.ItemImage.Remove(product.ProductAvatar);
                 }
                 //Remove gallery
@@ -241,11 +238,7 @@ namespace BussinessLayer.Implement
                     {
                         if (image.Id != product.ProductAvatarId)
                         {
-                            var oldImagePath = Path.Combine(uploadFolder, image.ImagePath);
-                            if (File.Exists(oldImagePath))
-                            {
-                                File.Delete(oldImagePath);
-                            }
+                            await _cloudinaryService.DeleteImageAsync(image.PublicId);
                             _unitOfWork.ItemImage.Remove(image);
                         }
                     }
@@ -317,17 +310,6 @@ namespace BussinessLayer.Implement
             }
 
             return productList;
-        }
-
-        private async Task<string> SaveImageAsync(IFormFile file, string uploadFolder)
-        {
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-            string filePath = Path.Combine(uploadFolder, fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-            return fileName;
         }
     }
 }

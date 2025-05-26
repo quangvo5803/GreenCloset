@@ -42,3 +42,4 @@ function initPreloader() {
         $('body').removeClass('preloader-site');
     });
 }
+

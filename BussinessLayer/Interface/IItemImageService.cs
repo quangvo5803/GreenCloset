@@ -5,6 +5,6 @@ namespace BussinessLayer.Interface
     public interface IItemImageService
     {
         ItemImage? GetItemImageById(int id);
-        void RemoveItemImage(ItemImage itemImage);
+        Task RemoveItemImage(ItemImage itemImage);
     }
 }

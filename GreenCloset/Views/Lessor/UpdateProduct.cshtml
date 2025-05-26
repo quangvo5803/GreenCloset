@@ -40,9 +40,9 @@
                                                 <h2 class="text-center p-4 bg-primary  text-white">
                                                     <i class="fas fa-plus-circle me-2"></i>Cập nhật sản phẩm
                                                 </h2>
-                                                <form asp-action="UpdateProduct" method="post" enctype="multipart/form-data">
+                                    <form asp-action="UpdateProduct" id="update-product-form" method="post" enctype="multipart/form-data">
                                                     <input asp-for="Id" class="form-control" hidden />
-
+                                                    <input type="hidden" id="user-role" value="@ViewBag.Role" />
                                                     <div class="row">
                                                         <div class="col-md-6 mb-3">
                                                             <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm:</label>
@@ -177,7 +177,7 @@
                                                         <div class="avatar-preview-container position-relative mt-2" style="@(Model.ProductAvatar != null ? "display:block;" : "display:none;") width:200px;">
                                                             @if (Model.ProductAvatar != null)
                                                             {
-                                                                <img id="avatarPreview" class="img-thumbnail" src="~/image/products/@Model.ProductAvatar.ImagePath" style="max-width: 200px;" />
+                                                                <img id="avatarPreview" class="img-thumbnail" src="@Model.ProductAvatar.ImagePath" style="max-width: 200px;" />
                                                             }
                                                             else
                                                             {
@@ -200,7 +200,7 @@
                                                                 @foreach (var img in Model.ProductImages.Where(img => img.Id != Model.ProductAvatarId))
                                                                 {
                                                                     <div class="position-relative m-2">
-                                                                        <img src="~/image/products/@img.ImagePath" class="img-thumbnail" style="width:150px;height:150px;object-fit:cover;" />
+                                                                        <img src="@img.ImagePath" class="img-thumbnail" style="width:150px;height:150px;object-fit:cover;" />
                                                                         <button type="button" class="btn-close position-absolute end-0 bg-danger text-white"
                                                                                 onclick="removeOldGalleryImage(@img.Id, this)" aria-label="Close"></button>
                                                                     </div>

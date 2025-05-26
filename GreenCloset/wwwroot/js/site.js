@@ -53,7 +53,6 @@
             $('.preloader-wrapper').fadeOut();
             $('body').removeClass('preloader-site');
         });
-
     }
 
     // init jarallax parallax

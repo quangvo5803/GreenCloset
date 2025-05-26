@@ -24,7 +24,7 @@
                                 <div class="col-md-3">
                                     @if (product?.ProductAvatar != null)
                                     {
-                                        <img src="/im/feedbacks/@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                        <img src="@product.ProductAvatar.ImagePath" alt="@product.Name"
                                              class="img-thumbnail" style="width:200px; height:200px" />
                                     }
                                     else
@@ -96,8 +96,8 @@
                                                         @foreach (var image in feedback.Images)
                                                         {
                                                             <a class="venobox" data-gall="gallery01" data-fitview="true"
-                                                               href="/image/feedbacks/@image.ImagePath">
-                                                                <img src="/image/feedbacks/@image.ImagePath" alt="Review Image" />
+                                                               href="@image.ImagePath">
+                                                                <img src="@image.ImagePath" alt="Review Image" />
                                                             </a>
                                                         }
                                                     </div>

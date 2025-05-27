@@ -181,6 +181,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (localStorage.getItem('updateSuccess') === 'true') {
         toastr.success('Cập nhật sản phẩm thành công');
-        localStorage.removeItem('addSuccess'); // Xóa trạng thái để không hiển thị lại
+        localStorage.removeItem('updateSuccess'); // Xóa trạng thái để không hiển thị lại
     }
 });

@@ -138,7 +138,7 @@ $("#create-product-form").on("submit", function (e) {
     const role = document.getElementById('user-role').value.toLowerCase();
     const url = `/${role}/CreateProduct`;
     let redirectUrl;
-    if (role == 'admin') {
+    if (role === 'admin') {
         redirectUrl = '/Admin/ManageProduct';
     } else {
         redirectUrl = '/Lessor/Index';
@@ -152,12 +152,12 @@ $("#create-product-form").on("submit", function (e) {
         contentType: false,
         success: function () {
             // Upload thành công
-            window.location.href = redirectUrl;
             localStorage.setItem('addSuccess', 'true');
+            window.location.href = redirectUrl;
         },
         complete: function () {
             // Ẩn preloader dù thành công hay thất bại
-            $('.preloader-wrapper').fadeOut();
+            $('.preloader-wrapper').hide();
             $('body').removeClass('preloader-site');
         }
     });

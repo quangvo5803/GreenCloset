@@ -217,12 +217,12 @@ $("#update-product-form").on("submit", function (e) {
         contentType: false,
         success: function () {
             // Upload thành công
-            window.location.href = redirectUrl;
             localStorage.setItem('updateSuccess', 'true');
+            window.location.href = redirectUrl;
         },
         complete: function () {
             // Ẩn preloader dù thành công hay thất bại
-            $('.preloader-wrapper').fadeOut();
+            $('.preloader-wrapper').hide();
             $('body').removeClass('preloader-site');
         }
     });

@@ -65,7 +65,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
@@ -125,7 +124,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();

@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GreenCloset.Controllers
 {
@@ -24,8 +24,12 @@ namespace GreenCloset.Controllers
                     p.Name,
                     p.Price,
                     p.Categories,
-                    AvgRating = p.Feedbacks != null && p.Feedbacks.Any() ? p.Feedbacks.Average(f => f.FeedbackStars) : 0,
-                    FeedbackCount = p.Feedbacks  != null && p.Feedbacks.Any()  ? p.Feedbacks.Count() : 0,
+                    AvgRating = p.Feedbacks != null && p.Feedbacks.Any()
+                        ? p.Feedbacks.Average(f => f.FeedbackStars)
+                        : 0,
+                    FeedbackCount = p.Feedbacks != null && p.Feedbacks.Any()
+                        ? p.Feedbacks.Count()
+                        : 0,
                 })
                 .ToList();
             ;
@@ -34,6 +38,7 @@ namespace GreenCloset.Controllers
 
         public IActionResult CreateProduct()
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View();
         }
@@ -60,7 +65,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
@@ -70,6 +74,7 @@ namespace GreenCloset.Controllers
 
         public IActionResult UpdateProduct(int id)
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             var product = _facadeService.Product.GetProductById(
                 id,
                 includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
@@ -119,7 +124,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction("ManageProduct");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
@@ -128,7 +132,7 @@ namespace GreenCloset.Controllers
         }
 
         [HttpDelete]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = _facadeService.Product.GetProductById(
                 id,
@@ -138,7 +142,7 @@ namespace GreenCloset.Controllers
             {
                 return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
             }
-            bool result = _facadeService.Product.DeleteProduct(product);
+            bool result = await _facadeService.Product.DeleteProduct(product);
             if (result)
             {
                 return Json(new { success = true, message = "Xóa sản phẩm thành công" });
@@ -147,7 +151,7 @@ namespace GreenCloset.Controllers
         }
 
         [HttpDelete]
-        public IActionResult DeleteImageProduct(int imageId)
+        public async Task<IActionResult> DeleteImageProduct(int imageId)
         {
             var image = _facadeService.ItemImage.GetItemImageById(imageId);
             if (image == null)
@@ -155,7 +159,7 @@ namespace GreenCloset.Controllers
                 return Ok(new { success = false, message = "Không tìm thấy ảnh" });
             }
 
-            _facadeService.ItemImage.RemoveItemImage(image);
+            await _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { success = true });
         }
 

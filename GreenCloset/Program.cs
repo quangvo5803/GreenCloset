@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Implement;
 using Repository.Interface;
 using Utility.Email;
+using Utility.Media;
 
 namespace GreenCloset
 {
@@ -69,7 +70,11 @@ namespace GreenCloset
             builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
             builder.Services.AddSingleton<EmailSender>();
             builder.Services.AddHostedService<BackgroundEmailSender>();
+            builder.Services.AddSingleton<CloudinaryService>();
             var app = builder.Build();
+
+            app.UseExceptionHandler("/Error");
+            app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
             app.UseStaticFiles();
             app.UseRouting();

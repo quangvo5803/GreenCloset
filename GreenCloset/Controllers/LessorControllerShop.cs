@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -100,6 +101,7 @@ namespace GreenCloset.Controllers
         [Authorize(Roles = "Lessor")]
         public IActionResult CreateProduct()
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View();
         }
@@ -127,7 +129,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("Index", "Lessor");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
@@ -138,6 +139,7 @@ namespace GreenCloset.Controllers
         [Authorize(Roles = "Lessor")]
         public IActionResult UpdateProduct(int id)
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             var product = _facadeService.Product.GetProductById(
                 id,
                 includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
@@ -188,7 +190,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction("Index", "Lessor");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
@@ -198,7 +199,7 @@ namespace GreenCloset.Controllers
 
         [Authorize(Roles = "Lessor")]
         [HttpDelete]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = _facadeService.Product.GetProductById(
                 id,
@@ -208,7 +209,7 @@ namespace GreenCloset.Controllers
             {
                 return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
             }
-            bool result = _facadeService.Product.DeleteProduct(product);
+            bool result = await _facadeService.Product.DeleteProduct(product);
             if (result)
             {
                 return Json(new { success = true, message = "Xóa sản phẩm thành công" });
@@ -218,7 +219,7 @@ namespace GreenCloset.Controllers
 
         [Authorize(Roles = "Lessor")]
         [HttpDelete]
-        public IActionResult DeleteImageProduct(int imageId)
+        public async Task<IActionResult> DeleteImageProduct(int imageId)
         {
             var image = _facadeService.ItemImage.GetItemImageById(imageId);
             if (image == null)
@@ -226,7 +227,7 @@ namespace GreenCloset.Controllers
                 return Ok(new { success = false, message = "Không tìm thấy ảnh" });
             }
 
-            _facadeService.ItemImage.RemoveItemImage(image);
+            await _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { successuccess = true });
         }
 

@@ -125,7 +125,7 @@ namespace GreenCloset.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (_facadeService.User.IsValidPassword(password))
+            if (!_facadeService.User.IsValidPassword(password))
             {
                 TempData["error"] = "Mật khẩu không hợp lệ";
                 ViewBag.Email = email;

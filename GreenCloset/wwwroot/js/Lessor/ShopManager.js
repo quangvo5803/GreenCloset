@@ -163,10 +163,24 @@ function Delete(url) {
                 url: url,
                 type: 'DELETE',
                 success: function (data) {
+                    localStorage.setItem('deletedSuccess', 'true');
                     location.reload();
-                    toastr.success(data.message);
                 }
             })
         }
     });
 }
+document.addEventListener('DOMContentLoaded', function () {
+    if (localStorage.getItem('deletedSuccess') === 'true') {
+        toastr.success('Xóa sản phẩm thành công');
+        localStorage.removeItem('deletedSuccess'); // Xóa trạng thái để không hiển thị lại     
+    }
+    if (localStorage.getItem('addSuccess') === 'true') {
+        toastr.success('Thêm sản phẩm thành công');
+        localStorage.removeItem('addSuccess'); // Xóa trạng thái để không hiển thị lại
+    }
+    if (localStorage.getItem('updateSuccess') === 'true') {
+        toastr.success('Cập nhật sản phẩm thành công');
+        localStorage.removeItem('updateSuccess'); // Xóa trạng thái để không hiển thị lại
+    }
+});

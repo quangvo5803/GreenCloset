@@ -73,6 +73,9 @@ namespace GreenCloset
             builder.Services.AddSingleton<CloudinaryService>();
             var app = builder.Build();
 
+            app.UseExceptionHandler("/Error");
+            app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();

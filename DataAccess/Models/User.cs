@@ -22,7 +22,6 @@ namespace DataAccess.Models
 
         [DisplayName("Ngày sinh: ")]
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/mm/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? DOB { get; set; }
         public Gender? Gender { get; set; }
         public string? Address { get; set; }

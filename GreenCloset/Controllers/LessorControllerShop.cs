@@ -268,5 +268,19 @@ namespace GreenCloset.Controllers
             TempData["success"] = "Cập nhật trạng thái đơn hàng thành công";
             return RedirectToAction("OrderDetail", "Lessor", new { orderId });
         }
+
+        [Authorize(Roles = "Lessor")]
+        public IActionResult ViewFeedbackProducts(int id)
+        {
+            var (product, feedbacks) = _facadeService.FeedBack.ViewFeedbackProduct(id);
+            if (product == null)
+            {
+                TempData["error"] = "Không có Product";
+                return RedirectToAction("Index", "Lessor");
+            }
+
+            ViewBag.Product = product;
+            return View(feedbacks);
+        }
     }
 }

@@ -702,5 +702,41 @@ namespace BussinessLayer.Implement
             );
             return order;
         }
+
+
+        public IEnumerable<Order> GetAllOrAdmin()
+        {
+            var rs = _unitOfWork.Order
+                .GetAll(includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User")
+                .OrderByDescending(o => o.OrderDate)
+                .ToList();
+            return rs;
+        }
+
+
+        public (
+            Order Order,
+            Dictionary<User, List<OrderDetail>> GroupedByStore
+        )? GetOrderDetailsAdmin(int orderId)
+        {
+            var order = _unitOfWork.Order.Get(
+                o => o.Id == orderId,
+                includeProperties: "User,OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
+            );
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            var grouped =
+                order
+                    .OrderDetails?.Where(od => od.Product?.User != null)
+                    .GroupBy(od => od.Product!.User!)
+                    .ToDictionary(g => g.Key, g => g.ToList())
+                ?? new Dictionary<User, List<OrderDetail>>();
+
+            return (order, grouped);
+        }
     }
 }

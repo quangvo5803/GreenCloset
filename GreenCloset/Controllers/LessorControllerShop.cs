@@ -298,18 +298,18 @@ namespace GreenCloset.Controllers
             return RedirectToAction("OrderDetail", "Lessor", new { orderId });
         }
 
-        public IActionResult PaymentCallback()
+        [Authorize(Roles = "Lessor")]
+        public IActionResult ViewFeedbackProducts(int id)
         {
-            if (_facadeService.Order.VNPayReturnMonthlyFee(Request.Query))
+            var (product, feedbacks) = _facadeService.FeedBack.ViewFeedbackProduct(id);
+            if (product == null)
             {
-                TempData["Success"] = "Thanh toán thành công!";
-            }
-            else
-            {
-                TempData["Error"] = "Thanh toán thất bại hoặc bị hủy!";
+                TempData["error"] = "Không có Product";
+                return RedirectToAction("Index", "Lessor");
             }
 
-            return RedirectToAction("Index");
+            ViewBag.Product = product;
+            return View(feedbacks);
         }
     }
 }

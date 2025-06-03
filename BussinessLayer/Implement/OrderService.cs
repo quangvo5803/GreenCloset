@@ -679,31 +679,40 @@ namespace BussinessLayer.Implement
             return order;
         }
 
-        public bool VNPayReturnMonthlyFee(IQueryCollection query)
+        public IEnumerable<Order> GetAllOrAdmin()
         {
-            var response = _vpnPayService.PaymentExecute(query);
-            if (response == null || response.VnPayResponseCode != "00")
-                return false;
+            var rs = _unitOfWork
+                .Order.GetAll(
+                    includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
+                )
+                .OrderByDescending(o => o.OrderDate)
+                .ToList();
+            return rs;
+        }
 
-            // Kiểm tra xem có đúng là thanh toán MonthlyFee không
-            var orderInfo = response.OrderDescription;
-            if (!orderInfo.StartsWith("MonthlyFee_"))
-                return false;
+        public (
+            Order Order,
+            Dictionary<User, List<OrderDetail>> GroupedByStore
+        )? GetOrderDetailsAdmin(int orderId)
+        {
+            var order = _unitOfWork.Order.Get(
+                o => o.Id == orderId,
+                includeProperties: "User,OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
+            );
 
-            var userIdStr = orderInfo.Substring("MonthlyFee_".Length);
-            if (!Guid.TryParse(userIdStr, out Guid userId))
-                return false;
+            if (order == null)
+            {
+                return null;
+            }
 
-            var user = _unitOfWork.User.Get(u => u.Id == userId);
-            if (user == null)
-                return false;
+            var grouped =
+                order
+                    .OrderDetails?.Where(od => od.Product?.User != null)
+                    .GroupBy(od => od.Product!.User!)
+                    .ToDictionary(g => g.Key, g => g.ToList())
+                ?? new Dictionary<User, List<OrderDetail>>();
 
-            // Cập nhật trạng thái đã thanh toán phí
-            user.IsMonthlyFeePaid = true;
-            _unitOfWork.User.Update(user);
-            _unitOfWork.Save();
-
-            return true;
+            return (order, grouped);
         }
     }
 }

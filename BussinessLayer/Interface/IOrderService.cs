@@ -43,6 +43,10 @@ namespace BussinessLayer.Interface
             List<int> checkReview
         )? GetOrderDetail(int orderId, Guid userId);
         Order? GetOrder(int orderId);
-        bool VNPayReturnMonthlyFee(IQueryCollection query);
+
+        IEnumerable<Order> GetAllOrAdmin();
+        (Order Order, Dictionary<User, List<OrderDetail>> GroupedByStore)? GetOrderDetailsAdmin(
+            int orderId
+        );
     }
 }

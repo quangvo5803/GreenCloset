@@ -65,7 +65,7 @@ function loadDataTable() {
                     return `
                     <div class="btn-group d-flex justify-content-between" role="group">
                        <a href="/Lessor/UpdateProduct?id=${row.id}" class="btn btn-dark flex-grow-1 mx-1">Chỉnh sửa</a>
-                       <a href="/Lessor/ViewProductFeedback?id=${row.id}" class="btn btn-warning flex-grow-1 mx-1">Xem đánh giá</a>
+                       <a href="/Lessor/ViewFeedbackProducts?id=${row.id}" class="btn btn-warning flex-grow-1 mx-1">Xem đánh giá</a>
                        <a onClick=Delete('/Lessor/DeleteProduct?id=${row.id}') class="btn btn-danger flex-grow-1 mx-1">Xóa</a>
                     </div>`;
                 }

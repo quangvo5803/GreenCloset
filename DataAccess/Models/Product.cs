@@ -27,7 +27,7 @@ namespace DataAccess.Models
         public ProductColor? Color { get; set; }
         public int? ProductAvatarId { get; set; }
         public int RentalCount { get; set; } = 0;
-        public IEnumerable<SizeClother>? SizeClother { get; set; }
+        public IList<SizeClother>? SizeClother { get; set; }
         public List<int>? SizeShoe { get; set; }
         public Guid? UserId { get; set; }
 

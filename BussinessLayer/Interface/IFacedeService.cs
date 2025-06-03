@@ -15,5 +15,7 @@ namespace BussinessLayer.Interface
         ICartService Cart { get; }
         IOrderService Order { get; }
         IFeedBackService FeedBack { get; }
+        IVnPayService VnPayService { get; }
+        IVietQrService VietQrService { get; }
     }
 }

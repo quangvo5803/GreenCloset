@@ -2,6 +2,7 @@
 using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository.Implement;
 using Utility.Email;
@@ -84,17 +85,13 @@ namespace BussinessLayer.Implement
                 var customerName = user?.UserName ?? "Khách hàng";
 
                 //Người bán
-                SendEmailsToSellers(
-                    order
-                );
+                SendEmailsToSellers(order);
 
                 //người mua
                 var totalPrices = order.TotalPrice;
                 if (user != null && !string.IsNullOrWhiteSpace(user.Email))
                 {
-                    SendEmailToBuyer(
-                        order
-                    );
+                    SendEmailToBuyer(order);
                 }
                 return order;
             }
@@ -146,7 +143,7 @@ namespace BussinessLayer.Implement
                 Amount = totalPrice,
                 Order = order,
             };
-            return _vpnPayService.CreatePaymentUrl(httpContext, vnpayModel);
+            return _vpnPayService.CreatePaymentUrl(httpContext, vnpayModel, "Buy");
         }
 
         public bool VNPayReturn(IQueryCollection query, string userId, out int orderId)
@@ -184,13 +181,9 @@ namespace BussinessLayer.Implement
                     includeProperties: "Product,Product.User"
                 );
                 //người bán
-                SendEmailsToSellers(
-                    order!
-                );
+                SendEmailsToSellers(order!);
                 //người mua
-                SendEmailToBuyer(
-                    order!
-                );
+                SendEmailToBuyer(order!);
                 var purchasedProductIds = _unitOfWork
                     .OrderDetail.GetRange(
                         od => od.OrderId == orderSuccessId,
@@ -235,7 +228,8 @@ namespace BussinessLayer.Implement
                 if (p.StartDate.HasValue && p.EndDate.HasValue)
                 {
                     days = (p.EndDate.Value - p.StartDate.Value).Days;
-                    if (days == 0) days = 1;
+                    if (days == 0)
+                        days = 1;
                 }
 
                 prePrice += price * p.Count * days;
@@ -290,8 +284,8 @@ namespace BussinessLayer.Implement
             var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
 
-            var storeProductMap = order?.OrderDetails?
-                .Where(od => od.Product != null && od.Product.User != null)
+            var storeProductMap = order
+                ?.OrderDetails?.Where(od => od.Product != null && od.Product.User != null)
                 .GroupBy(od => od.Product?.User?.Email ?? "abc@gmail.com")
                 .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -304,7 +298,8 @@ namespace BussinessLayer.Implement
                 {
                     var days = (i.EndDate - i.StartDate)?.Days ?? 1;
                     days = days > 0 ? days : 1;
-                    return i.UnitPrice * i.Quantity * days + (i.Product?.DepositPrice * i.Quantity ?? 0);
+                    return i.UnitPrice * i.Quantity * days
+                        + (i.Product?.DepositPrice * i.Quantity ?? 0);
                 });
 
                 string productDetails = string.Join(
@@ -319,11 +314,10 @@ namespace BussinessLayer.Implement
                         double itemTotal = i.UnitPrice * i.Quantity * days;
                         double deposit = product.DepositPrice * i.Quantity;
                         double prePrice = itemTotal + deposit;
-                        var sizeInfo = i.SizeClother != null
-                            ? $"{i.SizeClother.Value}"
-                            : i.SizeShoe != null
-                                ? $"{i.SizeShoe.Value}"
-                                : "Không có";
+                        var sizeInfo =
+                            i.SizeClother != null ? $"{i.SizeClother.Value}"
+                            : i.SizeShoe != null ? $"{i.SizeShoe.Value}"
+                            : "Không có";
 
                         return $@"
                         <tr>
@@ -346,13 +340,7 @@ namespace BussinessLayer.Implement
             }
         }
 
-
-        private string SellerEmailInformation(
-            Order order,
-            string productDetails,
-            double storeTotal
-
-        )
+        private string SellerEmailInformation(Order order, string productDetails, double storeTotal)
         {
             var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
@@ -397,16 +385,14 @@ namespace BussinessLayer.Implement
             </div>";
         }
 
-
-
         private void SendEmailToBuyer(Order order)
         {
             var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             if (user == null || string.IsNullOrWhiteSpace(user.Email))
                 return;
 
-            var productGroupsByStore = order?.OrderDetails?
-                .GroupBy(od => od.Product?.UserId)
+            var productGroupsByStore = order
+                ?.OrderDetails?.GroupBy(od => od.Product?.UserId)
                 .ToList();
 
             int storeCount = productGroupsByStore!.Count;
@@ -417,24 +403,23 @@ namespace BussinessLayer.Implement
                 {
                     var storeId = group.Key;
                     var storeName =
-                        _unitOfWork.User.Get(u => u.Id == storeId)?.ShopName ??
-                        _unitOfWork.User.Get(u => u.Id == storeId)?.UserName;
+                        _unitOfWork.User.Get(u => u.Id == storeId)?.ShopName
+                        ?? _unitOfWork.User.Get(u => u.Id == storeId)?.UserName;
 
                     string productRows = string.Join(
                         "",
                         group.Select(i =>
                         {
                             var product = i.Product;
-                            
+
                             var startDate = i.StartDate?.ToString("dd/MM/yyyy") ?? "N/A";
                             var endDate = i.EndDate?.ToString("dd/MM/yyyy") ?? "N/A";
                             var rentalDays = (i.EndDate - i.StartDate)?.Days ?? 1;
                             int days = rentalDays > 0 ? rentalDays : 1;
                             double itemTotal = i.UnitPrice * i.Quantity * days;
-                            var sizeInfo = i.SizeClother != null
-                            ? $"{i.SizeClother.Value}"
-                            : i.SizeShoe != null
-                                ? $"{i.SizeShoe.Value}"
+                            var sizeInfo =
+                                i.SizeClother != null ? $"{i.SizeClother.Value}"
+                                : i.SizeShoe != null ? $"{i.SizeShoe.Value}"
                                 : "Không có";
 
                             return $@"
@@ -473,11 +458,7 @@ namespace BussinessLayer.Implement
                 })
             );
 
-            string buyerBody = BuyerEmailInformation(
-                order!,
-                groupedProductDetail,
-                storeCount
-            );
+            string buyerBody = BuyerEmailInformation(order!, groupedProductDetail, storeCount);
 
             string buyerSubject = "Xác nhận đơn hàng của bạn";
             _emailQueue.QueueEmail(user.Email, buyerSubject, buyerBody);
@@ -489,7 +470,6 @@ namespace BussinessLayer.Implement
             int storeCount
         )
         {
-            
             var user = _unitOfWork.User.Get(u => u.Id == order.UserId);
             var customerName = user?.UserName ?? "Khách hàng";
 
@@ -529,10 +509,6 @@ namespace BussinessLayer.Implement
                 </div>
             </div>";
         }
-
-        
-
-        
 
         public IEnumerable<Order> GetOrdersByProductOwner(string? email = null)
         {
@@ -701,6 +677,33 @@ namespace BussinessLayer.Implement
                 includeProperties: "User,OrderDetails,OrderDetails.Product,OrderDetails.Product.User"
             );
             return order;
+        }
+
+        public bool VNPayReturnMonthlyFee(IQueryCollection query)
+        {
+            var response = _vpnPayService.PaymentExecute(query);
+            if (response == null || response.VnPayResponseCode != "00")
+                return false;
+
+            // Kiểm tra xem có đúng là thanh toán MonthlyFee không
+            var orderInfo = response.OrderDescription;
+            if (!orderInfo.StartsWith("MonthlyFee_"))
+                return false;
+
+            var userIdStr = orderInfo.Substring("MonthlyFee_".Length);
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return false;
+
+            var user = _unitOfWork.User.Get(u => u.Id == userId);
+            if (user == null)
+                return false;
+
+            // Cập nhật trạng thái đã thanh toán phí
+            user.IsMonthlyFeePaid = true;
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+
+            return true;
         }
     }
 }

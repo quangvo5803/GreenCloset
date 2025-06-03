@@ -1,10 +1,12 @@
 ﻿using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Data;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Repository.Implement;
 using Repository.Interface;
 using Utility.Email;
@@ -56,9 +58,10 @@ namespace GreenCloset
                         };
                     }
                 );
+
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddAuthorization();
-
+            builder.Services.AddHttpClient();
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))

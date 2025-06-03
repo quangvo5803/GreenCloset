@@ -1,7 +1,9 @@
-﻿using BussinessLayer.Interface;
+﻿using System.Drawing;
+using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using QRCoder.Core;
 using Utility;
 
 namespace BussinessLayer.Implement
@@ -9,12 +11,17 @@ namespace BussinessLayer.Implement
     public class VnPayService : IVnPayService
     {
         private readonly IConfiguration _config;
+
         public VnPayService(IConfiguration configuration)
         {
             _config = configuration;
         }
 
-        public string CreatePaymentUrl(HttpContext context, VnPaymentRequestModel requestModel)
+        public string CreatePaymentUrl(
+            HttpContext context,
+            VnPaymentRequestModel requestModel,
+            string type
+        )
         {
             var tick = DateTime.Now.Ticks.ToString();
 
@@ -30,9 +37,17 @@ namespace BussinessLayer.Implement
             vnpay.AddRequestData("vnp_CurrCode", _config["VnPay:CurrCode"]);
             vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress(context));
             vnpay.AddRequestData("vnp_Locale", _config["VnPay:Locale"]);
-            vnpay.AddRequestData("vnp_OrderInfo", requestModel.Order?.Id.ToString() ?? "0");
+            if (type == "Buy")
+            {
+                vnpay.AddRequestData("vnp_OrderInfo", "Order_" + requestModel.OrderId);
+                vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:PaymentBackReturnUrl"]);
+            }
+            else
+            {
+                vnpay.AddRequestData("vnp_OrderInfo", "MonthlyFee_" + requestModel.Description);
+                vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:MonthlyFeeReturnUrl"]);
+            }
             vnpay.AddRequestData("vnp_OrderType", "other");
-            vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:PaymentBackReturnUrl"]);
             vnpay.AddRequestData("vnp_TxnRef", tick);
             var paymentUrl = vnpay.CreateRequestUrl(
                 _config["VnPay:BaseUrl"],
@@ -77,6 +92,24 @@ namespace BussinessLayer.Implement
                 Token = vnp_SecureHash,
                 VnPayResponseCode = vnp_ResponseCode,
             };
+        }
+
+        public string GenerateQrCodeBase64(string paymentUrl)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                QRCodeData qrCodeData = qrGenerator.CreateQrCode(
+                    paymentUrl,
+                    QRCodeGenerator.ECCLevel.Q
+                );
+                QRCode qrCode = new QRCode(qrCodeData);
+                using (Bitmap qrCodeImage = qrCode.GetGraphic(20))
+                {
+                    qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                }
+            }
         }
     }
 }

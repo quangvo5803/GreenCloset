@@ -22,11 +22,14 @@ namespace DataAccess.Models
 
         [DisplayName("Ngày sinh: ")]
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/mm/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? DOB { get; set; }
         public Gender? Gender { get; set; }
         public string? Address { get; set; }
         public string? ShopName { get; set; }
+        public bool IsMonthlyFeePaid { get; set; } = true;
+
+        public string? PaymentReceiptImagePath { get; set; }
+        public DateTime? LastPaymentDate { get; set; }
 
         [Required]
         public UserRole Role { get; set; }

@@ -56,7 +56,7 @@ namespace BussinessLayer.Implement
         {
             return _unitOfWork
                 .Product.GetAll(includeProperties)
-                .Where(p => p.Id != product.Id)
+                .Where(p => p.Id != product.Id && p.User != null && p.User.IsMonthlyFeePaid)
                 .Where(p =>
                     product.Categories != null
                     && p.Categories != null
@@ -253,7 +253,8 @@ namespace BussinessLayer.Implement
 
         public IEnumerable<Product> GetProductsByFilter(ProductFilter? filter = null)
         {
-            var productList = GetAllProducts(includeProperties: "Categories,ProductAvatar");
+            var productList = GetAllProducts(includeProperties: "Categories,ProductAvatar,User")
+                .Where(p => p.Available && p.User != null && p.User.IsMonthlyFeePaid);
             if (filter != null)
             {
                 if (!string.IsNullOrEmpty(filter.Search))

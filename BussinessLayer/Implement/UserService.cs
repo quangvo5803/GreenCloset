@@ -72,6 +72,7 @@ namespace BussinessLayer.Implement
                     PasswordHash = PasswordHasher.HashPassword("Abc123@"),
                     Role = UserRole.Customer,
                     IsEmailConfirmed = true,
+                    IsMonthlyFeePaid = true,
                 };
                 _unitOfWork.User.Add(user);
                 _unitOfWork.Save();
@@ -106,6 +107,7 @@ namespace BussinessLayer.Implement
                     PasswordHash = PasswordHasher.HashPassword("Abc123@"),
                     Role = UserRole.Customer,
                     IsEmailConfirmed = true,
+                    IsMonthlyFeePaid = true,
                 };
                 _unitOfWork.User.Add(user);
                 _unitOfWork.Save();
@@ -133,6 +135,7 @@ namespace BussinessLayer.Implement
                 PasswordHash = hashedPassword,
                 Role = UserRole.Customer,
                 IsEmailConfirmed = false,
+                IsMonthlyFeePaid = true,
             };
             _unitOfWork.User.Add(user);
             _unitOfWork.Save();

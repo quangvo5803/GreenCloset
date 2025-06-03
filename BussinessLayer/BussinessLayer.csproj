@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.15" />
+    <PackageReference Include="QRCoder-ImageSharp" Version="0.10.0" />
+    <PackageReference Include="QRCoder.Core" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

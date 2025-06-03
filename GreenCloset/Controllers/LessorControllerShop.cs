@@ -1,10 +1,12 @@
 ﻿using System.Security.Claims;
 using System.Threading.Tasks;
+using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace GreenCloset.Controllers
 {
@@ -14,8 +16,35 @@ namespace GreenCloset.Controllers
             : base(facedeService) { }
 
         [Authorize(Roles = "Customer,Lessor")]
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
+            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (email != null)
+            {
+                var user = _facadeService.User.GetUserByEmail(email);
+                if (user != null && user.Role == UserRole.Lessor && !user.IsMonthlyFeePaid)
+                {
+                    ViewBag.IsMonthlyFeePaid = user.IsMonthlyFeePaid;
+                    var orderList = _facadeService
+                        .Order.GetOrdersByProductOwner(User.FindFirst(ClaimTypes.Email)?.Value)
+                        .Where(o => o.OrderDate.Month == DateTime.Now.Month);
+                    var lastMonthRevenue = orderList.Sum(o => o.TotalPrice);
+
+                    int fee = 200000;
+                    if (lastMonthRevenue > 5000000)
+                    {
+                        fee += (int)(lastMonthRevenue * 0.1);
+                    }
+
+                    ViewBag.LastMonthRevenue = lastMonthRevenue;
+                    ViewBag.MonthlyFee = fee;
+                    var qrBase64 = await _facadeService.VietQrService.GenerateQrCodeBase64Async(
+                        fee,
+                        "Thanh toan phi thang"
+                    );
+                    ViewBag.QrCodeImageUrl = qrBase64;
+                }
+            }
             return View();
         }
 

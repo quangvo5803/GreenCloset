@@ -26,4 +26,8 @@
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\image\billlessors\" />
+  </ItemGroup>
+
 </Project>

@@ -25,5 +25,7 @@ namespace BussinessLayer.Interface
         IEnumerable<User> GetAllCustomer();
         IEnumerable<User> GetAllLessor();
         Task SignInUser(HttpContext httpContext, User user);
+        Task SubmitBillLessoer(Guid userId, IFormFile file);
+        bool UpdateMonthlyFeeAdmin(Guid userId, bool isPaid);
     }
 }

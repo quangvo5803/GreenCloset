@@ -22,27 +22,34 @@ namespace GreenCloset.Controllers
             if (email != null)
             {
                 var user = _facadeService.User.GetUserByEmail(email);
-                if (user != null && user.Role == UserRole.Lessor && !user.IsMonthlyFeePaid)
+                if (user != null && user.Role == UserRole.Lessor)
                 {
                     ViewBag.IsMonthlyFeePaid = user.IsMonthlyFeePaid;
-                    var orderList = _facadeService
-                        .Order.GetOrdersByProductOwner(User.FindFirst(ClaimTypes.Email)?.Value)
-                        .Where(o => o.OrderDate.Month == DateTime.Now.Month);
-                    var lastMonthRevenue = orderList.Sum(o => o.TotalPrice);
-
-                    int fee = 200000;
-                    if (lastMonthRevenue > 5000000)
+                    ViewBag.UserId = user.Id;
+                    if (!user.IsMonthlyFeePaid)
                     {
-                        fee += (int)(lastMonthRevenue * 0.1);
-                    }
+                        var orderList = _facadeService
+                            .Order.GetOrdersByProductOwner(User.FindFirst(ClaimTypes.Email)?.Value)
+                            .Where(o => o.OrderDate.Month == DateTime.Now.Month);
+                        var lastMonthRevenue = orderList.Sum(o => o.TotalPrice);
 
-                    ViewBag.LastMonthRevenue = lastMonthRevenue;
-                    ViewBag.MonthlyFee = fee;
-                    var qrBase64 = await _facadeService.VietQrService.GenerateQrCodeBase64Async(
-                        fee,
-                        "Thanh toan phi thang"
-                    );
-                    ViewBag.QrCodeImageUrl = qrBase64;
+                        int fee = 200000;
+                        if (lastMonthRevenue > 5000000)
+                        {
+                            fee += (int)(lastMonthRevenue * 0.1);
+                        }
+
+                        ViewBag.LastMonthRevenue = lastMonthRevenue;
+                        ViewBag.MonthlyFee = fee;
+
+                        var randomCode =
+                            $"GC_{DateTime.Now:ddMMyyyy}_{user.Id.ToString().Substring(0, 6).ToUpper()}";
+                        var qrBase64 = await _facadeService.VietQrService.GenerateQrCodeBase64Async(
+                            fee, 
+                            randomCode
+                        );
+                        ViewBag.QrCodeImageUrl = qrBase64;
+                    }
                 }
             }
             return View();
@@ -88,7 +95,7 @@ namespace GreenCloset.Controllers
                 return Json(new { data = new List<Product>() });
             }
             var products = _facadeService
-                .Product.GetLessorProducts(emailUser, includeProperties: "Categories")
+                .Product.GetLessorProducts(emailUser, includeProperties: "Categories,Feedbacks")
                 .Select(p => new
                 {
                     p.Id,
@@ -310,6 +317,21 @@ namespace GreenCloset.Controllers
 
             ViewBag.Product = product;
             return View(feedbacks);
+        }
+
+        [Authorize(Roles = "Lessor")]
+        [HttpPost]
+        public async Task<IActionResult> SubmitBillLessoer(IFormFile fileImage)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != null)
+            {
+                await _facadeService.User.SubmitBillLessoer(Guid.Parse(userId), fileImage);
+                TempData["success"] = "Upload thành công";
+                return RedirectToAction("Index", "Lessor");
+            }
+            TempData["error"] = "Upload không thành công";
+            return RedirectToAction("Index", "Home");
         }
     }
 }

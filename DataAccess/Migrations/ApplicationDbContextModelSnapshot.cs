@@ -17,7 +17,7 @@ namespace DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "8.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -132,6 +132,10 @@ namespace DataAccess.Migrations
 
                     b.Property<int?>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -279,10 +283,10 @@ namespace DataAccess.Migrations
                     b.Property<int>("RentalCount")
                         .HasColumnType("int");
 
-                    b.PrimitiveCollection<string>("SizeClother")
+                    b.Property<string>("SizeClother")
                         .HasColumnType("nvarchar(max)");
 
-                    b.PrimitiveCollection<string>("SizeShoe")
+                    b.Property<string>("SizeShoe")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("UserId")
@@ -324,8 +328,17 @@ namespace DataAccess.Migrations
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsMonthlyFeePaid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastPaymentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentReceiptImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")

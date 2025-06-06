@@ -1,0 +1,312 @@
+﻿@model IEnumerable<Feedback>
+@{
+    ViewData["Title"] = "Sản phẩm cho thuê";
+    var product = ViewBag.Product as Product;
+    double avgRating = Model.Any() ? Model.Average(f => f.FeedbackStars) : 0;
+    int totalReviews = Model.Count();
+    var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var roles = isLoggedIn ? User?.FindFirst(ClaimTypes.Role)?.Value : null;
+}
+
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-3">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Sidebar -->
+                        <div class="col-lg-3 border-end">
+                            <div class="p-4">
+                                <div class="nav flex-column nav-pills">
+                                    <a class="nav-link  text-black" asp-controller="User" asp-action="Profile">
+                                        <i class="fa fa-user me-2"></i> Thông tin cá nhân
+                                    </a>
+                                    <a class="nav-link text-black" asp-controller="User" asp-action="ChangePassword"><i class="fa fa-lock me-3"></i>Bảo mật</a>
+                                    <a class="nav-link text-black" asp-controller="Customer" asp-action="ManageOrder">
+                                        <i class="fa fa-truck-fast me-2"></i> Lịch sử đơn hàng
+                                    </a>
+                                    <a class="nav-link active text-white" asp-controller="Lessor" asp-action="Index" style="background-color: #8DC63F !important;">
+                                        <i class="fa-solid fa-shop me-2"></i> Sản phẩm cho thuê
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="col-lg-9">
+                            <div class="p-4">
+                                @if (roles == "Lessor")
+                                {
+                                    <div class="col-lg-12 col-md-10">
+                                        <div class="card shadow-lg border-0 rounded-lg">
+                                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                <h2 class="text-white">Đánh giá sản phẩm @product?.Name</h2>
+                                                <a asp-action="Index" asp-controller="Lessor" class="btn btn-light">
+                                                    <i class="fa fa-arrow-left"></i> Trở lại danh sách sản phẩm
+                                                </a>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-3">
+                                                        @if (product?.ProductAvatar != null)
+                                                        {
+                                                            <img src="@product.ProductAvatar.ImagePath" alt="@product.Name"
+                                                                 class="img-thumbnail" style="width:200px; height:200px" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                                                                 alt="@product?.Name" class="img-thumbnail" style="width:200px; height:200px" />
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <h4>@product?.Name</h4>
+                                                        <p class="text-muted">Mô tả: @(string.IsNullOrWhiteSpace(product?.Description) ? "Không có mô tả nào" : product.Description)</p>
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <div class="me-2">
+                                                                <span class="text-warning">
+                                                                    @for (int i = 1; i <= 5; i++)
+                                                                    {
+                                                                        if (i <= avgRating)
+                                                                        {
+                                                                            <i class="fa fa-star"></i>
+                                                                        }
+                                                                        else if (i - 0.5 <= avgRating)
+                                                                        {
+                                                                            <i class="fa fa-star-half-stroke"></i>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <i class="fa-regular fa-star"></i>
+                                                                        }
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            <span class="text-muted">@avgRating.ToString("0.0") (@totalReviews Đánh giá)</span>
+                                                        </div>
+                                                        <!--Feed back list-->
+                                                        @if (Model != null && Model.Any())
+                                                        {
+                                                            foreach (var feedback in Model)
+                                                            {
+                                                                <div class="review-item border-bottom border-1 border-black pb-3 mb-3">
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <div class="review-header">
+                                                                            <strong>@(feedback.User?.UserName ?? feedback.User?.Email)</strong>
+                                                                            <div class="rating">
+                                                                                @for (int i = 1; i <= 5; i++)
+                                                                                {
+                                                                                    if (i <= feedback.FeedbackStars)
+                                                                                    {
+                                                                                        <i class="fa fa-star"></i>
+                                                                                    }
+                                                                                    else if (i - 0.5 <= feedback.FeedbackStars)
+                                                                                    {
+                                                                                        <i class="fa fa-star-half-stroke"></i>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <i class="fa-regular fa-star"></i>
+                                                                                    }
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                        <small class="text-black fs-6">@feedback.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                                    </div>
+                                                                    <p class="mt-2">@feedback.FeedbackContent</p>
+
+                                                                    <!-- Review Images -->
+                                                                    @if (feedback.Images != null)
+                                                                    {
+                                                                        <div class="review-images">
+                                                                            @foreach (var image in feedback.Images)
+                                                                            {
+                                                                                <a class="venobox" data-gall="gallery01" data-fitview="true"
+                                                                                   href="@image.ImagePath">
+                                                                                    <img src="@image.ImagePath" alt="Review Image" />
+                                                                                </a>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="text-black fs-4 m-4">Chưa có đánh giá nào từ khách hàng</div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                }
+                                else if (roles == "Customer")
+                                {
+                                    <form asp-controller="Lessor" asp-action="RegisterLessor" method="post">
+                                        <div class="terms-section border p-4 rounded shadow-sm bg-light">
+                                            <h3 class="text-center">Điều khoản & Quyền lợi khi trở thành người cho thuê</h3>
+
+                                            <p>Khi đăng ký trở thành người cho thuê, bạn sẽ đồng ý với các điều kiện và được hưởng các quyền lợi sau:</p>
+
+                                            <h4>🔒 Điều kiện dành cho người cho thuê:</h4>
+                                            <ol>
+                                                <li>Có tài khoản hợp lệ tại Green Closet</li>
+                                                <li>Cung cấp đầy đủ thông tin cá nhân/doanh nghiệp.</li>
+                                                <li>Sản phẩm cho thuê phải đúng mô tả, không vi phạm pháp luật.</li>
+                                                <li>Sản phẩm phải được giặt là sạch sẽ, không rách, hư hỏng.</li>
+                                            </ol>
+
+                                            <h4>🎯 QUYỀN LỢI CỦA NGƯỜI CHO THUÊ</h4>
+                                            <ol>
+                                                <li>Tự quyết giá thuê: Chủ động định giá thuê, thời gian thuê, và các điều kiện liên quan.</li>
+                                                <li>Quản lý sản phẩm dễ dàng: Theo dõi lượt thuê, đánh giá và doanh thu qua bảng điều khiển cá nhân.</li>
+                                                <li>Bảo vệ quyền lợi: Green Closet hỗ trợ xử lý tranh chấp, thiệt hại (tùy mức độ) theo chính sách hỗ trợ người cho thuê.</li>
+                                                <li>Thanh toán minh bạch: Nhận tiền thuê sau khi đơn hàng hoàn tất và không phát sinh khiếu nại (theo kỳ thanh toán của hệ thống).</li>
+                                                <li>Hỗ trợ chăm sóc khách hàng: Có đội ngũ CSKH hỗ trợ 24/7 qua email, hotline và mạng xã hội.</li>
+                                            </ol>
+
+                                            <h4>✅ TRÁCH NHIỆM CỦA NGƯỜI CHO THUÊ</h4>
+                                            <ol>
+                                                <li>Đảm bảo hình ảnh, mô tả sản phẩm đúng thực tế.</li>
+                                                <li>Giao hàng đúng hẹn, đúng chất lượng, không làm gián đoạn trải nghiệm của người thuê.</li>
+                                                <li>Cập nhật tình trạng sản phẩm kịp thời (hết hàng, hư hỏng...).</li>
+                                                <li>Chịu trách nhiệm về nguồn gốc sản phẩm, đảm bảo không vi phạm bản quyền, thương hiệu.</li>
+                                                <li>Tôn trọng các quy định về huỷ đơn, hoàn tiền và giải quyết tranh chấp.</li>
+                                            </ol>
+                                            <h4>📄 ĐIỀU KHOẢN BỔ SUNG</h4>
+                                            <ol>
+                                                <li>Nếu doanh thu <strong>≤ 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ</strong>.</li>
+                                                <li>Nếu doanh thu <strong>> 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ + 10% doanh thu</strong>.</li>
+                                            </ol>
+
+                                            <div class="form-floating mt-4">
+                                                <input type="text" id="storeName" name="storeName" class="form-control" placeholder="Nhập tên cửa hàng..." required />
+                                                <label for="storeName"><i class="fa-solid fa-file-lines"></i> Nhập tên cửa hàng của bạn:</label>
+
+                                            </div>
+                                            <div class="form-floating mt-4">
+                                                <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="Nhập số điện thoại cửa hàng..." required />
+                                                <label for="phoneNumber"><i class="fa-solid fa-phone"></i> Nhập số điện thoại cửa hàng của bạn:</label>
+                                            </div>
+                                            <div class="form-floating mt-4">
+                                                <input type="text" id="address" name="address" class="form-control" placeholder="Nhập địa chỉ cửa hàng..." required />
+                                                <label for="address"><i class="fa-solid fa-location-dot"></i> Nhập địa chỉ cửa hàng của bạn:</label>
+                                            </div>
+                                            <div class="text-center mt-3">
+                                                <button type="submit" class="btn btn-primary">Đăng ký trở thành người cho thuê</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                        <!-- End Content Area -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .customer-reviews {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .review-item {
+        background-color: white;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+        .review-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .review-header strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+    .rating {
+        display: flex;
+        gap: 2px;
+    }
+
+        .rating .fa-star {
+            color: #ffc107;
+        }
+
+            .rating .fa-star.text-muted {
+                color: #e0e0e0;
+            }
+
+    .overall-rating {
+        background-color: #f1f3f5;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .rating-breakdown .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+
+    .pagination {
+        margin-top: 20px;
+    }
+
+    .page-item.active .page-link {
+        background-color: #FEA116;
+        border-color: #FEA116;
+    }
+
+    .page-link {
+        color: #FEA116;
+    }
+
+        .page-link:hover {
+            background-color: #FEA116;
+            color: white;
+        }
+
+    .review-item {
+        padding: 10px;
+    }
+
+    .review-images {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+        .review-images img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+            .review-images img:hover {
+                transform: scale(1.05);
+            }
+</style>

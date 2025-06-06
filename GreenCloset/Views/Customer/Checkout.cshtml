@@ -2,21 +2,22 @@
 @{
     ViewData["Title"] = "Checkout";
     double subtotal = 0;
+    double deposittotal = 0;
     foreach (var group in Model)
     {
         foreach (var item in group)
         {
             if (item.Product != null)
             {
-                if (item.StartDate.HasValue && item.EndDate.HasValue )
+                double days = 1;
+                if (item.StartDate.HasValue && item.EndDate.HasValue)
                 {
                     var duration = (item.EndDate.Value - item.StartDate.Value).TotalDays;
-                    subtotal += item.Product.Price * item.Count * duration;
+                    days = duration > 0 ? duration : 1;
                 }
-                else
-                {
-                    subtotal += item.Product.Price * item.Count;
-                }
+
+                subtotal += item.Product.Price * item.Count * days;
+                deposittotal += item.Product.DepositPrice * item.Count;
             }
         }
     }
@@ -147,7 +148,7 @@
                         <div class="product-box d-flex align-items-center gap-3 mb-3">
                             @if (item.Product?.ProductAvatar != null)
                             {
-                                <img class="flex-shrink-0" src="/image/products/@item.Product.ProductAvatar.ImagePath" style="width: 80px; height: 80px;" />
+                                <img class="flex-shrink-0" src="@item.Product.ProductAvatar.ImagePath" style="width: 80px; height: 80px;" />
                             }
                             else
                             {
@@ -186,7 +187,8 @@
                                     <span>
                                         @if(item.EndDate !=null && item.StartDate !=null){
                                             var duration = item.EndDate.Value - item.StartDate.Value;
-                                            var totalPrice = item.Product!.Price * item.Count * duration.TotalDays;
+                                            var days = duration.TotalDays <= 0 ? 1 : duration.TotalDays;
+                                            var totalPrice = item.Product!.Price * item.Count * days;
                                             @totalPrice.ToString("C", new CultureInfo("vi-VN"))
                                         }else{
                                             @((item.Product!.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))
@@ -207,6 +209,14 @@
                 </span>
                 <span id="subtotalAmount">
                     @subtotal.ToString("C", new CultureInfo("vi-VN"))
+                </span>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size: 20px;">
+                <span>
+                    Tổng tiền cọc
+                </span>
+                <span id="deposittotalAmount">
+                    @deposittotal.ToString("C", new CultureInfo("vi-VN"))
                 </span>
             </div>
             <div class="d-flex justify-content-between" style="font-size: 20px;" id="shippingFeeSection">
@@ -346,7 +356,7 @@
 
             if (!isNaN(rentalDate) && !isNaN(returnDate)) {
                 const timeDiff = returnDate.getTime() - rentalDate.getTime();
-                const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const days = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
 
                 const formattedStart = rentalDate.toLocaleDateString('vi-VN');
                 const formattedEnd = returnDate.toLocaleDateString('vi-VN');
@@ -414,16 +424,18 @@
         const shippingFeeAmount = document.getElementById("shippingFeeAmount");
         const subtotalAmount = document.getElementById("subtotalAmount");
         const totalAmount = document.getElementById("totalAmount");
+        const deposittotalAmount = document.getElementById("deposittotalAmount");
 
         const storeCount = @storeCount;
         const subtotal = @subtotal;
+        const deposittotal = @deposittotal;
 
         function formatCurrency(value) {
             return value.toLocaleString('vi-VN') + 'đ';
         }
 
         function updateTotals() {
-            let total = subtotal;
+            let total = subtotal + deposittotal;
             let shippingFee = (storeCount >= 2) ? 50000 : 25000;
 
             subtotalAmount.textContent = formatCurrency(subtotal);

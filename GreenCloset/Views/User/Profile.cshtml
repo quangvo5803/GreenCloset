@@ -33,6 +33,8 @@
                                     <div class="mb-4">
                                         <h3 class="mb-4"><i class="fa fa-user me-2"></i>Thông tin cá nhân</h3>
                                         <div class="row g-3">
+                                            <input asp-for="Id" type="text" hidden>
+                                            <input asp-for="PasswordHash" type="text" hidden>
                                             <div class="col-md-6">
                                                 <div class="form-floating mb-3">
                                                     <input class="form-control border-0 border-bottom rounded-0" asp-for="UserName" type="text" placeholder="Chưa cung cấp thông tin">

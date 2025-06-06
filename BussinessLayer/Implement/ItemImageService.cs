@@ -1,19 +1,19 @@
 ﻿using BussinessLayer.Interface;
 using DataAccess.Models;
-using Microsoft.AspNetCore.Hosting;
 using Repository.Implement;
+using Utility.Media;
 
 namespace BussinessLayer.Implement
 {
     public class ItemImageService : IItemImageService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public ItemImageService(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+        public ItemImageService(IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
-            _webHostEnvironment = webHostEnvironment;
+            _cloudinaryService = cloudinaryService;
         }
 
         public ItemImage? GetItemImageById(int id)
@@ -22,16 +22,11 @@ namespace BussinessLayer.Implement
             return itemImage;
         }
 
-        public void RemoveItemImage(ItemImage itemImage)
+        public async Task RemoveItemImage(ItemImage itemImage)
         {
-            string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "image/products");
             if (itemImage.ImagePath != null)
             {
-                var oldAvatarPath = Path.Combine(uploadFolder, itemImage.ImagePath);
-                if (File.Exists(oldAvatarPath))
-                {
-                    File.Delete(oldAvatarPath);
-                }
+                await _cloudinaryService.DeleteImageAsync(itemImage.PublicId);
                 _unitOfWork.ItemImage.Remove(itemImage);
                 _unitOfWork.Save();
             }

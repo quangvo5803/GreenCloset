@@ -44,17 +44,18 @@
     }
 
     // Preloader
+    // Preloader
     var initPreloader = function () {
-        $(document).ready(function ($) {
-            var Body = $('body');
-            Body.addClass('preloader-site');
-        });
-        $(window).on("load", function () {
-            $('.preloader-wrapper').fadeOut();
-            $('body').removeClass('preloader-site');
-        });
+        $(document).ready(function () {
+            $('body').addClass('preloader-site');
 
-    }
+            // Ẩn preloader khi DOM sẵn sàng
+            $('.preloader-wrapper').fadeOut('slow', function () {
+                $('body').removeClass('preloader-site');
+            });
+        });
+    };
+
 
     // init jarallax parallax
     var initJarallax = function () {
@@ -84,11 +85,11 @@
             })
         });
     }
+    initPreloader();
 
     // document ready
     $(document).ready(function () {
         searchPopup();
-        initPreloader();
         initTabs();
         initJarallax();
 

@@ -101,9 +101,10 @@
                             </label>
                         </div>
                         <div class="d-flex gap-5">
+                            <span>Tiền Cọc</span>
                             <span>Đơn Giá</span>
                             <span>Số Lượng</span>
-                            <span>Thành Tiền</span>
+                            <span>Tạm tính</span>
                             <span>Thao Tác</span>
                         </div>
                     </div>
@@ -111,7 +112,7 @@
 
                     @foreach (var group in Model)
                     {
-                        var sellerName = group.FirstOrDefault()?.Product?.User?.UserName ?? "Người bán không xác định";
+                        var sellerName = group.FirstOrDefault()?.Product?.User?.ShopName ?? group.FirstOrDefault()?.Product?.User?.UserName;
                         <div class="shop-section">
                             <div class="d-flex justify-content-between align-items-center border-bottom py-3 bg-light">
                                 <div class="d-flex align-items-center gap-2">
@@ -132,7 +133,7 @@
                                                 <div class="d-flex align-items-center gap-3">
                                                     @if (item.Product.ProductAvatar != null)
                                                     {
-                                                        <img src="/image/products/@item.Product.ProductAvatar.ImagePath" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
+                                                        <img src="@item.Product.ProductAvatar.ImagePath" alt="Product" class="img-thumbnail" style="width: 80px; height: 80px;" />
                                                     }
                                                     else
                                                     {
@@ -190,6 +191,7 @@
                                                                 </div>
                                                             </div>
                                                         </p>
+                                                        <!-- ngày thuê và trả -->
                                                         <div class="row mt-2 cart-item-group">
                                                             <div class="col-md-6 mb-2">
                                                                 <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
@@ -218,19 +220,28 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="d-flex gap-4 align-items-center">
+                                        <div class="d-flex gap-4 align-items-center">
+                                                <span class="text-dangers product-deposit" style="margin-right:10px;">@item.Product.DepositPrice.ToString("C", new CultureInfo("vi-VN"))</span>
                                                 <span class="text-dangers">@item.Product.Price.ToString("C", new CultureInfo("vi-VN"))</span>
                                                 <div class="input-group" style="width:100px; margin-left: 6px;" data-product-id="@item.Product.Id">
                                                     <button type="button" class="btn btn-outline-secondary btn-sm decrement" style="margin-top:16px">-</button>
                                                     <input type="text" class="form-control text-center quantity" value="@item.Count" style="margin-bottom: 16px; margin-top:16px;" />
                                                     <button type="button" class="btn btn-outline-secondary btn-sm increment" style="margin-top:16px">+</button>
                                                 </div>
-                                                @if(item.StartDate != null && item.EndDate != null){   
-                                                        var duration = item.EndDate.Value - item.StartDate.Value;
-                                                        var totalPrice = item.Product.Price * item.Count * duration.TotalDays;  
+                                                @if(item.StartDate != null && item.EndDate != null){
+                                                    var duration = item.EndDate.Value - item.StartDate.Value;
+                                                    double days = duration.TotalDays;
+
+                                                    if (days == 0)
+                                                    {
+                                                        days = 1;
+                                                    }
+
+                                                    var totalPrice = item.Product.Price * item.Count * days + item.Product.DepositPrice * item.Count;
+
                                                     <span class="text-dangers product-total">@totalPrice.ToString("C", new CultureInfo("vi-VN"))</span>
                                                 } else {
-                                                    <span class="text-dangers product-total">@((item.Product.Price * item.Count).ToString("C", new CultureInfo("vi-VN")))</span>
+                                                    <span class="text-dangers product-total">@((item.Product.Price * item.Count + item.Product.DepositPrice * item.Count).ToString("C", new CultureInfo("vi-VN")))</span>
                                                 }
 
                                             <a href="#" class="text-dangers delete-item"
@@ -243,9 +254,9 @@
                                 </div>
                             }
                         }
-                        </div>
+                    </div>
            }  
-        </div>
+                </div>
 
         
     </div>
@@ -259,8 +270,8 @@
             </div>
             <div class="text-end ms-auto">
 
-                <h5 class="text-dark fw-bold mb-1" id="prePrice">Thành tiền: ₫0</h5>
-                <h5 class="text-dark fw-bold mb-1" id="depositPrice">Tiền cọc: ₫0</h5>
+                <h5 class="text-dark fw-bold mb-1" id="prePrice">Tiền thuê: ₫0</h5>
+                <h5 class="text-dark fw-bold mb-1" id="depositPrice">Tiền cọc: ₫</h5>
                 <p class="text-primary fw-bold mb-1" id="totalPrice">Tổng cộng (0 Sản phẩm): ₫0</p>
                 
                     
@@ -303,19 +314,41 @@
 
         // Cập nhật tổng số lượng đã chọn và tổng tiền
         function updateCartDisplay() {
-            let selectedCount = 0, prePrice = 0;
+            let selectedCount = 0, prePrice = 0; depositPrice = 0;
             document.querySelectorAll('.productCheckbox').forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('.product-row');
-                    const productTotalText = row.querySelector('.product-total').textContent;
-                    const productTotal = parseFloat(productTotalText.replace(/[^\d]/g, ''));
+                    const quantity = parseInt(row.querySelector('.quantity').value);
+                    const price = parseFloat(row.querySelector('.productCheckbox').dataset.price);
+                    const startDate = new Date(row.querySelector('.startDate').value);
+                    const endDate = new Date(row.querySelector('.endDate').value);
+                    // Lấy tiền cọc từ data attribute (ví dụ: data-deposit="10000")
+                    const depositText = row.querySelector('.product-deposit')?.textContent || '0₫';
+                    const deposit = parseFloat(depositText.replace(/[^\d]/g, ''));
+
+                    let days;
+
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        days = 1;
+                    } else {
+                        const diffInTime = endDate.getTime() - startDate.getTime();
+                        days = Math.max(1, Math.floor(diffInTime / (1000 * 60 * 60 * 24)));
+                    }
+
                     selectedCount++;
-                    prePrice += productTotal;
+                    prePrice += price * quantity * days;
+                    depositPrice += deposit * quantity;
                 }
             });
 
-            selectedCountSpan.textContent = `Chọn Tất Cả (${selectedCount})`;
-            prePriceSpan.textContent = `Thành tiền: ${prePrice.toLocaleString()} ₫`;
+
+             // Cập nhật nội dung các phần tử
+                document.getElementById('prePrice').textContent = `Tiền thuê: ${prePrice.toLocaleString()} ₫`;
+                document.getElementById('depositPrice').textContent = `Tiền cọc: ${depositPrice.toLocaleString()} ₫`;
+                document.getElementById('totalPrice').textContent = `Tổng cộng (${selectedCount} Sản phẩm): ${(prePrice + depositPrice).toLocaleString()} ₫`;
+
+                // Nếu cần cập nhật nút chọn tất cả
+                selectedCountSpan.textContent = `Chọn Tất Cả (${selectedCount})`;
         }
 
         // Cập nhật trạng thái "Chọn tất cả"
@@ -372,11 +405,19 @@
             const price = parseFloat(row.querySelector('.productCheckbox').dataset.price);
             const startDate = new Date(row.querySelector('.startDate').value);
             const endDate = new Date(row.querySelector('.endDate').value);
+            const depositText = row.querySelector('.product-deposit')?.textContent || '0₫';
+            const deposit = parseFloat(depositText.replace(/[^\d]/g, ''));
+            let days;
 
-            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                days = 1;
+            } else {
+                const diffInTime = endDate.getTime() - startDate.getTime();
+                days = Math.max(1, Math.floor(diffInTime / (1000 * 60 * 60 * 24)));
+            }
 
-            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) || 1;
-            const total = price * quantity * days;
+
+            const total = price * quantity * days + deposit * quantity;
 
             row.querySelector('.product-total').textContent = `${total.toLocaleString()} ₫`;
         }
@@ -511,7 +552,7 @@
 
                 console.log(`Start Date: ${startDate}, End Date: ${endDate}`);
                 if(startDate && endDate){
-                    if (endDate <= startDate) {
+                    if (endDate < startDate) {
                         return;
                     }
                 }
@@ -576,19 +617,20 @@
                     previousStartDate = this.value;
                 });
 
-                startDateInput.addEventListener('change', function () {
-                    const startDate = this.value;
-                    if (endDateInput) {
-                        endDateInput.min = startDate;
+                    startDateInput.addEventListener('change', function () {
+                        const startDate = this.value;
+                        if (endDateInput) {
+                            endDateInput.min = startDate;
 
-                        if (endDateInput.value && startDate >= endDateInput.value) {
-                            toastr.error("Ngày bắt đầu phải nhỏ hơn ngày trả.");
-                            this.value = previousStartDate; 
-                            return;
+                            if (endDateInput.value && startDate > endDateInput.value) {
+                                toastr.error("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày trả.");
+                                this.value = previousStartDate;
+                                return;
+                            }
                         }
-                    }
-                    handleDateChange(this);
-                });
+                        handleDateChange(this);
+                    });
+
             }
 
             if (endDateInput) {
@@ -596,19 +638,20 @@
                     previousEndDate = this.value;
                 });
 
-                endDateInput.addEventListener('change', function () {
-                    const startDate = startDateInput?.value;
-                    const endDate = this.value;
+                    endDateInput.addEventListener('change', function () {
+                        const startDate = startDateInput?.value;
+                        const endDate = this.value;
 
-                    if (startDate && endDate <= startDate) {
-                        toastr.error("Ngày trả phải lớn hơn ngày bắt đầu thuê.");
-                        this.value = previousEndDate;
-                        return;
-                    }
+                        if (startDate && endDate < startDate) {
+                            toastr.error("Ngày trả phải lớn hơn hoặc bằng ngày bắt đầu thuê.");
+                            this.value = previousEndDate;
+                            return;
+                        }
 
-                    previousEndDate = endDate;
-                    handleDateChange(this);
-                });
+                        previousEndDate = endDate;
+                        handleDateChange(this);
+                    });
+
             }
         });
     });

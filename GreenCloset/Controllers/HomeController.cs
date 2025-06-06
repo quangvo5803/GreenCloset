@@ -12,8 +12,8 @@ public partial class HomeController : BaseController
     public IActionResult Index()
     {
         var products = _facadeService
-            .Product.GetAllProducts(includeProperties: "Categories,ProductAvatar")
-            .Where(p => p.Available);
+            .Product.GetAllProducts(includeProperties: "Categories,ProductAvatar,User")
+            .Where(p => p.Available && p.User != null && p.User.IsMonthlyFeePaid);
         ViewBag.FeatureProducts = _facadeService
             .Product.GetFeatureProduct(includeProperties: "ProductAvatar")
             .Where(p => p.Available);
@@ -48,9 +48,7 @@ public partial class HomeController : BaseController
 
     public IActionResult Shop(int page = 1, int pageSize = 12, ProductFilter? filter = null)
     {
-        var productList = _facadeService
-            .Product.GetProductsByFilter(filter)
-            .Where(p => p.Available);
+        var productList = _facadeService.Product.GetProductsByFilter(filter);
 
         //Pagination
         var paginatedProducts = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();

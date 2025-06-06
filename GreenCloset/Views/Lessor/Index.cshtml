@@ -3,6 +3,10 @@
     ViewData["Title"] = "Sản phẩm cho thuê";
     var isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
     var roles = isLoggedIn ? User?.FindFirst(ClaimTypes.Role)?.Value : null;
+    var isMonthlyFeePaid = ViewBag.IsMonthlyFeePaid ?? false;
+    var lastMonthRevenue =  ViewBag.LastMonthRevenue ?? 0;
+    var fee = ViewBag.MonthlyFee;
+    var qrCodeUrl = ViewBag.QrCodeImageUrl;
 }
 <div class="container-fluid py-5">
     <div class="row">
@@ -33,69 +37,92 @@
                             <div class="p-4">
                                 @if (roles == "Lessor")
                                 {
-                                    <h2 class="text-center"><i class="fa-solid fa-gear"></i> QUẢN LÝ</h2>
+                                    if(isMonthlyFeePaid){
+                                        <h2 class="text-center"><i class="fa-solid fa-gear"></i> QUẢN LÝ</h2>
 
-                                    <!-- Nav Pills -->
-                                    <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="pills-product-tab" data-bs-toggle="pill" data-bs-target="#pills-product" type="button" role="tab" aria-controls="pills-product" aria-selected="true">
-                                                <i class="fa-solid fa-shirt"></i> Danh sách sản phẩm
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button" role="tab" aria-controls="pills-order" aria-selected="false">
-                                                <i class="fa-solid fa-cart-flatbed"></i> Danh sách đơn hàng
-                                            </button>
-                                        </li>
-                                    </ul>
+                                        <!-- Nav Pills -->
+                                        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="pills-product-tab" data-bs-toggle="pill" data-bs-target="#pills-product" type="button" role="tab" aria-controls="pills-product" aria-selected="true">
+                                                    <i class="fa-solid fa-shirt"></i> Danh sách sản phẩm
+                                                </button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button" role="tab" aria-controls="pills-order" aria-selected="false">
+                                                    <i class="fa-solid fa-cart-flatbed"></i> Danh sách đơn hàng
+                                                </button>
+                                            </li>
+                                        </ul>
 
-                                    <!-- Tab Content -->
-                                    <div class="tab-content" id="pills-tabContent">
-                                        <!-- Tab 1: Sản phẩm -->
-                                        <div class="tab-pane fade show active" id="pills-product" role="tabpanel" aria-labelledby="pills-product-tab">
-                                            <div class="row mb-3">
-                                                <div class="col-md-6 text-start"></div>
-                                                <div class="col-md-6 text-end">
-                                                    <a asp-controller="Lessor" asp-action="CreateProduct" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Tạo sản phẩm mới</a>
+                                        <!-- Tab Content -->
+                                        <div class="tab-content" id="pills-tabContent">
+                                            <!-- Tab 1: Sản phẩm -->
+                                            <div class="tab-pane fade show active" id="pills-product" role="tabpanel" aria-labelledby="pills-product-tab">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 text-start"></div>
+                                                    <div class="col-md-6 text-end">
+                                                        <a asp-controller="Lessor" asp-action="CreateProduct" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Tạo sản phẩm mới</a>
+                                                    </div>
                                                 </div>
+
+                                                <table id="tblProductData" class="table table-bordered" width="100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>STT</th>
+                                                            <th>Tên sản phẩm</th>
+                                                            <th>Giá thuê</th>
+                                                            <th>Danh mục</th>
+                                                            <th>Đánh giá</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                </table>
                                             </div>
 
-                                            <table id="tblProductData" class="table table-bordered" width="100%">
-                                                <thead>
-                                                    <tr>
-                                                        <th>STT</th>
-                                                        <th>Tên sản phẩm</th>
-                                                        <th>Giá thuê</th>
-                                                        <th>Danh mục</th>
-                                                        <th>Đánh giá</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
-                                        </div>
+                                            <!-- Tab 2: Đơn hàng -->
 
-                                        <!-- Tab 2: Đơn hàng -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6 text-start"></div>
-                                            <div class="col-md-6 text-end">
-                                                <a asp-controller="Lessor" asp-action="Statistic" class="btn btn-outline-primary"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
+                                            <div class="tab-pane fade" id="pills-order" role="tabpanel" aria-labelledby="pills-order-tab">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6 text-start"></div>
+                                                    <div class="col-md-6 text-end">
+                                                        <a asp-controller="Lessor" asp-action="Statistic" class="btn btn-outline-primary"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
+                                                    </div>
+                                                </div>
+                                                <table id="tblOrderData" class="table table-bordered" width="100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Mã đơn hàng</th>
+                                                            <th>Hình thức vận chuyển</th>
+                                                            <th>Trạng thái</th>
+                                                            <th>Số lượng sản phẩm</th>
+                                                            <th>Tổng tiền</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                </table>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="pills-order" role="tabpanel" aria-labelledby="pills-order-tab">
-                                            <table id="tblOrderData" class="table table-bordered" width="100%">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Mã đơn hàng</th>
-                                                        <th>Hình thức vận chuyển</th>
-                                                        <th>Trạng thái</th>
-                                                        <th>Số lượng sản phẩm</th>
-                                                        <th>Tổng tiền</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                            </table>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center mt-5">
+                                            <h3 class="text-danger">Bạn chưa đóng phí hệ thống tháng này</h3>
+
+                                            <p>Doanh thu tháng trước của bạn: <strong>@lastMonthRevenue.ToString("N0") VNĐ</strong></p>
+
+                                            <ul class="text-start d-inline-block">
+                                                <li>Nếu doanh thu <strong>≤ 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ</strong>.</li>
+                                                <li>Nếu doanh thu <strong>> 5.000.000 VNĐ</strong>: phí hệ thống là <strong>200.000 VNĐ + 10% doanh thu</strong>.</li>
+                                            </ul>
+
+                                            <p>Phí cần thanh toán tháng này: <strong class="text-primary">@fee.ToString("N0") VNĐ</strong></p>
+
+                                            <div class="mt-4">
+                                                <p>Vui lòng quét mã QR dưới đây để thanh toán:</p>
+                                                <img src="@qrCodeUrl" alt="QR Code thanh toán" style="max-width: 300px;" />
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
 
                                 }
                                 else if(roles == "Customer")

@@ -1,9 +1,12 @@
 ﻿using System.Security.Claims;
+using System.Threading.Tasks;
+using BussinessLayer.Implement;
 using BussinessLayer.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace GreenCloset.Controllers
 {
@@ -13,8 +16,35 @@ namespace GreenCloset.Controllers
             : base(facedeService) { }
 
         [Authorize(Roles = "Customer,Lessor")]
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
+            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (email != null)
+            {
+                var user = _facadeService.User.GetUserByEmail(email);
+                if (user != null && user.Role == UserRole.Lessor && !user.IsMonthlyFeePaid)
+                {
+                    ViewBag.IsMonthlyFeePaid = user.IsMonthlyFeePaid;
+                    var orderList = _facadeService
+                        .Order.GetOrdersByProductOwner(User.FindFirst(ClaimTypes.Email)?.Value)
+                        .Where(o => o.OrderDate.Month == DateTime.Now.Month);
+                    var lastMonthRevenue = orderList.Sum(o => o.TotalPrice);
+
+                    int fee = 200000;
+                    if (lastMonthRevenue > 5000000)
+                    {
+                        fee += (int)(lastMonthRevenue * 0.1);
+                    }
+
+                    ViewBag.LastMonthRevenue = lastMonthRevenue;
+                    ViewBag.MonthlyFee = fee;
+                    var qrBase64 = await _facadeService.VietQrService.GenerateQrCodeBase64Async(
+                        fee,
+                        "Thanh toan phi thang"
+                    );
+                    ViewBag.QrCodeImageUrl = qrBase64;
+                }
+            }
             return View();
         }
 
@@ -100,6 +130,7 @@ namespace GreenCloset.Controllers
         [Authorize(Roles = "Lessor")]
         public IActionResult CreateProduct()
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
             return View();
         }
@@ -127,7 +158,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Tạo sản phẩm thành công";
                 return RedirectToAction("Index", "Lessor");
             }
             TempData["error"] = "Tạo sản phẩm không thành công";
@@ -138,6 +168,7 @@ namespace GreenCloset.Controllers
         [Authorize(Roles = "Lessor")]
         public IActionResult UpdateProduct(int id)
         {
+            ViewBag.Role = User.FindFirstValue(ClaimTypes.Role);
             var product = _facadeService.Product.GetProductById(
                 id,
                 includeProperties: "Categories,ProductAvatar,ProductImages,Feedbacks"
@@ -188,7 +219,6 @@ namespace GreenCloset.Controllers
                     avatar,
                     gallery
                 );
-                TempData["success"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction("Index", "Lessor");
             }
             ViewBag.Categories = _facadeService.Category.GetAllCategories();
@@ -198,7 +228,7 @@ namespace GreenCloset.Controllers
 
         [Authorize(Roles = "Lessor")]
         [HttpDelete]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = _facadeService.Product.GetProductById(
                 id,
@@ -208,7 +238,7 @@ namespace GreenCloset.Controllers
             {
                 return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
             }
-            bool result = _facadeService.Product.DeleteProduct(product);
+            bool result = await _facadeService.Product.DeleteProduct(product);
             if (result)
             {
                 return Json(new { success = true, message = "Xóa sản phẩm thành công" });
@@ -218,7 +248,7 @@ namespace GreenCloset.Controllers
 
         [Authorize(Roles = "Lessor")]
         [HttpDelete]
-        public IActionResult DeleteImageProduct(int imageId)
+        public async Task<IActionResult> DeleteImageProduct(int imageId)
         {
             var image = _facadeService.ItemImage.GetItemImageById(imageId);
             if (image == null)
@@ -226,7 +256,7 @@ namespace GreenCloset.Controllers
                 return Ok(new { success = false, message = "Không tìm thấy ảnh" });
             }
 
-            _facadeService.ItemImage.RemoveItemImage(image);
+            await _facadeService.ItemImage.RemoveItemImage(image);
             return Ok(new { successuccess = true });
         }
 
@@ -266,6 +296,20 @@ namespace GreenCloset.Controllers
             }
             TempData["success"] = "Cập nhật trạng thái đơn hàng thành công";
             return RedirectToAction("OrderDetail", "Lessor", new { orderId });
+        }
+
+        [Authorize(Roles = "Lessor")]
+        public IActionResult ViewFeedbackProducts(int id)
+        {
+            var (product, feedbacks) = _facadeService.FeedBack.ViewFeedbackProduct(id);
+            if (product == null)
+            {
+                TempData["error"] = "Không có Product";
+                return RedirectToAction("Index", "Lessor");
+            }
+
+            ViewBag.Product = product;
+            return View(feedbacks);
         }
     }
 }

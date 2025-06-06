@@ -73,11 +73,11 @@ namespace GreenCloset.Controllers
             };
         }
 
-        public async Task LoginWithFacebook()
+        public IActionResult LoginWithFacebook()
         {
-            var redirectUrl = Url.Action("FacebookResponse", "Home");
+            var redirectUrl = Url.Action("FacebookResponse", "Home", null, Request.Scheme);
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-            await HttpContext.ChallengeAsync(FacebookDefaults.AuthenticationScheme, properties);
+            return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
 
         public async Task<IActionResult> FacebookResponse()
@@ -125,7 +125,7 @@ namespace GreenCloset.Controllers
                 ViewBag.Email = email;
                 return View();
             }
-            if (_facadeService.User.IsValidPassword(password))
+            if (!_facadeService.User.IsValidPassword(password))
             {
                 TempData["error"] = "Mật khẩu không hợp lệ";
                 ViewBag.Email = email;

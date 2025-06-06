@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Repository.Implement;
 using Utility.Email;
+using Utility.Media;
 using Utility.Password;
 
 namespace BussinessLayer.Implement
@@ -18,16 +19,19 @@ namespace BussinessLayer.Implement
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IEmailQueue _emailQueue;
+        private readonly CloudinaryService _cloudinaryService;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
-            IEmailQueue emailQueue
+            IEmailQueue emailQueue,
+            CloudinaryService cloudinaryService
         )
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _emailQueue = emailQueue;
+            _cloudinaryService = cloudinaryService;
         }
 
         public User? GetUserByEmail(string email)
@@ -498,6 +502,52 @@ namespace BussinessLayer.Implement
                 + $"<td></td>"
                 + $"</tr>"
                 + $"</table>";
+        }
+
+        public async Task SubmitBillLessoer(Guid userId, IFormFile fileImage)
+        {
+            var checkUserId = _unitOfWork.User.Get(u => u.Id == userId);
+
+            if (checkUserId == null)
+            {
+                throw new Exception("Lessor không tồn tại.");
+            }
+
+            string uploadFolder = "billlessors";
+            if (!Directory.Exists(uploadFolder))
+            {
+                Directory.CreateDirectory(uploadFolder);
+            }
+            if (fileImage != null)
+            {
+                var itemImage = new ItemImage
+                {
+                    ImagePath = "",
+                    PublicId = ""
+                };
+
+                await _cloudinaryService.UploadImageAsync(fileImage, uploadFolder, itemImage);
+                _unitOfWork.ItemImage.Add(itemImage);
+                checkUserId.LastPaymentDate = DateTime.Now;
+                checkUserId.IsMonthlyFeePaid = true;
+                checkUserId.PaymentReceiptImagePath = itemImage.ImagePath;
+
+                _unitOfWork.User.Update(checkUserId);
+                _unitOfWork.Save();
+            }
+            
+        }
+
+        public bool UpdateMonthlyFeeAdmin(Guid userId, bool isPaid)
+        {
+            var user = _unitOfWork.User.Get(u => u.Id == userId);
+            if (user == null) return false;
+
+            user.IsMonthlyFeePaid = isPaid;
+            user.LastPaymentDate = DateTime.Now;
+            _unitOfWork.User.Update(user);
+            _unitOfWork.Save();
+            return true;
         }
     }
 }

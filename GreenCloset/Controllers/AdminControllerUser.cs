@@ -30,7 +30,7 @@ namespace GreenCloset.Controllers
                         .Sum(o => o.Order.TotalPrice),
                 })
                 .ToList();
-            ;
+            
             return Json(new { data = customers });
         }
 
@@ -58,9 +58,23 @@ namespace GreenCloset.Controllers
                             .Average(f => f.FeedbackStars)
                         : 0,
                     FeedbackCount = _facadeService.FeedBack.GetAllShopFeedback(l.Id).Count(),
+                    l.IsMonthlyFeePaid,
+                    l.PaymentReceiptImagePath,
+                    l.UserName
                 })
                 .ToList();
             return Json(new { data = lessors });
+        }
+
+        [HttpPost]
+        public IActionResult UpdateMonthlyFeeAdmin(Guid userId, bool isMonthlyFeePaid)
+        {
+            bool rs = _facadeService.User.UpdateMonthlyFeeAdmin(userId, isMonthlyFeePaid);
+            if (rs)
+            {
+                return Ok(new { success = true, message = "Cập nhật thành công." });
+            }
+            return BadRequest(new { success = false, message = "Cập nhật không thành công." });
         }
     }
 }

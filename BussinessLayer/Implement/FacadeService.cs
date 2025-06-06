@@ -38,7 +38,7 @@ namespace BussinessLayer.Implement
 
             VnPayService = vnPayService;
             VietQrService = new VietQrService(_configuration, httpClientFactory);
-            User = new UserService(_unitOfWork, _configuration, _emailQueue);
+            User = new UserService(_unitOfWork, _configuration, _emailQueue, _cloudinaryService);
             Category = new CategoryService(_unitOfWork);
             Product = new ProductService(_unitOfWork, _cloudinaryService);
             ItemImage = new ItemImageService(_unitOfWork, _cloudinaryService);

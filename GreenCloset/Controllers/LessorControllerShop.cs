@@ -102,7 +102,7 @@ namespace GreenCloset.Controllers
                     p.Name,
                     p.Price,
                     p.Categories,
-                    AvgRating = p.Feedbacks != null ? p.Feedbacks.Average(f => f.FeedbackStars) : 0,
+                    AvgRating = (p.Feedbacks != null && p.Feedbacks.Any()) ? p.Feedbacks.Average(f => f.FeedbackStars) : 0,
                     FeedbackCount = p.Feedbacks != null ? p.Feedbacks.Count() : 0,
                 })
                 .ToList();
